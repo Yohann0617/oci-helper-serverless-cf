@@ -181909,6 +181909,16036 @@ var require_oci_identitydomains = __commonJS({
   }
 });
 
+// node-built-in-modules:net
+import libDefault13 from "net";
+var require_net = __commonJS({
+  "node-built-in-modules:net"(exports, module) {
+    module.exports = libDefault13;
+  }
+});
+
+// node-built-in-modules:child_process
+import libDefault14 from "child_process";
+var require_child_process = __commonJS({
+  "node-built-in-modules:child_process"(exports, module) {
+    module.exports = libDefault14;
+  }
+});
+
+// node_modules/ssh2/lib/protocol/constants.js
+var require_constants3 = __commonJS({
+  "node_modules/ssh2/lib/protocol/constants.js"(exports, module) {
+    "use strict";
+    var crypto2 = require_crypto();
+    var cpuInfo;
+    try {
+      cpuInfo = __require("cpu-features")();
+    } catch {
+    }
+    var { bindingAvailable, CIPHER_INFO, MAC_INFO } = require_crypto2();
+    var eddsaSupported = (() => {
+      if (typeof crypto2.sign === "function" && typeof crypto2.verify === "function") {
+        const key = "-----BEGIN PRIVATE KEY-----\r\nMC4CAQAwBQYDK2VwBCIEIHKj+sVa9WcD/q2DJUJaf43Kptc8xYuUQA4bOFj9vC8T\r\n-----END PRIVATE KEY-----";
+        const data = Buffer.from("a");
+        let sig;
+        let verified;
+        try {
+          sig = crypto2.sign(null, data, key);
+          verified = crypto2.verify(null, data, key, sig);
+        } catch {
+        }
+        return Buffer.isBuffer(sig) && sig.length === 64 && verified === true;
+      }
+      return false;
+    })();
+    var curve25519Supported = typeof crypto2.diffieHellman === "function" && typeof crypto2.generateKeyPairSync === "function" && typeof crypto2.createPublicKey === "function";
+    var DEFAULT_KEX = [
+      // https://tools.ietf.org/html/rfc5656#section-10.1
+      "ecdh-sha2-nistp256",
+      "ecdh-sha2-nistp384",
+      "ecdh-sha2-nistp521",
+      // https://tools.ietf.org/html/rfc4419#section-4
+      "diffie-hellman-group-exchange-sha256",
+      // https://tools.ietf.org/html/rfc8268
+      "diffie-hellman-group14-sha256",
+      "diffie-hellman-group15-sha512",
+      "diffie-hellman-group16-sha512",
+      "diffie-hellman-group17-sha512",
+      "diffie-hellman-group18-sha512"
+    ];
+    if (curve25519Supported) {
+      DEFAULT_KEX.unshift("curve25519-sha256");
+      DEFAULT_KEX.unshift("curve25519-sha256@libssh.org");
+    }
+    var SUPPORTED_KEX = DEFAULT_KEX.concat([
+      // https://tools.ietf.org/html/rfc4419#section-4
+      "diffie-hellman-group-exchange-sha1",
+      "diffie-hellman-group14-sha1",
+      // REQUIRED
+      "diffie-hellman-group1-sha1"
+      // REQUIRED
+    ]);
+    var DEFAULT_SERVER_HOST_KEY = [
+      "ecdsa-sha2-nistp256",
+      "ecdsa-sha2-nistp384",
+      "ecdsa-sha2-nistp521",
+      "rsa-sha2-512",
+      // RFC 8332
+      "rsa-sha2-256",
+      // RFC 8332
+      "ssh-rsa"
+    ];
+    if (eddsaSupported)
+      DEFAULT_SERVER_HOST_KEY.unshift("ssh-ed25519");
+    var SUPPORTED_SERVER_HOST_KEY = DEFAULT_SERVER_HOST_KEY.concat([
+      "ssh-dss"
+    ]);
+    var canUseCipher = (() => {
+      const ciphers = crypto2.getCiphers();
+      return (name) => ciphers.includes(CIPHER_INFO[name].sslName);
+    })();
+    var DEFAULT_CIPHER = [
+      // http://tools.ietf.org/html/rfc5647
+      "aes128-gcm@openssh.com",
+      "aes256-gcm@openssh.com",
+      // http://tools.ietf.org/html/rfc4344#section-4
+      "aes128-ctr",
+      "aes192-ctr",
+      "aes256-ctr"
+    ];
+    if (cpuInfo && cpuInfo.flags && !cpuInfo.flags.aes) {
+      if (bindingAvailable)
+        DEFAULT_CIPHER.unshift("chacha20-poly1305@openssh.com");
+      else
+        DEFAULT_CIPHER.push("chacha20-poly1305@openssh.com");
+    } else if (bindingAvailable && cpuInfo && cpuInfo.arch === "x86") {
+      DEFAULT_CIPHER.splice(4, 0, "chacha20-poly1305@openssh.com");
+    } else {
+      DEFAULT_CIPHER.push("chacha20-poly1305@openssh.com");
+    }
+    DEFAULT_CIPHER = DEFAULT_CIPHER.filter(canUseCipher);
+    var SUPPORTED_CIPHER = DEFAULT_CIPHER.concat([
+      "aes256-cbc",
+      "aes192-cbc",
+      "aes128-cbc",
+      "blowfish-cbc",
+      "3des-cbc",
+      "aes128-gcm",
+      "aes256-gcm",
+      // http://tools.ietf.org/html/rfc4345#section-4:
+      "arcfour256",
+      "arcfour128",
+      "cast128-cbc",
+      "arcfour"
+    ].filter(canUseCipher));
+    var canUseMAC = (() => {
+      const hashes = crypto2.getHashes();
+      return (name) => hashes.includes(MAC_INFO[name].sslName);
+    })();
+    var DEFAULT_MAC = [
+      "hmac-sha2-256-etm@openssh.com",
+      "hmac-sha2-512-etm@openssh.com",
+      "hmac-sha1-etm@openssh.com",
+      "hmac-sha2-256",
+      "hmac-sha2-512",
+      "hmac-sha1"
+    ].filter(canUseMAC);
+    var SUPPORTED_MAC = DEFAULT_MAC.concat([
+      "hmac-md5",
+      "hmac-sha2-256-96",
+      // first 96 bits of HMAC-SHA256
+      "hmac-sha2-512-96",
+      // first 96 bits of HMAC-SHA512
+      "hmac-ripemd160",
+      "hmac-sha1-96",
+      // first 96 bits of HMAC-SHA1
+      "hmac-md5-96"
+      // first 96 bits of HMAC-MD5
+    ].filter(canUseMAC));
+    var DEFAULT_COMPRESSION = [
+      "none",
+      "zlib@openssh.com",
+      // ZLIB (LZ77) compression, except
+      // compression/decompression does not start until after
+      // successful user authentication
+      "zlib"
+      // ZLIB (LZ77) compression
+    ];
+    var SUPPORTED_COMPRESSION = DEFAULT_COMPRESSION.concat([]);
+    var COMPAT = {
+      BAD_DHGEX: 1 << 0,
+      OLD_EXIT: 1 << 1,
+      DYN_RPORT_BUG: 1 << 2,
+      BUG_DHGEX_LARGE: 1 << 3,
+      IMPLY_RSA_SHA2_SIGALGS: 1 << 4
+    };
+    module.exports = {
+      MESSAGE: {
+        // Transport layer protocol -- generic (1-19)
+        DISCONNECT: 1,
+        IGNORE: 2,
+        UNIMPLEMENTED: 3,
+        DEBUG: 4,
+        SERVICE_REQUEST: 5,
+        SERVICE_ACCEPT: 6,
+        EXT_INFO: 7,
+        // RFC 8308
+        // Transport layer protocol -- algorithm negotiation (20-29)
+        KEXINIT: 20,
+        NEWKEYS: 21,
+        // Transport layer protocol -- key exchange method-specific (30-49)
+        KEXDH_INIT: 30,
+        KEXDH_REPLY: 31,
+        KEXDH_GEX_GROUP: 31,
+        KEXDH_GEX_INIT: 32,
+        KEXDH_GEX_REPLY: 33,
+        KEXDH_GEX_REQUEST: 34,
+        KEXECDH_INIT: 30,
+        KEXECDH_REPLY: 31,
+        // User auth protocol -- generic (50-59)
+        USERAUTH_REQUEST: 50,
+        USERAUTH_FAILURE: 51,
+        USERAUTH_SUCCESS: 52,
+        USERAUTH_BANNER: 53,
+        // User auth protocol -- user auth method-specific (60-79)
+        USERAUTH_PASSWD_CHANGEREQ: 60,
+        USERAUTH_PK_OK: 60,
+        USERAUTH_INFO_REQUEST: 60,
+        USERAUTH_INFO_RESPONSE: 61,
+        // Connection protocol -- generic (80-89)
+        GLOBAL_REQUEST: 80,
+        REQUEST_SUCCESS: 81,
+        REQUEST_FAILURE: 82,
+        // Connection protocol -- channel-related (90-127)
+        CHANNEL_OPEN: 90,
+        CHANNEL_OPEN_CONFIRMATION: 91,
+        CHANNEL_OPEN_FAILURE: 92,
+        CHANNEL_WINDOW_ADJUST: 93,
+        CHANNEL_DATA: 94,
+        CHANNEL_EXTENDED_DATA: 95,
+        CHANNEL_EOF: 96,
+        CHANNEL_CLOSE: 97,
+        CHANNEL_REQUEST: 98,
+        CHANNEL_SUCCESS: 99,
+        CHANNEL_FAILURE: 100
+        // Reserved for client protocols (128-191)
+        // Local extensions (192-155)
+      },
+      DISCONNECT_REASON: {
+        HOST_NOT_ALLOWED_TO_CONNECT: 1,
+        PROTOCOL_ERROR: 2,
+        KEY_EXCHANGE_FAILED: 3,
+        RESERVED: 4,
+        MAC_ERROR: 5,
+        COMPRESSION_ERROR: 6,
+        SERVICE_NOT_AVAILABLE: 7,
+        PROTOCOL_VERSION_NOT_SUPPORTED: 8,
+        HOST_KEY_NOT_VERIFIABLE: 9,
+        CONNECTION_LOST: 10,
+        BY_APPLICATION: 11,
+        TOO_MANY_CONNECTIONS: 12,
+        AUTH_CANCELED_BY_USER: 13,
+        NO_MORE_AUTH_METHODS_AVAILABLE: 14,
+        ILLEGAL_USER_NAME: 15
+      },
+      DISCONNECT_REASON_STR: void 0,
+      CHANNEL_OPEN_FAILURE: {
+        ADMINISTRATIVELY_PROHIBITED: 1,
+        CONNECT_FAILED: 2,
+        UNKNOWN_CHANNEL_TYPE: 3,
+        RESOURCE_SHORTAGE: 4
+      },
+      TERMINAL_MODE: {
+        TTY_OP_END: 0,
+        // Indicates end of options.
+        VINTR: 1,
+        // Interrupt character; 255 if none. Similarly for the
+        //  other characters.  Not all of these characters are
+        //  supported on all systems.
+        VQUIT: 2,
+        // The quit character (sends SIGQUIT signal on POSIX
+        //  systems).
+        VERASE: 3,
+        // Erase the character to left of the cursor.
+        VKILL: 4,
+        // Kill the current input line.
+        VEOF: 5,
+        // End-of-file character (sends EOF from the
+        //  terminal).
+        VEOL: 6,
+        // End-of-line character in addition to carriage
+        //  return and/or linefeed.
+        VEOL2: 7,
+        // Additional end-of-line character.
+        VSTART: 8,
+        // Continues paused output (normally control-Q).
+        VSTOP: 9,
+        // Pauses output (normally control-S).
+        VSUSP: 10,
+        // Suspends the current program.
+        VDSUSP: 11,
+        // Another suspend character.
+        VREPRINT: 12,
+        // Reprints the current input line.
+        VWERASE: 13,
+        // Erases a word left of cursor.
+        VLNEXT: 14,
+        // Enter the next character typed literally, even if
+        //  it is a special character
+        VFLUSH: 15,
+        // Character to flush output.
+        VSWTCH: 16,
+        // Switch to a different shell layer.
+        VSTATUS: 17,
+        // Prints system status line (load, command, pid,
+        //  etc).
+        VDISCARD: 18,
+        // Toggles the flushing of terminal output.
+        IGNPAR: 30,
+        // The ignore parity flag.  The parameter SHOULD be 0
+        //  if this flag is FALSE, and 1 if it is TRUE.
+        PARMRK: 31,
+        // Mark parity and framing errors.
+        INPCK: 32,
+        // Enable checking of parity errors.
+        ISTRIP: 33,
+        // Strip 8th bit off characters.
+        INLCR: 34,
+        // Map NL into CR on input.
+        IGNCR: 35,
+        // Ignore CR on input.
+        ICRNL: 36,
+        // Map CR to NL on input.
+        IUCLC: 37,
+        // Translate uppercase characters to lowercase.
+        IXON: 38,
+        // Enable output flow control.
+        IXANY: 39,
+        // Any char will restart after stop.
+        IXOFF: 40,
+        // Enable input flow control.
+        IMAXBEL: 41,
+        // Ring bell on input queue full.
+        ISIG: 50,
+        // Enable signals INTR, QUIT, [D]SUSP.
+        ICANON: 51,
+        // Canonicalize input lines.
+        XCASE: 52,
+        // Enable input and output of uppercase characters by
+        //  preceding their lowercase equivalents with "\".
+        ECHO: 53,
+        // Enable echoing.
+        ECHOE: 54,
+        // Visually erase chars.
+        ECHOK: 55,
+        // Kill character discards current line.
+        ECHONL: 56,
+        // Echo NL even if ECHO is off.
+        NOFLSH: 57,
+        // Don't flush after interrupt.
+        TOSTOP: 58,
+        // Stop background jobs from output.
+        IEXTEN: 59,
+        // Enable extensions.
+        ECHOCTL: 60,
+        // Echo control characters as ^(Char).
+        ECHOKE: 61,
+        // Visual erase for line kill.
+        PENDIN: 62,
+        // Retype pending input.
+        OPOST: 70,
+        // Enable output processing.
+        OLCUC: 71,
+        // Convert lowercase to uppercase.
+        ONLCR: 72,
+        // Map NL to CR-NL.
+        OCRNL: 73,
+        // Translate carriage return to newline (output).
+        ONOCR: 74,
+        // Translate newline to carriage return-newline
+        //  (output).
+        ONLRET: 75,
+        // Newline performs a carriage return (output).
+        CS7: 90,
+        // 7 bit mode.
+        CS8: 91,
+        // 8 bit mode.
+        PARENB: 92,
+        // Parity enable.
+        PARODD: 93,
+        // Odd parity, else even.
+        TTY_OP_ISPEED: 128,
+        // Specifies the input baud rate in bits per second.
+        TTY_OP_OSPEED: 129
+        // Specifies the output baud rate in bits per second.
+      },
+      CHANNEL_EXTENDED_DATATYPE: {
+        STDERR: 1
+      },
+      SIGNALS: [
+        "ABRT",
+        "ALRM",
+        "FPE",
+        "HUP",
+        "ILL",
+        "INT",
+        "QUIT",
+        "SEGV",
+        "TERM",
+        "USR1",
+        "USR2",
+        "KILL",
+        "PIPE"
+      ].reduce((cur, val) => ({ ...cur, [val]: 1 }), {}),
+      COMPAT,
+      COMPAT_CHECKS: [
+        ["Cisco-1.25", COMPAT.BAD_DHGEX],
+        [/^Cisco-1[.]/, COMPAT.BUG_DHGEX_LARGE],
+        [/^[0-9.]+$/, COMPAT.OLD_EXIT],
+        // old SSH.com implementations
+        [/^OpenSSH_5[.][0-9]+/, COMPAT.DYN_RPORT_BUG],
+        [/^OpenSSH_7[.]4/, COMPAT.IMPLY_RSA_SHA2_SIGALGS]
+      ],
+      // KEX proposal-related
+      DEFAULT_KEX,
+      SUPPORTED_KEX,
+      DEFAULT_SERVER_HOST_KEY,
+      SUPPORTED_SERVER_HOST_KEY,
+      DEFAULT_CIPHER,
+      SUPPORTED_CIPHER,
+      DEFAULT_MAC,
+      SUPPORTED_MAC,
+      DEFAULT_COMPRESSION,
+      SUPPORTED_COMPRESSION,
+      curve25519Supported,
+      eddsaSupported
+    };
+    module.exports.DISCONNECT_REASON_BY_VALUE = Array.from(Object.entries(module.exports.DISCONNECT_REASON)).reduce((obj, [key, value]) => ({ ...obj, [value]: key }), {});
+  }
+});
+
+// node_modules/ssh2/lib/protocol/utils.js
+var require_utils4 = __commonJS({
+  "node_modules/ssh2/lib/protocol/utils.js"(exports, module) {
+    "use strict";
+    var Ber = require_lib().Ber;
+    var DISCONNECT_REASON;
+    var FastBuffer = Buffer[Symbol.species];
+    var TypedArrayFill = Object.getPrototypeOf(Uint8Array.prototype).fill;
+    function readUInt32BE(buf, offset) {
+      return buf[offset++] * 16777216 + buf[offset++] * 65536 + buf[offset++] * 256 + buf[offset];
+    }
+    __name(readUInt32BE, "readUInt32BE");
+    function bufferCopy(src, dest, srcStart, srcEnd, destStart) {
+      if (!destStart)
+        destStart = 0;
+      if (srcEnd > src.length)
+        srcEnd = src.length;
+      let nb = srcEnd - srcStart;
+      const destLeft = dest.length - destStart;
+      if (nb > destLeft)
+        nb = destLeft;
+      dest.set(
+        new Uint8Array(src.buffer, src.byteOffset + srcStart, nb),
+        destStart
+      );
+      return nb;
+    }
+    __name(bufferCopy, "bufferCopy");
+    function bufferSlice(buf, start, end) {
+      if (end === void 0)
+        end = buf.length;
+      return new FastBuffer(buf.buffer, buf.byteOffset + start, end - start);
+    }
+    __name(bufferSlice, "bufferSlice");
+    function makeBufferParser() {
+      let pos = 0;
+      let buffer;
+      const self2 = {
+        init: /* @__PURE__ */ __name((buf, start) => {
+          buffer = buf;
+          pos = typeof start === "number" ? start : 0;
+        }, "init"),
+        pos: /* @__PURE__ */ __name(() => pos, "pos"),
+        length: /* @__PURE__ */ __name(() => buffer ? buffer.length : 0, "length"),
+        avail: /* @__PURE__ */ __name(() => buffer && pos < buffer.length ? buffer.length - pos : 0, "avail"),
+        clear: /* @__PURE__ */ __name(() => {
+          buffer = void 0;
+        }, "clear"),
+        readUInt32BE: /* @__PURE__ */ __name(() => {
+          if (!buffer || pos + 3 >= buffer.length)
+            return;
+          return buffer[pos++] * 16777216 + buffer[pos++] * 65536 + buffer[pos++] * 256 + buffer[pos++];
+        }, "readUInt32BE"),
+        readUInt64BE: /* @__PURE__ */ __name((behavior) => {
+          if (!buffer || pos + 7 >= buffer.length)
+            return;
+          switch (behavior) {
+            case "always":
+              return BigInt(`0x${buffer.hexSlice(pos, pos += 8)}`);
+            case "maybe":
+              if (buffer[pos] > 31)
+                return BigInt(`0x${buffer.hexSlice(pos, pos += 8)}`);
+            // FALLTHROUGH
+            default:
+              return buffer[pos++] * 72057594037927940 + buffer[pos++] * 281474976710656 + buffer[pos++] * 1099511627776 + buffer[pos++] * 4294967296 + buffer[pos++] * 16777216 + buffer[pos++] * 65536 + buffer[pos++] * 256 + buffer[pos++];
+          }
+        }, "readUInt64BE"),
+        skip: /* @__PURE__ */ __name((n) => {
+          if (buffer && n > 0)
+            pos += n;
+        }, "skip"),
+        skipString: /* @__PURE__ */ __name(() => {
+          const len = self2.readUInt32BE();
+          if (len === void 0)
+            return;
+          pos += len;
+          return pos <= buffer.length ? len : void 0;
+        }, "skipString"),
+        readByte: /* @__PURE__ */ __name(() => {
+          if (buffer && pos < buffer.length)
+            return buffer[pos++];
+        }, "readByte"),
+        readBool: /* @__PURE__ */ __name(() => {
+          if (buffer && pos < buffer.length)
+            return !!buffer[pos++];
+        }, "readBool"),
+        readList: /* @__PURE__ */ __name(() => {
+          const list = self2.readString(true);
+          if (list === void 0)
+            return;
+          return list ? list.split(",") : [];
+        }, "readList"),
+        readString: /* @__PURE__ */ __name((dest, maxLen) => {
+          if (typeof dest === "number") {
+            maxLen = dest;
+            dest = void 0;
+          }
+          const len = self2.readUInt32BE();
+          if (len === void 0)
+            return;
+          if (buffer.length - pos < len || typeof maxLen === "number" && len > maxLen) {
+            return;
+          }
+          if (dest) {
+            if (Buffer.isBuffer(dest))
+              return bufferCopy(buffer, dest, pos, pos += len);
+            return buffer.utf8Slice(pos, pos += len);
+          }
+          return bufferSlice(buffer, pos, pos += len);
+        }, "readString"),
+        readRaw: /* @__PURE__ */ __name((len) => {
+          if (!buffer)
+            return;
+          if (typeof len !== "number")
+            return bufferSlice(buffer, pos, pos += buffer.length - pos);
+          if (buffer.length - pos >= len)
+            return bufferSlice(buffer, pos, pos += len);
+        }, "readRaw")
+      };
+      return self2;
+    }
+    __name(makeBufferParser, "makeBufferParser");
+    function makeError(msg, level, fatal) {
+      const err = new Error(msg);
+      if (typeof level === "boolean") {
+        fatal = level;
+        err.level = "protocol";
+      } else {
+        err.level = level || "protocol";
+      }
+      err.fatal = !!fatal;
+      return err;
+    }
+    __name(makeError, "makeError");
+    function writeUInt32BE(buf, value, offset) {
+      buf[offset++] = value >>> 24;
+      buf[offset++] = value >>> 16;
+      buf[offset++] = value >>> 8;
+      buf[offset++] = value;
+      return offset;
+    }
+    __name(writeUInt32BE, "writeUInt32BE");
+    var utilBufferParser = makeBufferParser();
+    module.exports = {
+      bufferCopy,
+      bufferSlice,
+      FastBuffer,
+      bufferFill: /* @__PURE__ */ __name((buf, value, start, end) => {
+        return TypedArrayFill.call(buf, value, start, end);
+      }, "bufferFill"),
+      makeError,
+      doFatalError: /* @__PURE__ */ __name((protocol, msg, level, reason) => {
+        let err;
+        if (DISCONNECT_REASON === void 0)
+          ({ DISCONNECT_REASON } = require_constants3());
+        if (msg instanceof Error) {
+          err = msg;
+          if (typeof level !== "number")
+            reason = DISCONNECT_REASON.PROTOCOL_ERROR;
+          else
+            reason = level;
+        } else {
+          err = makeError(msg, level, true);
+        }
+        if (typeof reason !== "number")
+          reason = DISCONNECT_REASON.PROTOCOL_ERROR;
+        protocol.disconnect(reason);
+        protocol._destruct();
+        protocol._onError(err);
+        return Infinity;
+      }, "doFatalError"),
+      readUInt32BE,
+      writeUInt32BE,
+      writeUInt32LE: /* @__PURE__ */ __name((buf, value, offset) => {
+        buf[offset++] = value;
+        buf[offset++] = value >>> 8;
+        buf[offset++] = value >>> 16;
+        buf[offset++] = value >>> 24;
+        return offset;
+      }, "writeUInt32LE"),
+      makeBufferParser,
+      bufferParser: makeBufferParser(),
+      readString: /* @__PURE__ */ __name((buffer, start, dest, maxLen) => {
+        if (typeof dest === "number") {
+          maxLen = dest;
+          dest = void 0;
+        }
+        if (start === void 0)
+          start = 0;
+        const left = buffer.length - start;
+        if (start < 0 || start >= buffer.length || left < 4)
+          return;
+        const len = readUInt32BE(buffer, start);
+        if (left < 4 + len || typeof maxLen === "number" && len > maxLen)
+          return;
+        start += 4;
+        const end = start + len;
+        buffer._pos = end;
+        if (dest) {
+          if (Buffer.isBuffer(dest))
+            return bufferCopy(buffer, dest, start, end);
+          return buffer.utf8Slice(start, end);
+        }
+        return bufferSlice(buffer, start, end);
+      }, "readString"),
+      sigSSHToASN1: /* @__PURE__ */ __name((sig, type) => {
+        switch (type) {
+          case "ssh-dss": {
+            if (sig.length > 40)
+              return sig;
+            const asnWriter = new Ber.Writer();
+            asnWriter.startSequence();
+            let r = sig.slice(0, 20);
+            let s = sig.slice(20);
+            if (r[0] & 128) {
+              const rNew = Buffer.allocUnsafe(21);
+              rNew[0] = 0;
+              r.copy(rNew, 1);
+              r = rNew;
+            } else if (r[0] === 0 && !(r[1] & 128)) {
+              r = r.slice(1);
+            }
+            if (s[0] & 128) {
+              const sNew = Buffer.allocUnsafe(21);
+              sNew[0] = 0;
+              s.copy(sNew, 1);
+              s = sNew;
+            } else if (s[0] === 0 && !(s[1] & 128)) {
+              s = s.slice(1);
+            }
+            asnWriter.writeBuffer(r, Ber.Integer);
+            asnWriter.writeBuffer(s, Ber.Integer);
+            asnWriter.endSequence();
+            return asnWriter.buffer;
+          }
+          case "ecdsa-sha2-nistp256":
+          case "ecdsa-sha2-nistp384":
+          case "ecdsa-sha2-nistp521": {
+            utilBufferParser.init(sig, 0);
+            const r = utilBufferParser.readString();
+            const s = utilBufferParser.readString();
+            utilBufferParser.clear();
+            if (r === void 0 || s === void 0)
+              return;
+            const asnWriter = new Ber.Writer();
+            asnWriter.startSequence();
+            asnWriter.writeBuffer(r, Ber.Integer);
+            asnWriter.writeBuffer(s, Ber.Integer);
+            asnWriter.endSequence();
+            return asnWriter.buffer;
+          }
+          default:
+            return sig;
+        }
+      }, "sigSSHToASN1"),
+      convertSignature: /* @__PURE__ */ __name((signature, keyType) => {
+        switch (keyType) {
+          case "ssh-dss": {
+            if (signature.length <= 40)
+              return signature;
+            const asnReader = new Ber.Reader(signature);
+            asnReader.readSequence();
+            let r = asnReader.readString(Ber.Integer, true);
+            let s = asnReader.readString(Ber.Integer, true);
+            let rOffset = 0;
+            let sOffset = 0;
+            if (r.length < 20) {
+              const rNew = Buffer.allocUnsafe(20);
+              rNew.set(r, 1);
+              r = rNew;
+              r[0] = 0;
+            }
+            if (s.length < 20) {
+              const sNew = Buffer.allocUnsafe(20);
+              sNew.set(s, 1);
+              s = sNew;
+              s[0] = 0;
+            }
+            if (r.length > 20 && r[0] === 0)
+              rOffset = 1;
+            if (s.length > 20 && s[0] === 0)
+              sOffset = 1;
+            const newSig = Buffer.allocUnsafe(r.length - rOffset + (s.length - sOffset));
+            bufferCopy(r, newSig, rOffset, r.length, 0);
+            bufferCopy(s, newSig, sOffset, s.length, r.length - rOffset);
+            return newSig;
+          }
+          case "ecdsa-sha2-nistp256":
+          case "ecdsa-sha2-nistp384":
+          case "ecdsa-sha2-nistp521": {
+            if (signature[0] === 0)
+              return signature;
+            const asnReader = new Ber.Reader(signature);
+            asnReader.readSequence();
+            const r = asnReader.readString(Ber.Integer, true);
+            const s = asnReader.readString(Ber.Integer, true);
+            if (r === null || s === null)
+              return;
+            const newSig = Buffer.allocUnsafe(4 + r.length + 4 + s.length);
+            writeUInt32BE(newSig, r.length, 0);
+            newSig.set(r, 4);
+            writeUInt32BE(newSig, s.length, 4 + r.length);
+            newSig.set(s, 4 + 4 + r.length);
+            return newSig;
+          }
+        }
+        return signature;
+      }, "convertSignature"),
+      sendPacket: /* @__PURE__ */ __name((proto, packet, bypass) => {
+        if (!bypass && proto._kexinit !== void 0) {
+          if (proto._queue === void 0)
+            proto._queue = [];
+          proto._queue.push(packet);
+          proto._debug && proto._debug("Outbound: ... packet queued");
+          return false;
+        }
+        proto._cipher.encrypt(packet);
+        return true;
+      }, "sendPacket")
+    };
+  }
+});
+
+// node_modules/ssh2/lib/protocol/crypto/poly1305.js
+var require_poly1305 = __commonJS({
+  "node_modules/ssh2/lib/protocol/crypto/poly1305.js"(exports, module) {
+    var createPoly1305 = (function() {
+      function make() {
+        var noop = /* @__PURE__ */ __name(function() {
+          return 0;
+        }, "noop");
+        return {
+          _malloc: noop,
+          _free: noop,
+          b: noop,
+          j: noop,
+          c: noop,
+          d: noop,
+          e: noop,
+          cwrap: /* @__PURE__ */ __name(function() {
+            return noop;
+          }, "cwrap"),
+          HEAPU8: new Uint8Array(64)
+        };
+      }
+      __name(make, "make");
+      var fn = /* @__PURE__ */ __name(function() {
+        return Promise.resolve(make());
+      }, "fn");
+      fn.ready = Promise.resolve(make());
+      return fn;
+    })();
+    if (typeof module === "object" && module.exports) module.exports = createPoly1305;
+  }
+});
+
+// node_modules/ssh2/lib/protocol/crypto.js
+var require_crypto2 = __commonJS({
+  "node_modules/ssh2/lib/protocol/crypto.js"(exports, module) {
+    "use strict";
+    var {
+      createCipheriv,
+      createDecipheriv,
+      createHmac,
+      randomFillSync,
+      timingSafeEqual
+    } = require_crypto();
+    var { readUInt32BE, writeUInt32BE } = require_utils4();
+    var FastBuffer = Buffer[Symbol.species];
+    var MAX_SEQNO = 2 ** 32 - 1;
+    var EMPTY_BUFFER = Buffer.alloc(0);
+    var BUF_INT = Buffer.alloc(4);
+    var DISCARD_CACHE = /* @__PURE__ */ new Map();
+    var MAX_PACKET_SIZE = 35e3;
+    var binding;
+    var AESGCMCipher;
+    var ChaChaPolyCipher;
+    var GenericCipher;
+    var AESGCMDecipher;
+    var ChaChaPolyDecipher;
+    var GenericDecipher;
+    try {
+      binding = __require("./crypto/build/Release/sshcrypto.node");
+      ({
+        AESGCMCipher,
+        ChaChaPolyCipher,
+        GenericCipher,
+        AESGCMDecipher,
+        ChaChaPolyDecipher,
+        GenericDecipher
+      } = binding);
+    } catch {
+    }
+    var CIPHER_STREAM = 1 << 0;
+    var CIPHER_INFO = (() => {
+      function info(sslName, blockLen, keyLen, ivLen, authLen, discardLen, flags) {
+        return {
+          sslName,
+          blockLen,
+          keyLen,
+          ivLen: ivLen !== 0 || flags & CIPHER_STREAM ? ivLen : blockLen,
+          authLen,
+          discardLen,
+          stream: !!(flags & CIPHER_STREAM)
+        };
+      }
+      __name(info, "info");
+      return {
+        "chacha20-poly1305@openssh.com": info("chacha20", 8, 64, 0, 16, 0, CIPHER_STREAM),
+        "aes128-gcm": info("aes-128-gcm", 16, 16, 12, 16, 0, CIPHER_STREAM),
+        "aes256-gcm": info("aes-256-gcm", 16, 32, 12, 16, 0, CIPHER_STREAM),
+        "aes128-gcm@openssh.com": info("aes-128-gcm", 16, 16, 12, 16, 0, CIPHER_STREAM),
+        "aes256-gcm@openssh.com": info("aes-256-gcm", 16, 32, 12, 16, 0, CIPHER_STREAM),
+        "aes128-cbc": info("aes-128-cbc", 16, 16, 0, 0, 0, 0),
+        "aes192-cbc": info("aes-192-cbc", 16, 24, 0, 0, 0, 0),
+        "aes256-cbc": info("aes-256-cbc", 16, 32, 0, 0, 0, 0),
+        "rijndael-cbc@lysator.liu.se": info("aes-256-cbc", 16, 32, 0, 0, 0, 0),
+        "3des-cbc": info("des-ede3-cbc", 8, 24, 0, 0, 0, 0),
+        "blowfish-cbc": info("bf-cbc", 8, 16, 0, 0, 0, 0),
+        "idea-cbc": info("idea-cbc", 8, 16, 0, 0, 0, 0),
+        "cast128-cbc": info("cast-cbc", 8, 16, 0, 0, 0, 0),
+        "aes128-ctr": info("aes-128-ctr", 16, 16, 16, 0, 0, CIPHER_STREAM),
+        "aes192-ctr": info("aes-192-ctr", 16, 24, 16, 0, 0, CIPHER_STREAM),
+        "aes256-ctr": info("aes-256-ctr", 16, 32, 16, 0, 0, CIPHER_STREAM),
+        "3des-ctr": info("des-ede3", 8, 24, 8, 0, 0, CIPHER_STREAM),
+        "blowfish-ctr": info("bf-ecb", 8, 16, 8, 0, 0, CIPHER_STREAM),
+        "cast128-ctr": info("cast5-ecb", 8, 16, 8, 0, 0, CIPHER_STREAM),
+        /* The "arcfour128" algorithm is the RC4 cipher, as described in
+               [SCHNEIER], using a 128-bit key.  The first 1536 bytes of keystream
+               generated by the cipher MUST be discarded, and the first byte of the
+               first encrypted packet MUST be encrypted using the 1537th byte of
+               keystream.
+        
+               -- http://tools.ietf.org/html/rfc4345#section-4 */
+        "arcfour": info("rc4", 8, 16, 0, 0, 1536, CIPHER_STREAM),
+        "arcfour128": info("rc4", 8, 16, 0, 0, 1536, CIPHER_STREAM),
+        "arcfour256": info("rc4", 8, 32, 0, 0, 1536, CIPHER_STREAM),
+        "arcfour512": info("rc4", 8, 64, 0, 0, 1536, CIPHER_STREAM)
+      };
+    })();
+    var MAC_INFO = (() => {
+      function info(sslName, len, actualLen, isETM) {
+        return {
+          sslName,
+          len,
+          actualLen,
+          isETM
+        };
+      }
+      __name(info, "info");
+      return {
+        "hmac-md5": info("md5", 16, 16, false),
+        "hmac-md5-96": info("md5", 16, 12, false),
+        "hmac-ripemd160": info("ripemd160", 20, 20, false),
+        "hmac-sha1": info("sha1", 20, 20, false),
+        "hmac-sha1-etm@openssh.com": info("sha1", 20, 20, true),
+        "hmac-sha1-96": info("sha1", 20, 12, false),
+        "hmac-sha2-256": info("sha256", 32, 32, false),
+        "hmac-sha2-256-etm@openssh.com": info("sha256", 32, 32, true),
+        "hmac-sha2-256-96": info("sha256", 32, 12, false),
+        "hmac-sha2-512": info("sha512", 64, 64, false),
+        "hmac-sha2-512-etm@openssh.com": info("sha512", 64, 64, true),
+        "hmac-sha2-512-96": info("sha512", 64, 12, false)
+      };
+    })();
+    var NullCipher = class {
+      static {
+        __name(this, "NullCipher");
+      }
+      constructor(seqno, onWrite) {
+        this.outSeqno = seqno;
+        this._onWrite = onWrite;
+        this._dead = false;
+      }
+      free() {
+        this._dead = true;
+      }
+      allocPacket(payloadLen) {
+        let pktLen = 4 + 1 + payloadLen;
+        let padLen = 8 - (pktLen & 8 - 1);
+        if (padLen < 4)
+          padLen += 8;
+        pktLen += padLen;
+        const packet = Buffer.allocUnsafe(pktLen);
+        writeUInt32BE(packet, pktLen - 4, 0);
+        packet[4] = padLen;
+        randomFillSync(packet, 5 + payloadLen, padLen);
+        return packet;
+      }
+      encrypt(packet) {
+        if (this._dead)
+          return;
+        this._onWrite(packet);
+        this.outSeqno = this.outSeqno + 1 >>> 0;
+      }
+    };
+    var POLY1305_ZEROS = Buffer.alloc(32);
+    var POLY1305_OUT_COMPUTE = Buffer.alloc(16);
+    var POLY1305_WASM_MODULE;
+    var POLY1305_RESULT_MALLOC;
+    var poly1305_auth;
+    var ChaChaPolyCipherNative = class {
+      static {
+        __name(this, "ChaChaPolyCipherNative");
+      }
+      constructor(config) {
+        const enc2 = config.outbound;
+        this.outSeqno = enc2.seqno;
+        this._onWrite = enc2.onWrite;
+        this._encKeyMain = enc2.cipherKey.slice(0, 32);
+        this._encKeyPktLen = enc2.cipherKey.slice(32);
+        this._dead = false;
+      }
+      free() {
+        this._dead = true;
+      }
+      allocPacket(payloadLen) {
+        let pktLen = 4 + 1 + payloadLen;
+        let padLen = 8 - (pktLen - 4 & 8 - 1);
+        if (padLen < 4)
+          padLen += 8;
+        pktLen += padLen;
+        const packet = Buffer.allocUnsafe(pktLen);
+        writeUInt32BE(packet, pktLen - 4, 0);
+        packet[4] = padLen;
+        randomFillSync(packet, 5 + payloadLen, padLen);
+        return packet;
+      }
+      encrypt(packet) {
+        if (this._dead)
+          return;
+        POLY1305_OUT_COMPUTE[0] = 0;
+        writeUInt32BE(POLY1305_OUT_COMPUTE, this.outSeqno, 12);
+        const polyKey = createCipheriv("chacha20", this._encKeyMain, POLY1305_OUT_COMPUTE).update(POLY1305_ZEROS);
+        const pktLenEnc = createCipheriv("chacha20", this._encKeyPktLen, POLY1305_OUT_COMPUTE).update(packet.slice(0, 4));
+        this._onWrite(pktLenEnc);
+        POLY1305_OUT_COMPUTE[0] = 1;
+        const payloadEnc = createCipheriv("chacha20", this._encKeyMain, POLY1305_OUT_COMPUTE).update(packet.slice(4));
+        this._onWrite(payloadEnc);
+        poly1305_auth(
+          POLY1305_RESULT_MALLOC,
+          pktLenEnc,
+          pktLenEnc.length,
+          payloadEnc,
+          payloadEnc.length,
+          polyKey
+        );
+        const mac = Buffer.allocUnsafe(16);
+        mac.set(
+          new Uint8Array(
+            POLY1305_WASM_MODULE.HEAPU8.buffer,
+            POLY1305_RESULT_MALLOC,
+            16
+          ),
+          0
+        );
+        this._onWrite(mac);
+        this.outSeqno = this.outSeqno + 1 >>> 0;
+      }
+    };
+    var ChaChaPolyCipherBinding = class {
+      static {
+        __name(this, "ChaChaPolyCipherBinding");
+      }
+      constructor(config) {
+        const enc2 = config.outbound;
+        this.outSeqno = enc2.seqno;
+        this._onWrite = enc2.onWrite;
+        this._instance = new ChaChaPolyCipher(enc2.cipherKey);
+        this._dead = false;
+      }
+      free() {
+        this._dead = true;
+        this._instance.free();
+      }
+      allocPacket(payloadLen) {
+        let pktLen = 4 + 1 + payloadLen;
+        let padLen = 8 - (pktLen - 4 & 8 - 1);
+        if (padLen < 4)
+          padLen += 8;
+        pktLen += padLen;
+        const packet = Buffer.allocUnsafe(
+          pktLen + 16
+          /* MAC */
+        );
+        writeUInt32BE(packet, pktLen - 4, 0);
+        packet[4] = padLen;
+        randomFillSync(packet, 5 + payloadLen, padLen);
+        return packet;
+      }
+      encrypt(packet) {
+        if (this._dead)
+          return;
+        this._instance.encrypt(packet, this.outSeqno);
+        this._onWrite(packet);
+        this.outSeqno = this.outSeqno + 1 >>> 0;
+      }
+    };
+    var AESGCMCipherNative = class {
+      static {
+        __name(this, "AESGCMCipherNative");
+      }
+      constructor(config) {
+        const enc2 = config.outbound;
+        this.outSeqno = enc2.seqno;
+        this._onWrite = enc2.onWrite;
+        this._encSSLName = enc2.cipherInfo.sslName;
+        this._encKey = enc2.cipherKey;
+        this._encIV = enc2.cipherIV;
+        this._dead = false;
+      }
+      free() {
+        this._dead = true;
+      }
+      allocPacket(payloadLen) {
+        let pktLen = 4 + 1 + payloadLen;
+        let padLen = 16 - (pktLen - 4 & 16 - 1);
+        if (padLen < 4)
+          padLen += 16;
+        pktLen += padLen;
+        const packet = Buffer.allocUnsafe(pktLen);
+        writeUInt32BE(packet, pktLen - 4, 0);
+        packet[4] = padLen;
+        randomFillSync(packet, 5 + payloadLen, padLen);
+        return packet;
+      }
+      encrypt(packet) {
+        if (this._dead)
+          return;
+        const cipher = createCipheriv(this._encSSLName, this._encKey, this._encIV);
+        cipher.setAutoPadding(false);
+        const lenData = packet.slice(0, 4);
+        cipher.setAAD(lenData);
+        this._onWrite(lenData);
+        const encrypted = cipher.update(packet.slice(4));
+        this._onWrite(encrypted);
+        const final = cipher.final();
+        if (final.length)
+          this._onWrite(final);
+        const tag = cipher.getAuthTag();
+        this._onWrite(tag);
+        ivIncrement(this._encIV);
+        this.outSeqno = this.outSeqno + 1 >>> 0;
+      }
+    };
+    var AESGCMCipherBinding = class {
+      static {
+        __name(this, "AESGCMCipherBinding");
+      }
+      constructor(config) {
+        const enc2 = config.outbound;
+        this.outSeqno = enc2.seqno;
+        this._onWrite = enc2.onWrite;
+        this._instance = new AESGCMCipher(
+          enc2.cipherInfo.sslName,
+          enc2.cipherKey,
+          enc2.cipherIV
+        );
+        this._dead = false;
+      }
+      free() {
+        this._dead = true;
+        this._instance.free();
+      }
+      allocPacket(payloadLen) {
+        let pktLen = 4 + 1 + payloadLen;
+        let padLen = 16 - (pktLen - 4 & 16 - 1);
+        if (padLen < 4)
+          padLen += 16;
+        pktLen += padLen;
+        const packet = Buffer.allocUnsafe(
+          pktLen + 16
+          /* authTag */
+        );
+        writeUInt32BE(packet, pktLen - 4, 0);
+        packet[4] = padLen;
+        randomFillSync(packet, 5 + payloadLen, padLen);
+        return packet;
+      }
+      encrypt(packet) {
+        if (this._dead)
+          return;
+        this._instance.encrypt(packet);
+        this._onWrite(packet);
+        this.outSeqno = this.outSeqno + 1 >>> 0;
+      }
+    };
+    var GenericCipherNative = class {
+      static {
+        __name(this, "GenericCipherNative");
+      }
+      constructor(config) {
+        const enc2 = config.outbound;
+        this.outSeqno = enc2.seqno;
+        this._onWrite = enc2.onWrite;
+        this._encBlockLen = enc2.cipherInfo.blockLen;
+        this._cipherInstance = createCipheriv(
+          enc2.cipherInfo.sslName,
+          enc2.cipherKey,
+          enc2.cipherIV
+        );
+        this._macSSLName = enc2.macInfo.sslName;
+        this._macKey = enc2.macKey;
+        this._macActualLen = enc2.macInfo.actualLen;
+        this._macETM = enc2.macInfo.isETM;
+        this._aadLen = this._macETM ? 4 : 0;
+        this._dead = false;
+        const discardLen = enc2.cipherInfo.discardLen;
+        if (discardLen) {
+          let discard = DISCARD_CACHE.get(discardLen);
+          if (discard === void 0) {
+            discard = Buffer.alloc(discardLen);
+            DISCARD_CACHE.set(discardLen, discard);
+          }
+          this._cipherInstance.update(discard);
+        }
+      }
+      free() {
+        this._dead = true;
+      }
+      allocPacket(payloadLen) {
+        const blockLen = this._encBlockLen;
+        let pktLen = 4 + 1 + payloadLen;
+        let padLen = blockLen - (pktLen - this._aadLen & blockLen - 1);
+        if (padLen < 4)
+          padLen += blockLen;
+        pktLen += padLen;
+        const packet = Buffer.allocUnsafe(pktLen);
+        writeUInt32BE(packet, pktLen - 4, 0);
+        packet[4] = padLen;
+        randomFillSync(packet, 5 + payloadLen, padLen);
+        return packet;
+      }
+      encrypt(packet) {
+        if (this._dead)
+          return;
+        let mac;
+        if (this._macETM) {
+          const lenBytes = new Uint8Array(packet.buffer, packet.byteOffset, 4);
+          const encrypted = this._cipherInstance.update(
+            new Uint8Array(
+              packet.buffer,
+              packet.byteOffset + 4,
+              packet.length - 4
+            )
+          );
+          this._onWrite(lenBytes);
+          this._onWrite(encrypted);
+          mac = createHmac(this._macSSLName, this._macKey);
+          writeUInt32BE(BUF_INT, this.outSeqno, 0);
+          mac.update(BUF_INT);
+          mac.update(lenBytes);
+          mac.update(encrypted);
+        } else {
+          const encrypted = this._cipherInstance.update(packet);
+          this._onWrite(encrypted);
+          mac = createHmac(this._macSSLName, this._macKey);
+          writeUInt32BE(BUF_INT, this.outSeqno, 0);
+          mac.update(BUF_INT);
+          mac.update(packet);
+        }
+        let digest = mac.digest();
+        if (digest.length > this._macActualLen)
+          digest = digest.slice(0, this._macActualLen);
+        this._onWrite(digest);
+        this.outSeqno = this.outSeqno + 1 >>> 0;
+      }
+    };
+    var GenericCipherBinding = class {
+      static {
+        __name(this, "GenericCipherBinding");
+      }
+      constructor(config) {
+        const enc2 = config.outbound;
+        this.outSeqno = enc2.seqno;
+        this._onWrite = enc2.onWrite;
+        this._encBlockLen = enc2.cipherInfo.blockLen;
+        this._macLen = enc2.macInfo.len;
+        this._macActualLen = enc2.macInfo.actualLen;
+        this._aadLen = enc2.macInfo.isETM ? 4 : 0;
+        this._instance = new GenericCipher(
+          enc2.cipherInfo.sslName,
+          enc2.cipherKey,
+          enc2.cipherIV,
+          enc2.macInfo.sslName,
+          enc2.macKey,
+          enc2.macInfo.isETM
+        );
+        this._dead = false;
+      }
+      free() {
+        this._dead = true;
+        this._instance.free();
+      }
+      allocPacket(payloadLen) {
+        const blockLen = this._encBlockLen;
+        let pktLen = 4 + 1 + payloadLen;
+        let padLen = blockLen - (pktLen - this._aadLen & blockLen - 1);
+        if (padLen < 4)
+          padLen += blockLen;
+        pktLen += padLen;
+        const packet = Buffer.allocUnsafe(pktLen + this._macLen);
+        writeUInt32BE(packet, pktLen - 4, 0);
+        packet[4] = padLen;
+        randomFillSync(packet, 5 + payloadLen, padLen);
+        return packet;
+      }
+      encrypt(packet) {
+        if (this._dead)
+          return;
+        this._instance.encrypt(packet, this.outSeqno);
+        if (this._macActualLen < this._macLen) {
+          packet = new FastBuffer(
+            packet.buffer,
+            packet.byteOffset,
+            packet.length - (this._macLen - this._macActualLen)
+          );
+        }
+        this._onWrite(packet);
+        this.outSeqno = this.outSeqno + 1 >>> 0;
+      }
+    };
+    var NullDecipher = class {
+      static {
+        __name(this, "NullDecipher");
+      }
+      constructor(seqno, onPayload) {
+        this.inSeqno = seqno;
+        this._onPayload = onPayload;
+        this._len = 0;
+        this._lenBytes = 0;
+        this._packet = null;
+        this._packetPos = 0;
+      }
+      free() {
+      }
+      decrypt(data, p, dataLen) {
+        while (p < dataLen) {
+          if (this._lenBytes < 4) {
+            let nb = Math.min(4 - this._lenBytes, dataLen - p);
+            this._lenBytes += nb;
+            while (nb--)
+              this._len = (this._len << 8) + data[p++];
+            if (this._lenBytes < 4)
+              return;
+            if (this._len > MAX_PACKET_SIZE || this._len < 8 || (4 + this._len & 7) !== 0) {
+              throw new Error("Bad packet length");
+            }
+            if (p >= dataLen)
+              return;
+          }
+          if (this._packetPos < this._len) {
+            const nb = Math.min(this._len - this._packetPos, dataLen - p);
+            let chunk;
+            if (p !== 0 || nb !== dataLen)
+              chunk = new Uint8Array(data.buffer, data.byteOffset + p, nb);
+            else
+              chunk = data;
+            if (nb === this._len) {
+              this._packet = chunk;
+            } else {
+              if (!this._packet)
+                this._packet = Buffer.allocUnsafe(this._len);
+              this._packet.set(chunk, this._packetPos);
+            }
+            p += nb;
+            this._packetPos += nb;
+            if (this._packetPos < this._len)
+              return;
+          }
+          const payload = !this._packet ? EMPTY_BUFFER : new FastBuffer(
+            this._packet.buffer,
+            this._packet.byteOffset + 1,
+            this._packet.length - this._packet[0] - 1
+          );
+          this.inSeqno = this.inSeqno + 1 >>> 0;
+          this._len = 0;
+          this._lenBytes = 0;
+          this._packet = null;
+          this._packetPos = 0;
+          {
+            const ret = this._onPayload(payload);
+            if (ret !== void 0)
+              return ret === false ? p : ret;
+          }
+        }
+      }
+    };
+    var ChaChaPolyDecipherNative = class {
+      static {
+        __name(this, "ChaChaPolyDecipherNative");
+      }
+      constructor(config) {
+        const dec2 = config.inbound;
+        this.inSeqno = dec2.seqno;
+        this._onPayload = dec2.onPayload;
+        this._decKeyMain = dec2.decipherKey.slice(0, 32);
+        this._decKeyPktLen = dec2.decipherKey.slice(32);
+        this._len = 0;
+        this._lenBuf = Buffer.alloc(4);
+        this._lenPos = 0;
+        this._packet = null;
+        this._pktLen = 0;
+        this._mac = Buffer.allocUnsafe(16);
+        this._calcMac = Buffer.allocUnsafe(16);
+        this._macPos = 0;
+      }
+      free() {
+      }
+      decrypt(data, p, dataLen) {
+        while (p < dataLen) {
+          if (this._lenPos < 4) {
+            let nb = Math.min(4 - this._lenPos, dataLen - p);
+            while (nb--)
+              this._lenBuf[this._lenPos++] = data[p++];
+            if (this._lenPos < 4)
+              return;
+            POLY1305_OUT_COMPUTE[0] = 0;
+            writeUInt32BE(POLY1305_OUT_COMPUTE, this.inSeqno, 12);
+            const decLenBytes = createDecipheriv("chacha20", this._decKeyPktLen, POLY1305_OUT_COMPUTE).update(this._lenBuf);
+            this._len = readUInt32BE(decLenBytes, 0);
+            if (this._len > MAX_PACKET_SIZE || this._len < 8 || (this._len & 7) !== 0) {
+              throw new Error("Bad packet length");
+            }
+          }
+          if (this._pktLen < this._len) {
+            if (p >= dataLen)
+              return;
+            const nb = Math.min(this._len - this._pktLen, dataLen - p);
+            let encrypted;
+            if (p !== 0 || nb !== dataLen)
+              encrypted = new Uint8Array(data.buffer, data.byteOffset + p, nb);
+            else
+              encrypted = data;
+            if (nb === this._len) {
+              this._packet = encrypted;
+            } else {
+              if (!this._packet)
+                this._packet = Buffer.allocUnsafe(this._len);
+              this._packet.set(encrypted, this._pktLen);
+            }
+            p += nb;
+            this._pktLen += nb;
+            if (this._pktLen < this._len || p >= dataLen)
+              return;
+          }
+          {
+            const nb = Math.min(16 - this._macPos, dataLen - p);
+            if (p !== 0 || nb !== dataLen) {
+              this._mac.set(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                this._macPos
+              );
+            } else {
+              this._mac.set(data, this._macPos);
+            }
+            p += nb;
+            this._macPos += nb;
+            if (this._macPos < 16)
+              return;
+          }
+          POLY1305_OUT_COMPUTE[0] = 0;
+          writeUInt32BE(POLY1305_OUT_COMPUTE, this.inSeqno, 12);
+          const polyKey = createCipheriv("chacha20", this._decKeyMain, POLY1305_OUT_COMPUTE).update(POLY1305_ZEROS);
+          poly1305_auth(
+            POLY1305_RESULT_MALLOC,
+            this._lenBuf,
+            4,
+            this._packet,
+            this._packet.length,
+            polyKey
+          );
+          this._calcMac.set(
+            new Uint8Array(
+              POLY1305_WASM_MODULE.HEAPU8.buffer,
+              POLY1305_RESULT_MALLOC,
+              16
+            ),
+            0
+          );
+          if (!timingSafeEqual(this._calcMac, this._mac))
+            throw new Error("Invalid MAC");
+          POLY1305_OUT_COMPUTE[0] = 1;
+          const packet = createDecipheriv("chacha20", this._decKeyMain, POLY1305_OUT_COMPUTE).update(this._packet);
+          const payload = new FastBuffer(
+            packet.buffer,
+            packet.byteOffset + 1,
+            packet.length - packet[0] - 1
+          );
+          this.inSeqno = this.inSeqno + 1 >>> 0;
+          this._len = 0;
+          this._lenPos = 0;
+          this._packet = null;
+          this._pktLen = 0;
+          this._macPos = 0;
+          {
+            const ret = this._onPayload(payload);
+            if (ret !== void 0)
+              return ret === false ? p : ret;
+          }
+        }
+      }
+    };
+    var ChaChaPolyDecipherBinding = class {
+      static {
+        __name(this, "ChaChaPolyDecipherBinding");
+      }
+      constructor(config) {
+        const dec2 = config.inbound;
+        this.inSeqno = dec2.seqno;
+        this._onPayload = dec2.onPayload;
+        this._instance = new ChaChaPolyDecipher(dec2.decipherKey);
+        this._len = 0;
+        this._lenBuf = Buffer.alloc(4);
+        this._lenPos = 0;
+        this._packet = null;
+        this._pktLen = 0;
+        this._mac = Buffer.allocUnsafe(16);
+        this._macPos = 0;
+      }
+      free() {
+        this._instance.free();
+      }
+      decrypt(data, p, dataLen) {
+        while (p < dataLen) {
+          if (this._lenPos < 4) {
+            let nb = Math.min(4 - this._lenPos, dataLen - p);
+            while (nb--)
+              this._lenBuf[this._lenPos++] = data[p++];
+            if (this._lenPos < 4)
+              return;
+            this._len = this._instance.decryptLen(this._lenBuf, this.inSeqno);
+            if (this._len > MAX_PACKET_SIZE || this._len < 8 || (this._len & 7) !== 0) {
+              throw new Error("Bad packet length");
+            }
+            if (p >= dataLen)
+              return;
+          }
+          if (this._pktLen < this._len) {
+            const nb = Math.min(this._len - this._pktLen, dataLen - p);
+            let encrypted;
+            if (p !== 0 || nb !== dataLen)
+              encrypted = new Uint8Array(data.buffer, data.byteOffset + p, nb);
+            else
+              encrypted = data;
+            if (nb === this._len) {
+              this._packet = encrypted;
+            } else {
+              if (!this._packet)
+                this._packet = Buffer.allocUnsafe(this._len);
+              this._packet.set(encrypted, this._pktLen);
+            }
+            p += nb;
+            this._pktLen += nb;
+            if (this._pktLen < this._len || p >= dataLen)
+              return;
+          }
+          {
+            const nb = Math.min(16 - this._macPos, dataLen - p);
+            if (p !== 0 || nb !== dataLen) {
+              this._mac.set(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                this._macPos
+              );
+            } else {
+              this._mac.set(data, this._macPos);
+            }
+            p += nb;
+            this._macPos += nb;
+            if (this._macPos < 16)
+              return;
+          }
+          this._instance.decrypt(this._packet, this._mac, this.inSeqno);
+          const payload = new FastBuffer(
+            this._packet.buffer,
+            this._packet.byteOffset + 1,
+            this._packet.length - this._packet[0] - 1
+          );
+          this.inSeqno = this.inSeqno + 1 >>> 0;
+          this._len = 0;
+          this._lenPos = 0;
+          this._packet = null;
+          this._pktLen = 0;
+          this._macPos = 0;
+          {
+            const ret = this._onPayload(payload);
+            if (ret !== void 0)
+              return ret === false ? p : ret;
+          }
+        }
+      }
+    };
+    var AESGCMDecipherNative = class {
+      static {
+        __name(this, "AESGCMDecipherNative");
+      }
+      constructor(config) {
+        const dec2 = config.inbound;
+        this.inSeqno = dec2.seqno;
+        this._onPayload = dec2.onPayload;
+        this._decipherInstance = null;
+        this._decipherSSLName = dec2.decipherInfo.sslName;
+        this._decipherKey = dec2.decipherKey;
+        this._decipherIV = dec2.decipherIV;
+        this._len = 0;
+        this._lenBytes = 0;
+        this._packet = null;
+        this._packetPos = 0;
+        this._pktLen = 0;
+        this._tag = Buffer.allocUnsafe(16);
+        this._tagPos = 0;
+      }
+      free() {
+      }
+      decrypt(data, p, dataLen) {
+        while (p < dataLen) {
+          if (this._lenBytes < 4) {
+            let nb = Math.min(4 - this._lenBytes, dataLen - p);
+            this._lenBytes += nb;
+            while (nb--)
+              this._len = (this._len << 8) + data[p++];
+            if (this._lenBytes < 4)
+              return;
+            if (this._len + 20 > MAX_PACKET_SIZE || this._len < 16 || (this._len & 15) !== 0) {
+              throw new Error("Bad packet length");
+            }
+            this._decipherInstance = createDecipheriv(
+              this._decipherSSLName,
+              this._decipherKey,
+              this._decipherIV
+            );
+            this._decipherInstance.setAutoPadding(false);
+            this._decipherInstance.setAAD(intToBytes(this._len));
+          }
+          if (this._pktLen < this._len) {
+            if (p >= dataLen)
+              return;
+            const nb = Math.min(this._len - this._pktLen, dataLen - p);
+            let decrypted;
+            if (p !== 0 || nb !== dataLen) {
+              decrypted = this._decipherInstance.update(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb)
+              );
+            } else {
+              decrypted = this._decipherInstance.update(data);
+            }
+            if (decrypted.length) {
+              if (nb === this._len) {
+                this._packet = decrypted;
+              } else {
+                if (!this._packet)
+                  this._packet = Buffer.allocUnsafe(this._len);
+                this._packet.set(decrypted, this._packetPos);
+              }
+              this._packetPos += decrypted.length;
+            }
+            p += nb;
+            this._pktLen += nb;
+            if (this._pktLen < this._len || p >= dataLen)
+              return;
+          }
+          {
+            const nb = Math.min(16 - this._tagPos, dataLen - p);
+            if (p !== 0 || nb !== dataLen) {
+              this._tag.set(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                this._tagPos
+              );
+            } else {
+              this._tag.set(data, this._tagPos);
+            }
+            p += nb;
+            this._tagPos += nb;
+            if (this._tagPos < 16)
+              return;
+          }
+          {
+            this._decipherInstance.setAuthTag(this._tag);
+            const decrypted = this._decipherInstance.final();
+            if (decrypted.length) {
+              if (this._packet)
+                this._packet.set(decrypted, this._packetPos);
+              else
+                this._packet = decrypted;
+            }
+          }
+          const payload = !this._packet ? EMPTY_BUFFER : new FastBuffer(
+            this._packet.buffer,
+            this._packet.byteOffset + 1,
+            this._packet.length - this._packet[0] - 1
+          );
+          this.inSeqno = this.inSeqno + 1 >>> 0;
+          ivIncrement(this._decipherIV);
+          this._len = 0;
+          this._lenBytes = 0;
+          this._packet = null;
+          this._packetPos = 0;
+          this._pktLen = 0;
+          this._tagPos = 0;
+          {
+            const ret = this._onPayload(payload);
+            if (ret !== void 0)
+              return ret === false ? p : ret;
+          }
+        }
+      }
+    };
+    var AESGCMDecipherBinding = class {
+      static {
+        __name(this, "AESGCMDecipherBinding");
+      }
+      constructor(config) {
+        const dec2 = config.inbound;
+        this.inSeqno = dec2.seqno;
+        this._onPayload = dec2.onPayload;
+        this._instance = new AESGCMDecipher(
+          dec2.decipherInfo.sslName,
+          dec2.decipherKey,
+          dec2.decipherIV
+        );
+        this._len = 0;
+        this._lenBytes = 0;
+        this._packet = null;
+        this._pktLen = 0;
+        this._tag = Buffer.allocUnsafe(16);
+        this._tagPos = 0;
+      }
+      free() {
+      }
+      decrypt(data, p, dataLen) {
+        while (p < dataLen) {
+          if (this._lenBytes < 4) {
+            let nb = Math.min(4 - this._lenBytes, dataLen - p);
+            this._lenBytes += nb;
+            while (nb--)
+              this._len = (this._len << 8) + data[p++];
+            if (this._lenBytes < 4)
+              return;
+            if (this._len + 20 > MAX_PACKET_SIZE || this._len < 16 || (this._len & 15) !== 0) {
+              throw new Error(`Bad packet length: ${this._len}`);
+            }
+          }
+          if (this._pktLen < this._len) {
+            if (p >= dataLen)
+              return;
+            const nb = Math.min(this._len - this._pktLen, dataLen - p);
+            let encrypted;
+            if (p !== 0 || nb !== dataLen)
+              encrypted = new Uint8Array(data.buffer, data.byteOffset + p, nb);
+            else
+              encrypted = data;
+            if (nb === this._len) {
+              this._packet = encrypted;
+            } else {
+              if (!this._packet)
+                this._packet = Buffer.allocUnsafe(this._len);
+              this._packet.set(encrypted, this._pktLen);
+            }
+            p += nb;
+            this._pktLen += nb;
+            if (this._pktLen < this._len || p >= dataLen)
+              return;
+          }
+          {
+            const nb = Math.min(16 - this._tagPos, dataLen - p);
+            if (p !== 0 || nb !== dataLen) {
+              this._tag.set(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                this._tagPos
+              );
+            } else {
+              this._tag.set(data, this._tagPos);
+            }
+            p += nb;
+            this._tagPos += nb;
+            if (this._tagPos < 16)
+              return;
+          }
+          this._instance.decrypt(this._packet, this._len, this._tag);
+          const payload = new FastBuffer(
+            this._packet.buffer,
+            this._packet.byteOffset + 1,
+            this._packet.length - this._packet[0] - 1
+          );
+          this.inSeqno = this.inSeqno + 1 >>> 0;
+          this._len = 0;
+          this._lenBytes = 0;
+          this._packet = null;
+          this._pktLen = 0;
+          this._tagPos = 0;
+          {
+            const ret = this._onPayload(payload);
+            if (ret !== void 0)
+              return ret === false ? p : ret;
+          }
+        }
+      }
+    };
+    var GenericDecipherNative = class {
+      static {
+        __name(this, "GenericDecipherNative");
+      }
+      constructor(config) {
+        const dec2 = config.inbound;
+        this.inSeqno = dec2.seqno;
+        this._onPayload = dec2.onPayload;
+        this._decipherInstance = createDecipheriv(
+          dec2.decipherInfo.sslName,
+          dec2.decipherKey,
+          dec2.decipherIV
+        );
+        this._decipherInstance.setAutoPadding(false);
+        this._block = Buffer.allocUnsafe(
+          dec2.macInfo.isETM ? 4 : dec2.decipherInfo.blockLen
+        );
+        this._blockSize = dec2.decipherInfo.blockLen;
+        this._blockPos = 0;
+        this._len = 0;
+        this._packet = null;
+        this._packetPos = 0;
+        this._pktLen = 0;
+        this._mac = Buffer.allocUnsafe(dec2.macInfo.actualLen);
+        this._macPos = 0;
+        this._macSSLName = dec2.macInfo.sslName;
+        this._macKey = dec2.macKey;
+        this._macActualLen = dec2.macInfo.actualLen;
+        this._macETM = dec2.macInfo.isETM;
+        this._macInstance = null;
+        const discardLen = dec2.decipherInfo.discardLen;
+        if (discardLen) {
+          let discard = DISCARD_CACHE.get(discardLen);
+          if (discard === void 0) {
+            discard = Buffer.alloc(discardLen);
+            DISCARD_CACHE.set(discardLen, discard);
+          }
+          this._decipherInstance.update(discard);
+        }
+      }
+      free() {
+      }
+      decrypt(data, p, dataLen) {
+        while (p < dataLen) {
+          if (this._blockPos < this._block.length) {
+            const nb = Math.min(this._block.length - this._blockPos, dataLen - p);
+            if (p !== 0 || nb !== dataLen || nb < data.length) {
+              this._block.set(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                this._blockPos
+              );
+            } else {
+              this._block.set(data, this._blockPos);
+            }
+            p += nb;
+            this._blockPos += nb;
+            if (this._blockPos < this._block.length)
+              return;
+            let decrypted;
+            let need;
+            if (this._macETM) {
+              this._len = need = readUInt32BE(this._block, 0);
+            } else {
+              decrypted = this._decipherInstance.update(this._block);
+              this._len = readUInt32BE(decrypted, 0);
+              need = 4 + this._len - this._blockSize;
+            }
+            if (this._len > MAX_PACKET_SIZE || this._len < 5 || (need & this._blockSize - 1) !== 0) {
+              throw new Error("Bad packet length");
+            }
+            this._macInstance = createHmac(this._macSSLName, this._macKey);
+            writeUInt32BE(BUF_INT, this.inSeqno, 0);
+            this._macInstance.update(BUF_INT);
+            if (this._macETM) {
+              this._macInstance.update(this._block);
+            } else {
+              this._macInstance.update(new Uint8Array(
+                decrypted.buffer,
+                decrypted.byteOffset,
+                4
+              ));
+              this._pktLen = decrypted.length - 4;
+              this._packetPos = this._pktLen;
+              this._packet = Buffer.allocUnsafe(this._len);
+              this._packet.set(
+                new Uint8Array(
+                  decrypted.buffer,
+                  decrypted.byteOffset + 4,
+                  this._packetPos
+                ),
+                0
+              );
+            }
+            if (p >= dataLen)
+              return;
+          }
+          if (this._pktLen < this._len) {
+            const nb = Math.min(this._len - this._pktLen, dataLen - p);
+            let encrypted;
+            if (p !== 0 || nb !== dataLen)
+              encrypted = new Uint8Array(data.buffer, data.byteOffset + p, nb);
+            else
+              encrypted = data;
+            if (this._macETM)
+              this._macInstance.update(encrypted);
+            const decrypted = this._decipherInstance.update(encrypted);
+            if (decrypted.length) {
+              if (nb === this._len) {
+                this._packet = decrypted;
+              } else {
+                if (!this._packet)
+                  this._packet = Buffer.allocUnsafe(this._len);
+                this._packet.set(decrypted, this._packetPos);
+              }
+              this._packetPos += decrypted.length;
+            }
+            p += nb;
+            this._pktLen += nb;
+            if (this._pktLen < this._len || p >= dataLen)
+              return;
+          }
+          {
+            const nb = Math.min(this._macActualLen - this._macPos, dataLen - p);
+            if (p !== 0 || nb !== dataLen) {
+              this._mac.set(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                this._macPos
+              );
+            } else {
+              this._mac.set(data, this._macPos);
+            }
+            p += nb;
+            this._macPos += nb;
+            if (this._macPos < this._macActualLen)
+              return;
+          }
+          if (!this._macETM)
+            this._macInstance.update(this._packet);
+          let calculated = this._macInstance.digest();
+          if (this._macActualLen < calculated.length) {
+            calculated = new Uint8Array(
+              calculated.buffer,
+              calculated.byteOffset,
+              this._macActualLen
+            );
+          }
+          if (!timingSafeEquals(calculated, this._mac))
+            throw new Error("Invalid MAC");
+          const payload = new FastBuffer(
+            this._packet.buffer,
+            this._packet.byteOffset + 1,
+            this._packet.length - this._packet[0] - 1
+          );
+          this.inSeqno = this.inSeqno + 1 >>> 0;
+          this._blockPos = 0;
+          this._len = 0;
+          this._packet = null;
+          this._packetPos = 0;
+          this._pktLen = 0;
+          this._macPos = 0;
+          this._macInstance = null;
+          {
+            const ret = this._onPayload(payload);
+            if (ret !== void 0)
+              return ret === false ? p : ret;
+          }
+        }
+      }
+    };
+    var GenericDecipherBinding = class {
+      static {
+        __name(this, "GenericDecipherBinding");
+      }
+      constructor(config) {
+        const dec2 = config.inbound;
+        this.inSeqno = dec2.seqno;
+        this._onPayload = dec2.onPayload;
+        this._instance = new GenericDecipher(
+          dec2.decipherInfo.sslName,
+          dec2.decipherKey,
+          dec2.decipherIV,
+          dec2.macInfo.sslName,
+          dec2.macKey,
+          dec2.macInfo.isETM,
+          dec2.macInfo.actualLen
+        );
+        this._block = Buffer.allocUnsafe(
+          dec2.macInfo.isETM || dec2.decipherInfo.stream ? 4 : dec2.decipherInfo.blockLen
+        );
+        this._blockPos = 0;
+        this._len = 0;
+        this._packet = null;
+        this._pktLen = 0;
+        this._mac = Buffer.allocUnsafe(dec2.macInfo.actualLen);
+        this._macPos = 0;
+        this._macActualLen = dec2.macInfo.actualLen;
+        this._macETM = dec2.macInfo.isETM;
+      }
+      free() {
+        this._instance.free();
+      }
+      decrypt(data, p, dataLen) {
+        while (p < dataLen) {
+          if (this._blockPos < this._block.length) {
+            const nb = Math.min(this._block.length - this._blockPos, dataLen - p);
+            if (p !== 0 || nb !== dataLen || nb < data.length) {
+              this._block.set(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                this._blockPos
+              );
+            } else {
+              this._block.set(data, this._blockPos);
+            }
+            p += nb;
+            this._blockPos += nb;
+            if (this._blockPos < this._block.length)
+              return;
+            let need;
+            if (this._macETM) {
+              this._len = need = readUInt32BE(this._block, 0);
+            } else {
+              this._instance.decryptBlock(this._block);
+              this._len = readUInt32BE(this._block, 0);
+              need = 4 + this._len - this._block.length;
+            }
+            if (this._len > MAX_PACKET_SIZE || this._len < 5 || (need & this._block.length - 1) !== 0) {
+              throw new Error("Bad packet length");
+            }
+            if (!this._macETM) {
+              this._pktLen = this._block.length - 4;
+              if (this._pktLen) {
+                this._packet = Buffer.allocUnsafe(this._len);
+                this._packet.set(
+                  new Uint8Array(
+                    this._block.buffer,
+                    this._block.byteOffset + 4,
+                    this._pktLen
+                  ),
+                  0
+                );
+              }
+            }
+            if (p >= dataLen)
+              return;
+          }
+          if (this._pktLen < this._len) {
+            const nb = Math.min(this._len - this._pktLen, dataLen - p);
+            let encrypted;
+            if (p !== 0 || nb !== dataLen)
+              encrypted = new Uint8Array(data.buffer, data.byteOffset + p, nb);
+            else
+              encrypted = data;
+            if (nb === this._len) {
+              this._packet = encrypted;
+            } else {
+              if (!this._packet)
+                this._packet = Buffer.allocUnsafe(this._len);
+              this._packet.set(encrypted, this._pktLen);
+            }
+            p += nb;
+            this._pktLen += nb;
+            if (this._pktLen < this._len || p >= dataLen)
+              return;
+          }
+          {
+            const nb = Math.min(this._macActualLen - this._macPos, dataLen - p);
+            if (p !== 0 || nb !== dataLen) {
+              this._mac.set(
+                new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                this._macPos
+              );
+            } else {
+              this._mac.set(data, this._macPos);
+            }
+            p += nb;
+            this._macPos += nb;
+            if (this._macPos < this._macActualLen)
+              return;
+          }
+          this._instance.decrypt(
+            this._packet,
+            this.inSeqno,
+            this._block,
+            this._mac
+          );
+          const payload = new FastBuffer(
+            this._packet.buffer,
+            this._packet.byteOffset + 1,
+            this._packet.length - this._packet[0] - 1
+          );
+          this.inSeqno = this.inSeqno + 1 >>> 0;
+          this._blockPos = 0;
+          this._len = 0;
+          this._packet = null;
+          this._pktLen = 0;
+          this._macPos = 0;
+          this._macInstance = null;
+          {
+            const ret = this._onPayload(payload);
+            if (ret !== void 0)
+              return ret === false ? p : ret;
+          }
+        }
+      }
+    };
+    function ivIncrement(iv) {
+      ++iv[11] >>> 8 && ++iv[10] >>> 8 && ++iv[9] >>> 8 && ++iv[8] >>> 8 && ++iv[7] >>> 8 && ++iv[6] >>> 8 && ++iv[5] >>> 8 && ++iv[4] >>> 8;
+    }
+    __name(ivIncrement, "ivIncrement");
+    var intToBytes = (() => {
+      const ret = Buffer.alloc(4);
+      return (n) => {
+        ret[0] = n >>> 24;
+        ret[1] = n >>> 16;
+        ret[2] = n >>> 8;
+        ret[3] = n;
+        return ret;
+      };
+    })();
+    function timingSafeEquals(a, b) {
+      if (a.length !== b.length) {
+        timingSafeEqual(a, a);
+        return false;
+      }
+      return timingSafeEqual(a, b);
+    }
+    __name(timingSafeEquals, "timingSafeEquals");
+    function createCipher(config) {
+      if (typeof config !== "object" || config === null)
+        throw new Error("Invalid config");
+      if (typeof config.outbound !== "object" || config.outbound === null)
+        throw new Error("Invalid outbound");
+      const outbound = config.outbound;
+      if (typeof outbound.onWrite !== "function")
+        throw new Error("Invalid outbound.onWrite");
+      if (typeof outbound.cipherInfo !== "object" || outbound.cipherInfo === null)
+        throw new Error("Invalid outbound.cipherInfo");
+      if (!Buffer.isBuffer(outbound.cipherKey) || outbound.cipherKey.length !== outbound.cipherInfo.keyLen) {
+        throw new Error("Invalid outbound.cipherKey");
+      }
+      if (outbound.cipherInfo.ivLen && (!Buffer.isBuffer(outbound.cipherIV) || outbound.cipherIV.length !== outbound.cipherInfo.ivLen)) {
+        throw new Error("Invalid outbound.cipherIV");
+      }
+      if (typeof outbound.seqno !== "number" || outbound.seqno < 0 || outbound.seqno > MAX_SEQNO) {
+        throw new Error("Invalid outbound.seqno");
+      }
+      const forceNative = !!outbound.forceNative;
+      switch (outbound.cipherInfo.sslName) {
+        case "aes-128-gcm":
+        case "aes-256-gcm":
+          return AESGCMCipher && !forceNative ? new AESGCMCipherBinding(config) : new AESGCMCipherNative(config);
+        case "chacha20":
+          return ChaChaPolyCipher && !forceNative ? new ChaChaPolyCipherBinding(config) : new ChaChaPolyCipherNative(config);
+        default: {
+          if (typeof outbound.macInfo !== "object" || outbound.macInfo === null)
+            throw new Error("Invalid outbound.macInfo");
+          if (!Buffer.isBuffer(outbound.macKey) || outbound.macKey.length !== outbound.macInfo.len) {
+            throw new Error("Invalid outbound.macKey");
+          }
+          return GenericCipher && !forceNative ? new GenericCipherBinding(config) : new GenericCipherNative(config);
+        }
+      }
+    }
+    __name(createCipher, "createCipher");
+    function createDecipher(config) {
+      if (typeof config !== "object" || config === null)
+        throw new Error("Invalid config");
+      if (typeof config.inbound !== "object" || config.inbound === null)
+        throw new Error("Invalid inbound");
+      const inbound = config.inbound;
+      if (typeof inbound.onPayload !== "function")
+        throw new Error("Invalid inbound.onPayload");
+      if (typeof inbound.decipherInfo !== "object" || inbound.decipherInfo === null) {
+        throw new Error("Invalid inbound.decipherInfo");
+      }
+      if (!Buffer.isBuffer(inbound.decipherKey) || inbound.decipherKey.length !== inbound.decipherInfo.keyLen) {
+        throw new Error("Invalid inbound.decipherKey");
+      }
+      if (inbound.decipherInfo.ivLen && (!Buffer.isBuffer(inbound.decipherIV) || inbound.decipherIV.length !== inbound.decipherInfo.ivLen)) {
+        throw new Error("Invalid inbound.decipherIV");
+      }
+      if (typeof inbound.seqno !== "number" || inbound.seqno < 0 || inbound.seqno > MAX_SEQNO) {
+        throw new Error("Invalid inbound.seqno");
+      }
+      const forceNative = !!inbound.forceNative;
+      switch (inbound.decipherInfo.sslName) {
+        case "aes-128-gcm":
+        case "aes-256-gcm":
+          return AESGCMDecipher && !forceNative ? new AESGCMDecipherBinding(config) : new AESGCMDecipherNative(config);
+        case "chacha20":
+          return ChaChaPolyDecipher && !forceNative ? new ChaChaPolyDecipherBinding(config) : new ChaChaPolyDecipherNative(config);
+        default: {
+          if (typeof inbound.macInfo !== "object" || inbound.macInfo === null)
+            throw new Error("Invalid inbound.macInfo");
+          if (!Buffer.isBuffer(inbound.macKey) || inbound.macKey.length !== inbound.macInfo.len) {
+            throw new Error("Invalid inbound.macKey");
+          }
+          return GenericDecipher && !forceNative ? new GenericDecipherBinding(config) : new GenericDecipherNative(config);
+        }
+      }
+    }
+    __name(createDecipher, "createDecipher");
+    module.exports = {
+      CIPHER_INFO,
+      MAC_INFO,
+      bindingAvailable: !!binding,
+      init: (() => {
+        return new Promise(async (resolve, reject) => {
+          try {
+            POLY1305_WASM_MODULE = await require_poly1305()();
+            POLY1305_RESULT_MALLOC = POLY1305_WASM_MODULE._malloc(16);
+            poly1305_auth = POLY1305_WASM_MODULE.cwrap(
+              "poly1305_auth",
+              null,
+              ["number", "array", "number", "array", "number", "array"]
+            );
+          } catch (ex) {
+            return reject(ex);
+          }
+          resolve();
+        });
+      })(),
+      NullCipher,
+      createCipher,
+      NullDecipher,
+      createDecipher
+    };
+  }
+});
+
+// node_modules/ssh2/lib/protocol/keyParser.js
+var require_keyParser = __commonJS({
+  "node_modules/ssh2/lib/protocol/keyParser.js"(exports, module) {
+    "use strict";
+    var {
+      createDecipheriv,
+      createECDH,
+      createHash,
+      createHmac,
+      createSign,
+      createVerify,
+      getCiphers,
+      sign: sign_,
+      verify: verify_
+    } = require_crypto();
+    var supportedOpenSSLCiphers = getCiphers();
+    var { Ber } = require_lib();
+    var bcrypt_pbkdf = require_bcrypt_pbkdf().pbkdf;
+    var { CIPHER_INFO } = require_crypto2();
+    var { eddsaSupported, SUPPORTED_CIPHER } = require_constants3();
+    var {
+      bufferSlice,
+      makeBufferParser,
+      readString,
+      readUInt32BE,
+      writeUInt32BE
+    } = require_utils4();
+    var SYM_HASH_ALGO = /* @__PURE__ */ Symbol("Hash Algorithm");
+    var SYM_PRIV_PEM = /* @__PURE__ */ Symbol("Private key PEM");
+    var SYM_PUB_PEM = /* @__PURE__ */ Symbol("Public key PEM");
+    var SYM_PUB_SSH = /* @__PURE__ */ Symbol("Public key SSH");
+    var SYM_DECRYPTED = /* @__PURE__ */ Symbol("Decrypted Key");
+    var CIPHER_INFO_OPENSSL = /* @__PURE__ */ Object.create(null);
+    {
+      const keys = Object.keys(CIPHER_INFO);
+      for (let i = 0; i < keys.length; ++i) {
+        const cipherName = CIPHER_INFO[keys[i]].sslName;
+        if (!cipherName || CIPHER_INFO_OPENSSL[cipherName])
+          continue;
+        CIPHER_INFO_OPENSSL[cipherName] = CIPHER_INFO[keys[i]];
+      }
+    }
+    var binaryKeyParser = makeBufferParser();
+    function makePEM(type, data) {
+      data = data.base64Slice(0, data.length);
+      let formatted = data.replace(/.{64}/g, "$&\n");
+      if (data.length & 63)
+        formatted += "\n";
+      return `-----BEGIN ${type} KEY-----
+${formatted}-----END ${type} KEY-----`;
+    }
+    __name(makePEM, "makePEM");
+    function combineBuffers(buf1, buf2) {
+      const result = Buffer.allocUnsafe(buf1.length + buf2.length);
+      result.set(buf1, 0);
+      result.set(buf2, buf1.length);
+      return result;
+    }
+    __name(combineBuffers, "combineBuffers");
+    function skipFields(buf, nfields) {
+      const bufLen = buf.length;
+      let pos = buf._pos || 0;
+      for (let i = 0; i < nfields; ++i) {
+        const left = bufLen - pos;
+        if (pos >= bufLen || left < 4)
+          return false;
+        const len = readUInt32BE(buf, pos);
+        if (left < 4 + len)
+          return false;
+        pos += 4 + len;
+      }
+      buf._pos = pos;
+      return true;
+    }
+    __name(skipFields, "skipFields");
+    function genOpenSSLRSAPub(n, e) {
+      const asnWriter = new Ber.Writer();
+      asnWriter.startSequence();
+      asnWriter.startSequence();
+      asnWriter.writeOID("1.2.840.113549.1.1.1");
+      asnWriter.writeNull();
+      asnWriter.endSequence();
+      asnWriter.startSequence(Ber.BitString);
+      asnWriter.writeByte(0);
+      asnWriter.startSequence();
+      asnWriter.writeBuffer(n, Ber.Integer);
+      asnWriter.writeBuffer(e, Ber.Integer);
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      return makePEM("PUBLIC", asnWriter.buffer);
+    }
+    __name(genOpenSSLRSAPub, "genOpenSSLRSAPub");
+    function genOpenSSHRSAPub(n, e) {
+      const publicKey = Buffer.allocUnsafe(4 + 7 + 4 + e.length + 4 + n.length);
+      writeUInt32BE(publicKey, 7, 0);
+      publicKey.utf8Write("ssh-rsa", 4, 7);
+      let i = 4 + 7;
+      writeUInt32BE(publicKey, e.length, i);
+      publicKey.set(e, i += 4);
+      writeUInt32BE(publicKey, n.length, i += e.length);
+      publicKey.set(n, i + 4);
+      return publicKey;
+    }
+    __name(genOpenSSHRSAPub, "genOpenSSHRSAPub");
+    var genOpenSSLRSAPriv = /* @__PURE__ */ (() => {
+      function genRSAASN1Buf(n, e, d, p, q2, dmp1, dmq1, iqmp) {
+        const asnWriter = new Ber.Writer();
+        asnWriter.startSequence();
+        asnWriter.writeInt(0, Ber.Integer);
+        asnWriter.writeBuffer(n, Ber.Integer);
+        asnWriter.writeBuffer(e, Ber.Integer);
+        asnWriter.writeBuffer(d, Ber.Integer);
+        asnWriter.writeBuffer(p, Ber.Integer);
+        asnWriter.writeBuffer(q2, Ber.Integer);
+        asnWriter.writeBuffer(dmp1, Ber.Integer);
+        asnWriter.writeBuffer(dmq1, Ber.Integer);
+        asnWriter.writeBuffer(iqmp, Ber.Integer);
+        asnWriter.endSequence();
+        return asnWriter.buffer;
+      }
+      __name(genRSAASN1Buf, "genRSAASN1Buf");
+      function bigIntFromBuffer(buf) {
+        return BigInt(`0x${buf.hexSlice(0, buf.length)}`);
+      }
+      __name(bigIntFromBuffer, "bigIntFromBuffer");
+      function bigIntToBuffer(bn) {
+        let hex = bn.toString(16);
+        if ((hex.length & 1) !== 0) {
+          hex = `0${hex}`;
+        } else {
+          const sigbit = hex.charCodeAt(0);
+          if (sigbit === 56 || sigbit === 57 || sigbit >= 97 && sigbit <= 102) {
+            hex = `00${hex}`;
+          }
+        }
+        return Buffer.from(hex, "hex");
+      }
+      __name(bigIntToBuffer, "bigIntToBuffer");
+      return /* @__PURE__ */ __name(function genOpenSSLRSAPriv2(n, e, d, iqmp, p, q2) {
+        const bn_d = bigIntFromBuffer(d);
+        const dmp1 = bigIntToBuffer(bn_d % (bigIntFromBuffer(p) - 1n));
+        const dmq1 = bigIntToBuffer(bn_d % (bigIntFromBuffer(q2) - 1n));
+        return makePEM(
+          "RSA PRIVATE",
+          genRSAASN1Buf(n, e, d, p, q2, dmp1, dmq1, iqmp)
+        );
+      }, "genOpenSSLRSAPriv");
+    })();
+    function genOpenSSLDSAPub(p, q2, g, y) {
+      const asnWriter = new Ber.Writer();
+      asnWriter.startSequence();
+      asnWriter.startSequence();
+      asnWriter.writeOID("1.2.840.10040.4.1");
+      asnWriter.startSequence();
+      asnWriter.writeBuffer(p, Ber.Integer);
+      asnWriter.writeBuffer(q2, Ber.Integer);
+      asnWriter.writeBuffer(g, Ber.Integer);
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      asnWriter.startSequence(Ber.BitString);
+      asnWriter.writeByte(0);
+      asnWriter.writeBuffer(y, Ber.Integer);
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      return makePEM("PUBLIC", asnWriter.buffer);
+    }
+    __name(genOpenSSLDSAPub, "genOpenSSLDSAPub");
+    function genOpenSSHDSAPub(p, q2, g, y) {
+      const publicKey = Buffer.allocUnsafe(
+        4 + 7 + 4 + p.length + 4 + q2.length + 4 + g.length + 4 + y.length
+      );
+      writeUInt32BE(publicKey, 7, 0);
+      publicKey.utf8Write("ssh-dss", 4, 7);
+      let i = 4 + 7;
+      writeUInt32BE(publicKey, p.length, i);
+      publicKey.set(p, i += 4);
+      writeUInt32BE(publicKey, q2.length, i += p.length);
+      publicKey.set(q2, i += 4);
+      writeUInt32BE(publicKey, g.length, i += q2.length);
+      publicKey.set(g, i += 4);
+      writeUInt32BE(publicKey, y.length, i += g.length);
+      publicKey.set(y, i + 4);
+      return publicKey;
+    }
+    __name(genOpenSSHDSAPub, "genOpenSSHDSAPub");
+    function genOpenSSLDSAPriv(p, q2, g, y, x) {
+      const asnWriter = new Ber.Writer();
+      asnWriter.startSequence();
+      asnWriter.writeInt(0, Ber.Integer);
+      asnWriter.writeBuffer(p, Ber.Integer);
+      asnWriter.writeBuffer(q2, Ber.Integer);
+      asnWriter.writeBuffer(g, Ber.Integer);
+      asnWriter.writeBuffer(y, Ber.Integer);
+      asnWriter.writeBuffer(x, Ber.Integer);
+      asnWriter.endSequence();
+      return makePEM("DSA PRIVATE", asnWriter.buffer);
+    }
+    __name(genOpenSSLDSAPriv, "genOpenSSLDSAPriv");
+    function genOpenSSLEdPub(pub) {
+      const asnWriter = new Ber.Writer();
+      asnWriter.startSequence();
+      asnWriter.startSequence();
+      asnWriter.writeOID("1.3.101.112");
+      asnWriter.endSequence();
+      asnWriter.startSequence(Ber.BitString);
+      asnWriter.writeByte(0);
+      asnWriter._ensure(pub.length);
+      asnWriter._buf.set(pub, asnWriter._offset);
+      asnWriter._offset += pub.length;
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      return makePEM("PUBLIC", asnWriter.buffer);
+    }
+    __name(genOpenSSLEdPub, "genOpenSSLEdPub");
+    function genOpenSSHEdPub(pub) {
+      const publicKey = Buffer.allocUnsafe(4 + 11 + 4 + pub.length);
+      writeUInt32BE(publicKey, 11, 0);
+      publicKey.utf8Write("ssh-ed25519", 4, 11);
+      writeUInt32BE(publicKey, pub.length, 15);
+      publicKey.set(pub, 19);
+      return publicKey;
+    }
+    __name(genOpenSSHEdPub, "genOpenSSHEdPub");
+    function genOpenSSLEdPriv(priv) {
+      const asnWriter = new Ber.Writer();
+      asnWriter.startSequence();
+      asnWriter.writeInt(0, Ber.Integer);
+      asnWriter.startSequence();
+      asnWriter.writeOID("1.3.101.112");
+      asnWriter.endSequence();
+      asnWriter.startSequence(Ber.OctetString);
+      asnWriter.writeBuffer(priv, Ber.OctetString);
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      return makePEM("PRIVATE", asnWriter.buffer);
+    }
+    __name(genOpenSSLEdPriv, "genOpenSSLEdPriv");
+    function genOpenSSLECDSAPub(oid, Q) {
+      const asnWriter = new Ber.Writer();
+      asnWriter.startSequence();
+      asnWriter.startSequence();
+      asnWriter.writeOID("1.2.840.10045.2.1");
+      asnWriter.writeOID(oid);
+      asnWriter.endSequence();
+      asnWriter.startSequence(Ber.BitString);
+      asnWriter.writeByte(0);
+      asnWriter._ensure(Q.length);
+      asnWriter._buf.set(Q, asnWriter._offset);
+      asnWriter._offset += Q.length;
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      return makePEM("PUBLIC", asnWriter.buffer);
+    }
+    __name(genOpenSSLECDSAPub, "genOpenSSLECDSAPub");
+    function genOpenSSHECDSAPub(oid, Q) {
+      let curveName;
+      switch (oid) {
+        case "1.2.840.10045.3.1.7":
+          curveName = "nistp256";
+          break;
+        case "1.3.132.0.34":
+          curveName = "nistp384";
+          break;
+        case "1.3.132.0.35":
+          curveName = "nistp521";
+          break;
+        default:
+          return;
+      }
+      const publicKey = Buffer.allocUnsafe(4 + 19 + 4 + 8 + 4 + Q.length);
+      writeUInt32BE(publicKey, 19, 0);
+      publicKey.utf8Write(`ecdsa-sha2-${curveName}`, 4, 19);
+      writeUInt32BE(publicKey, 8, 23);
+      publicKey.utf8Write(curveName, 27, 8);
+      writeUInt32BE(publicKey, Q.length, 35);
+      publicKey.set(Q, 39);
+      return publicKey;
+    }
+    __name(genOpenSSHECDSAPub, "genOpenSSHECDSAPub");
+    function genOpenSSLECDSAPriv(oid, pub, priv) {
+      const asnWriter = new Ber.Writer();
+      asnWriter.startSequence();
+      asnWriter.writeInt(1, Ber.Integer);
+      asnWriter.writeBuffer(priv, Ber.OctetString);
+      asnWriter.startSequence(160);
+      asnWriter.writeOID(oid);
+      asnWriter.endSequence();
+      asnWriter.startSequence(161);
+      asnWriter.startSequence(Ber.BitString);
+      asnWriter.writeByte(0);
+      asnWriter._ensure(pub.length);
+      asnWriter._buf.set(pub, asnWriter._offset);
+      asnWriter._offset += pub.length;
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      asnWriter.endSequence();
+      return makePEM("EC PRIVATE", asnWriter.buffer);
+    }
+    __name(genOpenSSLECDSAPriv, "genOpenSSLECDSAPriv");
+    function genOpenSSLECDSAPubFromPriv(curveName, priv) {
+      const tempECDH = createECDH(curveName);
+      tempECDH.setPrivateKey(priv);
+      return tempECDH.getPublicKey();
+    }
+    __name(genOpenSSLECDSAPubFromPriv, "genOpenSSLECDSAPubFromPriv");
+    var BaseKey = {
+      sign: (() => {
+        if (typeof sign_ === "function") {
+          return /* @__PURE__ */ __name(function sign(data, algo) {
+            const pem = this[SYM_PRIV_PEM];
+            if (pem === null)
+              return new Error("No private key available");
+            if (!algo || typeof algo !== "string")
+              algo = this[SYM_HASH_ALGO];
+            try {
+              return sign_(algo, data, pem);
+            } catch (ex) {
+              return ex;
+            }
+          }, "sign");
+        }
+        return /* @__PURE__ */ __name(function sign(data, algo) {
+          const pem = this[SYM_PRIV_PEM];
+          if (pem === null)
+            return new Error("No private key available");
+          if (!algo || typeof algo !== "string")
+            algo = this[SYM_HASH_ALGO];
+          const signature = createSign(algo);
+          signature.update(data);
+          try {
+            return signature.sign(pem);
+          } catch (ex) {
+            return ex;
+          }
+        }, "sign");
+      })(),
+      verify: (() => {
+        if (typeof verify_ === "function") {
+          return /* @__PURE__ */ __name(function verify(data, signature, algo) {
+            const pem = this[SYM_PUB_PEM];
+            if (pem === null)
+              return new Error("No public key available");
+            if (!algo || typeof algo !== "string")
+              algo = this[SYM_HASH_ALGO];
+            try {
+              return verify_(algo, data, pem, signature);
+            } catch (ex) {
+              return ex;
+            }
+          }, "verify");
+        }
+        return /* @__PURE__ */ __name(function verify(data, signature, algo) {
+          const pem = this[SYM_PUB_PEM];
+          if (pem === null)
+            return new Error("No public key available");
+          if (!algo || typeof algo !== "string")
+            algo = this[SYM_HASH_ALGO];
+          const verifier = createVerify(algo);
+          verifier.update(data);
+          try {
+            return verifier.verify(pem, signature);
+          } catch (ex) {
+            return ex;
+          }
+        }, "verify");
+      })(),
+      isPrivateKey: /* @__PURE__ */ __name(function isPrivateKey() {
+        return this[SYM_PRIV_PEM] !== null;
+      }, "isPrivateKey"),
+      getPrivatePEM: /* @__PURE__ */ __name(function getPrivatePEM() {
+        return this[SYM_PRIV_PEM];
+      }, "getPrivatePEM"),
+      getPublicPEM: /* @__PURE__ */ __name(function getPublicPEM() {
+        return this[SYM_PUB_PEM];
+      }, "getPublicPEM"),
+      getPublicSSH: /* @__PURE__ */ __name(function getPublicSSH() {
+        return this[SYM_PUB_SSH];
+      }, "getPublicSSH"),
+      equals: /* @__PURE__ */ __name(function equals(key) {
+        const parsed = parseKey(key);
+        if (parsed instanceof Error)
+          return false;
+        return this.type === parsed.type && this[SYM_PRIV_PEM] === parsed[SYM_PRIV_PEM] && this[SYM_PUB_PEM] === parsed[SYM_PUB_PEM] && this[SYM_PUB_SSH].equals(parsed[SYM_PUB_SSH]);
+      }, "equals")
+    };
+    function OpenSSH_Private(type, comment, privPEM, pubPEM, pubSSH, algo, decrypted) {
+      this.type = type;
+      this.comment = comment;
+      this[SYM_PRIV_PEM] = privPEM;
+      this[SYM_PUB_PEM] = pubPEM;
+      this[SYM_PUB_SSH] = pubSSH;
+      this[SYM_HASH_ALGO] = algo;
+      this[SYM_DECRYPTED] = decrypted;
+    }
+    __name(OpenSSH_Private, "OpenSSH_Private");
+    OpenSSH_Private.prototype = BaseKey;
+    {
+      let parseOpenSSHPrivKeys = function(data, nkeys, decrypted) {
+        const keys = [];
+        if (data.length < 8)
+          return new Error("Malformed OpenSSH private key");
+        const check1 = readUInt32BE(data, 0);
+        const check2 = readUInt32BE(data, 4);
+        if (check1 !== check2) {
+          if (decrypted) {
+            return new Error(
+              "OpenSSH key integrity check failed -- bad passphrase?"
+            );
+          }
+          return new Error("OpenSSH key integrity check failed");
+        }
+        data._pos = 8;
+        let i;
+        let oid;
+        for (i = 0; i < nkeys; ++i) {
+          let algo;
+          let privPEM;
+          let pubPEM;
+          let pubSSH;
+          const type = readString(data, data._pos, true);
+          if (type === void 0)
+            return new Error("Malformed OpenSSH private key");
+          switch (type) {
+            case "ssh-rsa": {
+              const n = readString(data, data._pos);
+              if (n === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const e = readString(data, data._pos);
+              if (e === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const d = readString(data, data._pos);
+              if (d === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const iqmp = readString(data, data._pos);
+              if (iqmp === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const p = readString(data, data._pos);
+              if (p === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const q2 = readString(data, data._pos);
+              if (q2 === void 0)
+                return new Error("Malformed OpenSSH private key");
+              pubPEM = genOpenSSLRSAPub(n, e);
+              pubSSH = genOpenSSHRSAPub(n, e);
+              privPEM = genOpenSSLRSAPriv(n, e, d, iqmp, p, q2);
+              algo = "sha1";
+              break;
+            }
+            case "ssh-dss": {
+              const p = readString(data, data._pos);
+              if (p === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const q2 = readString(data, data._pos);
+              if (q2 === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const g = readString(data, data._pos);
+              if (g === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const y = readString(data, data._pos);
+              if (y === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const x = readString(data, data._pos);
+              if (x === void 0)
+                return new Error("Malformed OpenSSH private key");
+              pubPEM = genOpenSSLDSAPub(p, q2, g, y);
+              pubSSH = genOpenSSHDSAPub(p, q2, g, y);
+              privPEM = genOpenSSLDSAPriv(p, q2, g, y, x);
+              algo = "sha1";
+              break;
+            }
+            case "ssh-ed25519": {
+              if (!eddsaSupported)
+                return new Error(`Unsupported OpenSSH private key type: ${type}`);
+              const edpub = readString(data, data._pos);
+              if (edpub === void 0 || edpub.length !== 32)
+                return new Error("Malformed OpenSSH private key");
+              const edpriv = readString(data, data._pos);
+              if (edpriv === void 0 || edpriv.length !== 64)
+                return new Error("Malformed OpenSSH private key");
+              pubPEM = genOpenSSLEdPub(edpub);
+              pubSSH = genOpenSSHEdPub(edpub);
+              privPEM = genOpenSSLEdPriv(bufferSlice(edpriv, 0, 32));
+              algo = null;
+              break;
+            }
+            case "ecdsa-sha2-nistp256":
+              algo = "sha256";
+              oid = "1.2.840.10045.3.1.7";
+            // FALLTHROUGH
+            case "ecdsa-sha2-nistp384":
+              if (algo === void 0) {
+                algo = "sha384";
+                oid = "1.3.132.0.34";
+              }
+            // FALLTHROUGH
+            case "ecdsa-sha2-nistp521": {
+              if (algo === void 0) {
+                algo = "sha512";
+                oid = "1.3.132.0.35";
+              }
+              if (!skipFields(data, 1))
+                return new Error("Malformed OpenSSH private key");
+              const ecpub = readString(data, data._pos);
+              if (ecpub === void 0)
+                return new Error("Malformed OpenSSH private key");
+              const ecpriv = readString(data, data._pos);
+              if (ecpriv === void 0)
+                return new Error("Malformed OpenSSH private key");
+              pubPEM = genOpenSSLECDSAPub(oid, ecpub);
+              pubSSH = genOpenSSHECDSAPub(oid, ecpub);
+              privPEM = genOpenSSLECDSAPriv(oid, ecpub, ecpriv);
+              break;
+            }
+            default:
+              return new Error(`Unsupported OpenSSH private key type: ${type}`);
+          }
+          const privComment = readString(data, data._pos, true);
+          if (privComment === void 0)
+            return new Error("Malformed OpenSSH private key");
+          keys.push(
+            new OpenSSH_Private(
+              type,
+              privComment,
+              privPEM,
+              pubPEM,
+              pubSSH,
+              algo,
+              decrypted
+            )
+          );
+        }
+        let cnt = 0;
+        for (i = data._pos; i < data.length; ++i) {
+          if (data[i] !== ++cnt % 255)
+            return new Error("Malformed OpenSSH private key");
+        }
+        return keys;
+      };
+      __name(parseOpenSSHPrivKeys, "parseOpenSSHPrivKeys");
+      const regexp = /^-----BEGIN OPENSSH PRIVATE KEY-----(?:\r\n|\n)([\s\S]+)(?:\r\n|\n)-----END OPENSSH PRIVATE KEY-----$/;
+      OpenSSH_Private.parse = (str, passphrase) => {
+        const m = regexp.exec(str);
+        if (m === null)
+          return null;
+        let ret;
+        const data = Buffer.from(m[1], "base64");
+        if (data.length < 31)
+          return new Error("Malformed OpenSSH private key");
+        const magic = data.utf8Slice(0, 15);
+        if (magic !== "openssh-key-v1\0")
+          return new Error(`Unsupported OpenSSH key magic: ${magic}`);
+        const cipherName = readString(data, 15, true);
+        if (cipherName === void 0)
+          return new Error("Malformed OpenSSH private key");
+        if (cipherName !== "none" && SUPPORTED_CIPHER.indexOf(cipherName) === -1)
+          return new Error(`Unsupported cipher for OpenSSH key: ${cipherName}`);
+        const kdfName = readString(data, data._pos, true);
+        if (kdfName === void 0)
+          return new Error("Malformed OpenSSH private key");
+        if (kdfName !== "none") {
+          if (cipherName === "none")
+            return new Error("Malformed OpenSSH private key");
+          if (kdfName !== "bcrypt")
+            return new Error(`Unsupported kdf name for OpenSSH key: ${kdfName}`);
+          if (!passphrase) {
+            return new Error(
+              "Encrypted private OpenSSH key detected, but no passphrase given"
+            );
+          }
+        } else if (cipherName !== "none") {
+          return new Error("Malformed OpenSSH private key");
+        }
+        let encInfo;
+        let cipherKey;
+        let cipherIV;
+        if (cipherName !== "none")
+          encInfo = CIPHER_INFO[cipherName];
+        const kdfOptions = readString(data, data._pos);
+        if (kdfOptions === void 0)
+          return new Error("Malformed OpenSSH private key");
+        if (kdfOptions.length) {
+          switch (kdfName) {
+            case "none":
+              return new Error("Malformed OpenSSH private key");
+            case "bcrypt": {
+              const salt = readString(kdfOptions, 0);
+              if (salt === void 0 || kdfOptions._pos + 4 > kdfOptions.length)
+                return new Error("Malformed OpenSSH private key");
+              const rounds = readUInt32BE(kdfOptions, kdfOptions._pos);
+              const gen = Buffer.allocUnsafe(encInfo.keyLen + encInfo.ivLen);
+              const r = bcrypt_pbkdf(
+                passphrase,
+                passphrase.length,
+                salt,
+                salt.length,
+                gen,
+                gen.length,
+                rounds
+              );
+              if (r !== 0)
+                return new Error("Failed to generate information to decrypt key");
+              cipherKey = bufferSlice(gen, 0, encInfo.keyLen);
+              cipherIV = bufferSlice(gen, encInfo.keyLen, gen.length);
+              break;
+            }
+          }
+        } else if (kdfName !== "none") {
+          return new Error("Malformed OpenSSH private key");
+        }
+        if (data._pos + 3 >= data.length)
+          return new Error("Malformed OpenSSH private key");
+        const keyCount = readUInt32BE(data, data._pos);
+        data._pos += 4;
+        if (keyCount > 0) {
+          for (let i = 0; i < keyCount; ++i) {
+            const pubData = readString(data, data._pos);
+            if (pubData === void 0)
+              return new Error("Malformed OpenSSH private key");
+            const type = readString(pubData, 0, true);
+            if (type === void 0)
+              return new Error("Malformed OpenSSH private key");
+          }
+          let privBlob = readString(data, data._pos);
+          if (privBlob === void 0)
+            return new Error("Malformed OpenSSH private key");
+          if (cipherKey !== void 0) {
+            if (privBlob.length < encInfo.blockLen || privBlob.length % encInfo.blockLen !== 0) {
+              return new Error("Malformed OpenSSH private key");
+            }
+            try {
+              const options = { authTagLength: encInfo.authLen };
+              const decipher = createDecipheriv(
+                encInfo.sslName,
+                cipherKey,
+                cipherIV,
+                options
+              );
+              decipher.setAutoPadding(false);
+              if (encInfo.authLen > 0) {
+                if (data.length - data._pos < encInfo.authLen)
+                  return new Error("Malformed OpenSSH private key");
+                decipher.setAuthTag(
+                  bufferSlice(data, data._pos, data._pos += encInfo.authLen)
+                );
+              }
+              privBlob = combineBuffers(
+                decipher.update(privBlob),
+                decipher.final()
+              );
+            } catch (ex) {
+              return ex;
+            }
+          }
+          if (data._pos !== data.length)
+            return new Error("Malformed OpenSSH private key");
+          ret = parseOpenSSHPrivKeys(privBlob, keyCount, cipherKey !== void 0);
+        } else {
+          ret = [];
+        }
+        if (ret instanceof Error)
+          return ret;
+        return ret[0];
+      };
+    }
+    function OpenSSH_Old_Private(type, comment, privPEM, pubPEM, pubSSH, algo, decrypted) {
+      this.type = type;
+      this.comment = comment;
+      this[SYM_PRIV_PEM] = privPEM;
+      this[SYM_PUB_PEM] = pubPEM;
+      this[SYM_PUB_SSH] = pubSSH;
+      this[SYM_HASH_ALGO] = algo;
+      this[SYM_DECRYPTED] = decrypted;
+    }
+    __name(OpenSSH_Old_Private, "OpenSSH_Old_Private");
+    OpenSSH_Old_Private.prototype = BaseKey;
+    {
+      const regexp = /^-----BEGIN (RSA|DSA|EC) PRIVATE KEY-----(?:\r\n|\n)((?:[^:]+:\s*[\S].*(?:\r\n|\n))*)([\s\S]+)(?:\r\n|\n)-----END (RSA|DSA|EC) PRIVATE KEY-----$/;
+      OpenSSH_Old_Private.parse = (str, passphrase) => {
+        const m = regexp.exec(str);
+        if (m === null)
+          return null;
+        let privBlob = Buffer.from(m[3], "base64");
+        let headers = m[2];
+        let decrypted = false;
+        if (headers !== void 0) {
+          headers = headers.split(/\r\n|\n/g);
+          for (let i = 0; i < headers.length; ++i) {
+            const header = headers[i];
+            let sepIdx = header.indexOf(":");
+            if (header.slice(0, sepIdx) === "DEK-Info") {
+              const val = header.slice(sepIdx + 2);
+              sepIdx = val.indexOf(",");
+              if (sepIdx === -1)
+                continue;
+              const cipherName = val.slice(0, sepIdx).toLowerCase();
+              if (supportedOpenSSLCiphers.indexOf(cipherName) === -1) {
+                return new Error(
+                  `Cipher (${cipherName}) not supported for encrypted OpenSSH private key`
+                );
+              }
+              const encInfo = CIPHER_INFO_OPENSSL[cipherName];
+              if (!encInfo) {
+                return new Error(
+                  `Cipher (${cipherName}) not supported for encrypted OpenSSH private key`
+                );
+              }
+              const cipherIV = Buffer.from(val.slice(sepIdx + 1), "hex");
+              if (cipherIV.length !== encInfo.ivLen)
+                return new Error("Malformed encrypted OpenSSH private key");
+              if (!passphrase) {
+                return new Error(
+                  "Encrypted OpenSSH private key detected, but no passphrase given"
+                );
+              }
+              const ivSlice = bufferSlice(cipherIV, 0, 8);
+              let cipherKey = createHash("md5").update(passphrase).update(ivSlice).digest();
+              while (cipherKey.length < encInfo.keyLen) {
+                cipherKey = combineBuffers(
+                  cipherKey,
+                  createHash("md5").update(cipherKey).update(passphrase).update(ivSlice).digest()
+                );
+              }
+              if (cipherKey.length > encInfo.keyLen)
+                cipherKey = bufferSlice(cipherKey, 0, encInfo.keyLen);
+              try {
+                const decipher = createDecipheriv(cipherName, cipherKey, cipherIV);
+                decipher.setAutoPadding(false);
+                privBlob = combineBuffers(
+                  decipher.update(privBlob),
+                  decipher.final()
+                );
+                decrypted = true;
+              } catch (ex) {
+                return ex;
+              }
+            }
+          }
+        }
+        let type;
+        let privPEM;
+        let pubPEM;
+        let pubSSH;
+        let algo;
+        let reader;
+        let errMsg = "Malformed OpenSSH private key";
+        if (decrypted)
+          errMsg += ". Bad passphrase?";
+        switch (m[1]) {
+          case "RSA":
+            type = "ssh-rsa";
+            privPEM = makePEM("RSA PRIVATE", privBlob);
+            try {
+              reader = new Ber.Reader(privBlob);
+              reader.readSequence();
+              reader.readInt();
+              const n = reader.readString(Ber.Integer, true);
+              if (n === null)
+                return new Error(errMsg);
+              const e = reader.readString(Ber.Integer, true);
+              if (e === null)
+                return new Error(errMsg);
+              pubPEM = genOpenSSLRSAPub(n, e);
+              pubSSH = genOpenSSHRSAPub(n, e);
+            } catch {
+              return new Error(errMsg);
+            }
+            algo = "sha1";
+            break;
+          case "DSA":
+            type = "ssh-dss";
+            privPEM = makePEM("DSA PRIVATE", privBlob);
+            try {
+              reader = new Ber.Reader(privBlob);
+              reader.readSequence();
+              reader.readInt();
+              const p = reader.readString(Ber.Integer, true);
+              if (p === null)
+                return new Error(errMsg);
+              const q2 = reader.readString(Ber.Integer, true);
+              if (q2 === null)
+                return new Error(errMsg);
+              const g = reader.readString(Ber.Integer, true);
+              if (g === null)
+                return new Error(errMsg);
+              const y = reader.readString(Ber.Integer, true);
+              if (y === null)
+                return new Error(errMsg);
+              pubPEM = genOpenSSLDSAPub(p, q2, g, y);
+              pubSSH = genOpenSSHDSAPub(p, q2, g, y);
+            } catch {
+              return new Error(errMsg);
+            }
+            algo = "sha1";
+            break;
+          case "EC": {
+            let ecSSLName;
+            let ecPriv;
+            let ecOID;
+            try {
+              reader = new Ber.Reader(privBlob);
+              reader.readSequence();
+              reader.readInt();
+              ecPriv = reader.readString(Ber.OctetString, true);
+              reader.readByte();
+              const offset = reader.readLength();
+              if (offset !== null) {
+                reader._offset = offset;
+                ecOID = reader.readOID();
+                if (ecOID === null)
+                  return new Error(errMsg);
+                switch (ecOID) {
+                  case "1.2.840.10045.3.1.7":
+                    ecSSLName = "prime256v1";
+                    type = "ecdsa-sha2-nistp256";
+                    algo = "sha256";
+                    break;
+                  case "1.3.132.0.34":
+                    ecSSLName = "secp384r1";
+                    type = "ecdsa-sha2-nistp384";
+                    algo = "sha384";
+                    break;
+                  case "1.3.132.0.35":
+                    ecSSLName = "secp521r1";
+                    type = "ecdsa-sha2-nistp521";
+                    algo = "sha512";
+                    break;
+                  default:
+                    return new Error(`Unsupported private key EC OID: ${ecOID}`);
+                }
+              } else {
+                return new Error(errMsg);
+              }
+            } catch {
+              return new Error(errMsg);
+            }
+            privPEM = makePEM("EC PRIVATE", privBlob);
+            const pubBlob = genOpenSSLECDSAPubFromPriv(ecSSLName, ecPriv);
+            pubPEM = genOpenSSLECDSAPub(ecOID, pubBlob);
+            pubSSH = genOpenSSHECDSAPub(ecOID, pubBlob);
+            break;
+          }
+        }
+        return new OpenSSH_Old_Private(
+          type,
+          "",
+          privPEM,
+          pubPEM,
+          pubSSH,
+          algo,
+          decrypted
+        );
+      };
+    }
+    function PPK_Private(type, comment, privPEM, pubPEM, pubSSH, algo, decrypted) {
+      this.type = type;
+      this.comment = comment;
+      this[SYM_PRIV_PEM] = privPEM;
+      this[SYM_PUB_PEM] = pubPEM;
+      this[SYM_PUB_SSH] = pubSSH;
+      this[SYM_HASH_ALGO] = algo;
+      this[SYM_DECRYPTED] = decrypted;
+    }
+    __name(PPK_Private, "PPK_Private");
+    PPK_Private.prototype = BaseKey;
+    {
+      const EMPTY_PASSPHRASE = Buffer.alloc(0);
+      const PPK_IV = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+      const PPK_PP1 = Buffer.from([0, 0, 0, 0]);
+      const PPK_PP2 = Buffer.from([0, 0, 0, 1]);
+      const regexp = /^PuTTY-User-Key-File-2: (ssh-(?:rsa|dss))\r?\nEncryption: (aes256-cbc|none)\r?\nComment: ([^\r\n]*)\r?\nPublic-Lines: \d+\r?\n([\s\S]+?)\r?\nPrivate-Lines: \d+\r?\n([\s\S]+?)\r?\nPrivate-MAC: ([^\r\n]+)/;
+      PPK_Private.parse = (str, passphrase) => {
+        const m = regexp.exec(str);
+        if (m === null)
+          return null;
+        const cipherName = m[2];
+        const encrypted = cipherName !== "none";
+        if (encrypted && !passphrase) {
+          return new Error(
+            "Encrypted PPK private key detected, but no passphrase given"
+          );
+        }
+        let privBlob = Buffer.from(m[5], "base64");
+        if (encrypted) {
+          const encInfo = CIPHER_INFO[cipherName];
+          let cipherKey = combineBuffers(
+            createHash("sha1").update(PPK_PP1).update(passphrase).digest(),
+            createHash("sha1").update(PPK_PP2).update(passphrase).digest()
+          );
+          if (cipherKey.length > encInfo.keyLen)
+            cipherKey = bufferSlice(cipherKey, 0, encInfo.keyLen);
+          try {
+            const decipher = createDecipheriv(encInfo.sslName, cipherKey, PPK_IV);
+            decipher.setAutoPadding(false);
+            privBlob = combineBuffers(
+              decipher.update(privBlob),
+              decipher.final()
+            );
+          } catch (ex) {
+            return ex;
+          }
+        }
+        const type = m[1];
+        const comment = m[3];
+        const pubBlob = Buffer.from(m[4], "base64");
+        const mac = m[6];
+        const typeLen = type.length;
+        const cipherNameLen = cipherName.length;
+        const commentLen = Buffer.byteLength(comment);
+        const pubLen = pubBlob.length;
+        const privLen = privBlob.length;
+        const macData = Buffer.allocUnsafe(4 + typeLen + 4 + cipherNameLen + 4 + commentLen + 4 + pubLen + 4 + privLen);
+        let p = 0;
+        writeUInt32BE(macData, typeLen, p);
+        macData.utf8Write(type, p += 4, typeLen);
+        writeUInt32BE(macData, cipherNameLen, p += typeLen);
+        macData.utf8Write(cipherName, p += 4, cipherNameLen);
+        writeUInt32BE(macData, commentLen, p += cipherNameLen);
+        macData.utf8Write(comment, p += 4, commentLen);
+        writeUInt32BE(macData, pubLen, p += commentLen);
+        macData.set(pubBlob, p += 4);
+        writeUInt32BE(macData, privLen, p += pubLen);
+        macData.set(privBlob, p + 4);
+        if (!passphrase)
+          passphrase = EMPTY_PASSPHRASE;
+        const calcMAC = createHmac(
+          "sha1",
+          createHash("sha1").update("putty-private-key-file-mac-key").update(passphrase).digest()
+        ).update(macData).digest("hex");
+        if (calcMAC !== mac) {
+          if (encrypted) {
+            return new Error(
+              "PPK private key integrity check failed -- bad passphrase?"
+            );
+          }
+          return new Error("PPK private key integrity check failed");
+        }
+        let pubPEM;
+        let pubSSH;
+        let privPEM;
+        pubBlob._pos = 0;
+        skipFields(pubBlob, 1);
+        switch (type) {
+          case "ssh-rsa": {
+            const e = readString(pubBlob, pubBlob._pos);
+            if (e === void 0)
+              return new Error("Malformed PPK public key");
+            const n = readString(pubBlob, pubBlob._pos);
+            if (n === void 0)
+              return new Error("Malformed PPK public key");
+            const d = readString(privBlob, 0);
+            if (d === void 0)
+              return new Error("Malformed PPK private key");
+            const p2 = readString(privBlob, privBlob._pos);
+            if (p2 === void 0)
+              return new Error("Malformed PPK private key");
+            const q2 = readString(privBlob, privBlob._pos);
+            if (q2 === void 0)
+              return new Error("Malformed PPK private key");
+            const iqmp = readString(privBlob, privBlob._pos);
+            if (iqmp === void 0)
+              return new Error("Malformed PPK private key");
+            pubPEM = genOpenSSLRSAPub(n, e);
+            pubSSH = genOpenSSHRSAPub(n, e);
+            privPEM = genOpenSSLRSAPriv(n, e, d, iqmp, p2, q2);
+            break;
+          }
+          case "ssh-dss": {
+            const p2 = readString(pubBlob, pubBlob._pos);
+            if (p2 === void 0)
+              return new Error("Malformed PPK public key");
+            const q2 = readString(pubBlob, pubBlob._pos);
+            if (q2 === void 0)
+              return new Error("Malformed PPK public key");
+            const g = readString(pubBlob, pubBlob._pos);
+            if (g === void 0)
+              return new Error("Malformed PPK public key");
+            const y = readString(pubBlob, pubBlob._pos);
+            if (y === void 0)
+              return new Error("Malformed PPK public key");
+            const x = readString(privBlob, 0);
+            if (x === void 0)
+              return new Error("Malformed PPK private key");
+            pubPEM = genOpenSSLDSAPub(p2, q2, g, y);
+            pubSSH = genOpenSSHDSAPub(p2, q2, g, y);
+            privPEM = genOpenSSLDSAPriv(p2, q2, g, y, x);
+            break;
+          }
+        }
+        return new PPK_Private(
+          type,
+          comment,
+          privPEM,
+          pubPEM,
+          pubSSH,
+          "sha1",
+          encrypted
+        );
+      };
+    }
+    function OpenSSH_Public(type, comment, pubPEM, pubSSH, algo) {
+      this.type = type;
+      this.comment = comment;
+      this[SYM_PRIV_PEM] = null;
+      this[SYM_PUB_PEM] = pubPEM;
+      this[SYM_PUB_SSH] = pubSSH;
+      this[SYM_HASH_ALGO] = algo;
+      this[SYM_DECRYPTED] = false;
+    }
+    __name(OpenSSH_Public, "OpenSSH_Public");
+    OpenSSH_Public.prototype = BaseKey;
+    {
+      let regexp;
+      if (eddsaSupported)
+        regexp = /^(((?:ssh-(?:rsa|dss|ed25519))|ecdsa-sha2-nistp(?:256|384|521))(?:-cert-v0[01]@openssh.com)?) ([A-Z0-9a-z/+=]+)(?:$|\s+([\S].*)?)$/;
+      else
+        regexp = /^(((?:ssh-(?:rsa|dss))|ecdsa-sha2-nistp(?:256|384|521))(?:-cert-v0[01]@openssh.com)?) ([A-Z0-9a-z/+=]+)(?:$|\s+([\S].*)?)$/;
+      OpenSSH_Public.parse = (str) => {
+        const m = regexp.exec(str);
+        if (m === null)
+          return null;
+        const fullType = m[1];
+        const baseType = m[2];
+        const data = Buffer.from(m[3], "base64");
+        const comment = m[4] || "";
+        const type = readString(data, data._pos, true);
+        if (type === void 0 || type.indexOf(baseType) !== 0)
+          return new Error("Malformed OpenSSH public key");
+        return parseDER(data, baseType, comment, fullType);
+      };
+    }
+    function RFC4716_Public(type, comment, pubPEM, pubSSH, algo) {
+      this.type = type;
+      this.comment = comment;
+      this[SYM_PRIV_PEM] = null;
+      this[SYM_PUB_PEM] = pubPEM;
+      this[SYM_PUB_SSH] = pubSSH;
+      this[SYM_HASH_ALGO] = algo;
+      this[SYM_DECRYPTED] = false;
+    }
+    __name(RFC4716_Public, "RFC4716_Public");
+    RFC4716_Public.prototype = BaseKey;
+    {
+      const regexp = /^---- BEGIN SSH2 PUBLIC KEY ----(?:\r?\n)((?:.{0,72}\r?\n)+)---- END SSH2 PUBLIC KEY ----$/;
+      const RE_DATA = /^[A-Z0-9a-z/+=\r\n]+$/;
+      const RE_HEADER = /^([\x21-\x39\x3B-\x7E]{1,64}): ((?:[^\\]*\\\r?\n)*[^\r\n]+)\r?\n/gm;
+      const RE_HEADER_ENDS = /\\\r?\n/g;
+      RFC4716_Public.parse = (str) => {
+        let m = regexp.exec(str);
+        if (m === null)
+          return null;
+        const body = m[1];
+        let dataStart = 0;
+        let comment = "";
+        while (m = RE_HEADER.exec(body)) {
+          const headerName = m[1];
+          const headerValue = m[2].replace(RE_HEADER_ENDS, "");
+          if (headerValue.length > 1024) {
+            RE_HEADER.lastIndex = 0;
+            return new Error("Malformed RFC4716 public key");
+          }
+          dataStart = RE_HEADER.lastIndex;
+          if (headerName.toLowerCase() === "comment") {
+            comment = headerValue;
+            if (comment.length > 1 && comment.charCodeAt(0) === 34 && comment.charCodeAt(comment.length - 1) === 34) {
+              comment = comment.slice(1, -1);
+            }
+          }
+        }
+        let data = body.slice(dataStart);
+        if (!RE_DATA.test(data))
+          return new Error("Malformed RFC4716 public key");
+        data = Buffer.from(data, "base64");
+        const type = readString(data, 0, true);
+        if (type === void 0)
+          return new Error("Malformed RFC4716 public key");
+        let pubPEM = null;
+        let pubSSH = null;
+        switch (type) {
+          case "ssh-rsa": {
+            const e = readString(data, data._pos);
+            if (e === void 0)
+              return new Error("Malformed RFC4716 public key");
+            const n = readString(data, data._pos);
+            if (n === void 0)
+              return new Error("Malformed RFC4716 public key");
+            pubPEM = genOpenSSLRSAPub(n, e);
+            pubSSH = genOpenSSHRSAPub(n, e);
+            break;
+          }
+          case "ssh-dss": {
+            const p = readString(data, data._pos);
+            if (p === void 0)
+              return new Error("Malformed RFC4716 public key");
+            const q2 = readString(data, data._pos);
+            if (q2 === void 0)
+              return new Error("Malformed RFC4716 public key");
+            const g = readString(data, data._pos);
+            if (g === void 0)
+              return new Error("Malformed RFC4716 public key");
+            const y = readString(data, data._pos);
+            if (y === void 0)
+              return new Error("Malformed RFC4716 public key");
+            pubPEM = genOpenSSLDSAPub(p, q2, g, y);
+            pubSSH = genOpenSSHDSAPub(p, q2, g, y);
+            break;
+          }
+          default:
+            return new Error("Malformed RFC4716 public key");
+        }
+        return new RFC4716_Public(type, comment, pubPEM, pubSSH, "sha1");
+      };
+    }
+    function parseDER(data, baseType, comment, fullType) {
+      if (!isSupportedKeyType(baseType))
+        return new Error(`Unsupported OpenSSH public key type: ${baseType}`);
+      let algo;
+      let oid;
+      let pubPEM = null;
+      let pubSSH = null;
+      switch (baseType) {
+        case "ssh-rsa": {
+          const e = readString(data, data._pos || 0);
+          if (e === void 0)
+            return new Error("Malformed OpenSSH public key");
+          const n = readString(data, data._pos);
+          if (n === void 0)
+            return new Error("Malformed OpenSSH public key");
+          pubPEM = genOpenSSLRSAPub(n, e);
+          pubSSH = genOpenSSHRSAPub(n, e);
+          algo = "sha1";
+          break;
+        }
+        case "ssh-dss": {
+          const p = readString(data, data._pos || 0);
+          if (p === void 0)
+            return new Error("Malformed OpenSSH public key");
+          const q2 = readString(data, data._pos);
+          if (q2 === void 0)
+            return new Error("Malformed OpenSSH public key");
+          const g = readString(data, data._pos);
+          if (g === void 0)
+            return new Error("Malformed OpenSSH public key");
+          const y = readString(data, data._pos);
+          if (y === void 0)
+            return new Error("Malformed OpenSSH public key");
+          pubPEM = genOpenSSLDSAPub(p, q2, g, y);
+          pubSSH = genOpenSSHDSAPub(p, q2, g, y);
+          algo = "sha1";
+          break;
+        }
+        case "ssh-ed25519": {
+          const edpub = readString(data, data._pos || 0);
+          if (edpub === void 0 || edpub.length !== 32)
+            return new Error("Malformed OpenSSH public key");
+          pubPEM = genOpenSSLEdPub(edpub);
+          pubSSH = genOpenSSHEdPub(edpub);
+          algo = null;
+          break;
+        }
+        case "ecdsa-sha2-nistp256":
+          algo = "sha256";
+          oid = "1.2.840.10045.3.1.7";
+        // FALLTHROUGH
+        case "ecdsa-sha2-nistp384":
+          if (algo === void 0) {
+            algo = "sha384";
+            oid = "1.3.132.0.34";
+          }
+        // FALLTHROUGH
+        case "ecdsa-sha2-nistp521": {
+          if (algo === void 0) {
+            algo = "sha512";
+            oid = "1.3.132.0.35";
+          }
+          if (!skipFields(data, 1))
+            return new Error("Malformed OpenSSH public key");
+          const ecpub = readString(data, data._pos || 0);
+          if (ecpub === void 0)
+            return new Error("Malformed OpenSSH public key");
+          pubPEM = genOpenSSLECDSAPub(oid, ecpub);
+          pubSSH = genOpenSSHECDSAPub(oid, ecpub);
+          break;
+        }
+        default:
+          return new Error(`Unsupported OpenSSH public key type: ${baseType}`);
+      }
+      return new OpenSSH_Public(fullType, comment, pubPEM, pubSSH, algo);
+    }
+    __name(parseDER, "parseDER");
+    function isSupportedKeyType(type) {
+      switch (type) {
+        case "ssh-rsa":
+        case "ssh-dss":
+        case "ecdsa-sha2-nistp256":
+        case "ecdsa-sha2-nistp384":
+        case "ecdsa-sha2-nistp521":
+          return true;
+        case "ssh-ed25519":
+          if (eddsaSupported)
+            return true;
+        // FALLTHROUGH
+        default:
+          return false;
+      }
+    }
+    __name(isSupportedKeyType, "isSupportedKeyType");
+    function isParsedKey(val) {
+      if (!val)
+        return false;
+      return typeof val[SYM_DECRYPTED] === "boolean";
+    }
+    __name(isParsedKey, "isParsedKey");
+    function parseKey(data, passphrase) {
+      if (isParsedKey(data))
+        return data;
+      let origBuffer;
+      if (Buffer.isBuffer(data)) {
+        origBuffer = data;
+        data = data.utf8Slice(0, data.length).trim();
+      } else if (typeof data === "string") {
+        data = data.trim();
+      } else {
+        return new Error("Key data must be a Buffer or string");
+      }
+      if (passphrase != void 0) {
+        if (typeof passphrase === "string")
+          passphrase = Buffer.from(passphrase);
+        else if (!Buffer.isBuffer(passphrase))
+          return new Error("Passphrase must be a string or Buffer when supplied");
+      }
+      let ret;
+      if ((ret = OpenSSH_Private.parse(data, passphrase)) !== null)
+        return ret;
+      if ((ret = OpenSSH_Old_Private.parse(data, passphrase)) !== null)
+        return ret;
+      if ((ret = PPK_Private.parse(data, passphrase)) !== null)
+        return ret;
+      if ((ret = OpenSSH_Public.parse(data)) !== null)
+        return ret;
+      if ((ret = RFC4716_Public.parse(data)) !== null)
+        return ret;
+      if (origBuffer) {
+        binaryKeyParser.init(origBuffer, 0);
+        const type = binaryKeyParser.readString(true);
+        if (type !== void 0) {
+          data = binaryKeyParser.readRaw();
+          if (data !== void 0) {
+            ret = parseDER(data, type, "", type);
+            if (ret instanceof Error)
+              ret = null;
+          }
+        }
+        binaryKeyParser.clear();
+      }
+      if (ret)
+        return ret;
+      return new Error("Unsupported key format");
+    }
+    __name(parseKey, "parseKey");
+    module.exports = {
+      isParsedKey,
+      isSupportedKeyType,
+      parseDERKey: /* @__PURE__ */ __name((data, type) => parseDER(data, type, "", type), "parseDERKey"),
+      parseKey
+    };
+  }
+});
+
+// node_modules/ssh2/lib/agent.js
+var require_agent = __commonJS({
+  "node_modules/ssh2/lib/agent.js"(exports, module) {
+    "use strict";
+    var { Socket } = require_net();
+    var { Duplex } = require_stream();
+    var { resolve } = require_path();
+    var { readFile } = require_fs();
+    var { execFile, spawn } = require_child_process();
+    var { isParsedKey, parseKey } = require_keyParser();
+    var {
+      makeBufferParser,
+      readUInt32BE,
+      writeUInt32BE,
+      writeUInt32LE
+    } = require_utils4();
+    function once(cb) {
+      let called = false;
+      return (...args) => {
+        if (called)
+          return;
+        called = true;
+        cb(...args);
+      };
+    }
+    __name(once, "once");
+    function concat(buf1, buf2) {
+      const combined = Buffer.allocUnsafe(buf1.length + buf2.length);
+      buf1.copy(combined, 0);
+      buf2.copy(combined, buf1.length);
+      return combined;
+    }
+    __name(concat, "concat");
+    function noop() {
+    }
+    __name(noop, "noop");
+    var EMPTY_BUF = Buffer.alloc(0);
+    var binaryParser = makeBufferParser();
+    var BaseAgent = class {
+      static {
+        __name(this, "BaseAgent");
+      }
+      getIdentities(cb) {
+        cb(new Error("Missing getIdentities() implementation"));
+      }
+      sign(pubKey, data, options, cb) {
+        if (typeof options === "function")
+          cb = options;
+        cb(new Error("Missing sign() implementation"));
+      }
+    };
+    var OpenSSHAgent = class extends BaseAgent {
+      static {
+        __name(this, "OpenSSHAgent");
+      }
+      constructor(socketPath) {
+        super();
+        this.socketPath = socketPath;
+      }
+      getStream(cb) {
+        cb = once(cb);
+        const sock = new Socket();
+        sock.on("connect", () => {
+          cb(null, sock);
+        });
+        sock.on("close", onFail).on("end", onFail).on("error", onFail);
+        sock.connect(this.socketPath);
+        function onFail() {
+          try {
+            sock.destroy();
+          } catch {
+          }
+          cb(new Error("Failed to connect to agent"));
+        }
+        __name(onFail, "onFail");
+      }
+      getIdentities(cb) {
+        cb = once(cb);
+        this.getStream((err, stream) => {
+          function onFail(err2) {
+            if (stream) {
+              try {
+                stream.destroy();
+              } catch {
+              }
+            }
+            if (!err2)
+              err2 = new Error("Failed to retrieve identities from agent");
+            cb(err2);
+          }
+          __name(onFail, "onFail");
+          if (err)
+            return onFail(err);
+          const protocol = new AgentProtocol(true);
+          protocol.on("error", onFail);
+          protocol.pipe(stream).pipe(protocol);
+          stream.on("close", onFail).on("end", onFail).on("error", onFail);
+          protocol.getIdentities((err2, keys) => {
+            if (err2)
+              return onFail(err2);
+            try {
+              stream.destroy();
+            } catch {
+            }
+            cb(null, keys);
+          });
+        });
+      }
+      sign(pubKey, data, options, cb) {
+        if (typeof options === "function") {
+          cb = options;
+          options = void 0;
+        } else if (typeof options !== "object" || options === null) {
+          options = void 0;
+        }
+        cb = once(cb);
+        this.getStream((err, stream) => {
+          function onFail(err2) {
+            if (stream) {
+              try {
+                stream.destroy();
+              } catch {
+              }
+            }
+            if (!err2)
+              err2 = new Error("Failed to sign data with agent");
+            cb(err2);
+          }
+          __name(onFail, "onFail");
+          if (err)
+            return onFail(err);
+          const protocol = new AgentProtocol(true);
+          protocol.on("error", onFail);
+          protocol.pipe(stream).pipe(protocol);
+          stream.on("close", onFail).on("end", onFail).on("error", onFail);
+          protocol.sign(pubKey, data, options, (err2, sig) => {
+            if (err2)
+              return onFail(err2);
+            try {
+              stream.destroy();
+            } catch {
+            }
+            cb(null, sig);
+          });
+        });
+      }
+    };
+    var PageantAgent = (() => {
+      const RET_ERR_BADARGS = 10;
+      const RET_ERR_UNAVAILABLE = 11;
+      const RET_ERR_NOMAP = 12;
+      const RET_ERR_BINSTDIN = 13;
+      const RET_ERR_BINSTDOUT = 14;
+      const RET_ERR_BADLEN = 15;
+      const EXEPATH = resolve(__dirname, "..", "util/pagent.exe");
+      const ERROR = {
+        [RET_ERR_BADARGS]: new Error("Invalid pagent.exe arguments"),
+        [RET_ERR_UNAVAILABLE]: new Error("Pageant is not running"),
+        [RET_ERR_NOMAP]: new Error("pagent.exe could not create an mmap"),
+        [RET_ERR_BINSTDIN]: new Error("pagent.exe could not set mode for stdin"),
+        [RET_ERR_BINSTDOUT]: new Error("pagent.exe could not set mode for stdout"),
+        [RET_ERR_BADLEN]: new Error("pagent.exe did not get expected input payload")
+      };
+      function destroy(stream) {
+        stream.buffer = null;
+        if (stream.proc) {
+          stream.proc.kill();
+          stream.proc = void 0;
+        }
+      }
+      __name(destroy, "destroy");
+      class PageantSocket extends Duplex {
+        static {
+          __name(this, "PageantSocket");
+        }
+        constructor() {
+          super();
+          this.proc = void 0;
+          this.buffer = null;
+        }
+        _read(n) {
+        }
+        _write(data, encoding, cb) {
+          if (this.buffer === null) {
+            this.buffer = data;
+          } else {
+            const newBuffer = Buffer.allocUnsafe(this.buffer.length + data.length);
+            this.buffer.copy(newBuffer, 0);
+            data.copy(newBuffer, this.buffer.length);
+            this.buffer = newBuffer;
+          }
+          if (this.buffer.length < 4)
+            return cb();
+          const len = readUInt32BE(this.buffer, 0);
+          if (this.buffer.length - 4 < len)
+            return cb();
+          data = this.buffer.slice(0, 4 + len);
+          if (this.buffer.length > 4 + len)
+            return cb(new Error("Unexpected multiple agent requests"));
+          this.buffer = null;
+          let error;
+          const proc = this.proc = spawn(EXEPATH, [data.length]);
+          proc.stdout.on("data", (data2) => {
+            this.push(data2);
+          });
+          proc.on("error", (err) => {
+            error = err;
+            cb(error);
+          });
+          proc.on("close", (code) => {
+            this.proc = void 0;
+            if (!error) {
+              if (error = ERROR[code])
+                return cb(error);
+              cb();
+            }
+          });
+          proc.stdin.end(data);
+        }
+        _final(cb) {
+          destroy(this);
+          cb();
+        }
+        _destroy(err, cb) {
+          destroy(this);
+          cb();
+        }
+      }
+      return class PageantAgent extends OpenSSHAgent {
+        static {
+          __name(this, "PageantAgent");
+        }
+        getStream(cb) {
+          cb(null, new PageantSocket());
+        }
+      };
+    })();
+    var CygwinAgent = /* @__PURE__ */ (() => {
+      const RE_CYGWIN_SOCK = /^!<socket >(\d+) s ([A-Z0-9]{8}-[A-Z0-9]{8}-[A-Z0-9]{8}-[A-Z0-9]{8})/;
+      return class CygwinAgent extends OpenSSHAgent {
+        static {
+          __name(this, "CygwinAgent");
+        }
+        getStream(cb) {
+          cb = once(cb);
+          let socketPath = this.socketPath;
+          let triedCygpath = false;
+          readFile(socketPath, /* @__PURE__ */ __name(function readCygsocket(err, data) {
+            if (err) {
+              if (triedCygpath)
+                return cb(new Error("Invalid cygwin unix socket path"));
+              execFile("cygpath", ["-w", socketPath], (err2, stdout, stderr) => {
+                if (err2 || stdout.length === 0)
+                  return cb(new Error("Invalid cygwin unix socket path"));
+                triedCygpath = true;
+                socketPath = stdout.toString().replace(/[\r\n]/g, "");
+                readFile(socketPath, readCygsocket);
+              });
+              return;
+            }
+            const m = RE_CYGWIN_SOCK.exec(data.toString("ascii"));
+            if (!m)
+              return cb(new Error("Malformed cygwin unix socket file"));
+            let state;
+            let bc = 0;
+            let isRetrying = false;
+            const inBuf = [];
+            let sock;
+            let credsBuf = Buffer.alloc(12);
+            const port = parseInt(m[1], 10);
+            const secret = m[2].replace(/-/g, "");
+            const secretBuf = Buffer.allocUnsafe(16);
+            for (let i = 0, j = 0; j < 32; ++i, j += 2)
+              secretBuf[i] = parseInt(secret.substring(j, j + 2), 16);
+            for (let i = 0; i < 16; i += 4)
+              writeUInt32LE(secretBuf, readUInt32BE(secretBuf, i), i);
+            tryConnect();
+            function _onconnect() {
+              bc = 0;
+              state = "secret";
+              sock.write(secretBuf);
+            }
+            __name(_onconnect, "_onconnect");
+            function _ondata(data2) {
+              bc += data2.length;
+              if (state === "secret") {
+                if (bc === 16) {
+                  bc = 0;
+                  state = "creds";
+                  sock.write(credsBuf);
+                }
+                return;
+              }
+              if (state === "creds") {
+                if (!isRetrying)
+                  inBuf.push(data2);
+                if (bc === 12) {
+                  sock.removeListener("connect", _onconnect);
+                  sock.removeListener("data", _ondata);
+                  sock.removeListener("error", onFail);
+                  sock.removeListener("end", onFail);
+                  sock.removeListener("close", onFail);
+                  if (isRetrying)
+                    return cb(null, sock);
+                  isRetrying = true;
+                  credsBuf = Buffer.concat(inBuf);
+                  writeUInt32LE(credsBuf, process.pid, 0);
+                  sock.on("error", () => {
+                  });
+                  sock.destroy();
+                  tryConnect();
+                }
+              }
+            }
+            __name(_ondata, "_ondata");
+            function onFail() {
+              cb(new Error("Problem negotiating cygwin unix socket security"));
+            }
+            __name(onFail, "onFail");
+            function tryConnect() {
+              sock = new Socket();
+              sock.on("connect", _onconnect);
+              sock.on("data", _ondata);
+              sock.on("error", onFail);
+              sock.on("end", onFail);
+              sock.on("close", onFail);
+              sock.connect(port);
+            }
+            __name(tryConnect, "tryConnect");
+          }, "readCygsocket"));
+        }
+      };
+    })();
+    var WINDOWS_PIPE_REGEX = /^[/\\][/\\]\.[/\\]pipe[/\\].+/;
+    function createAgent(path) {
+      if (process.platform === "win32" && !WINDOWS_PIPE_REGEX.test(path)) {
+        return path === "pageant" ? new PageantAgent() : new CygwinAgent(path);
+      }
+      return new OpenSSHAgent(path);
+    }
+    __name(createAgent, "createAgent");
+    var AgentProtocol = (() => {
+      const SSH_AGENTC_REQUEST_IDENTITIES = 11;
+      const SSH_AGENTC_SIGN_REQUEST = 13;
+      const SSH_AGENT_FAILURE = 5;
+      const SSH_AGENT_IDENTITIES_ANSWER = 12;
+      const SSH_AGENT_SIGN_RESPONSE = 14;
+      const SSH_AGENT_RSA_SHA2_256 = 1 << 1;
+      const SSH_AGENT_RSA_SHA2_512 = 1 << 2;
+      const ROLE_CLIENT = 0;
+      const ROLE_SERVER = 1;
+      function processResponses(protocol) {
+        let ret;
+        while (protocol[SYM_REQS].length) {
+          const nextResponse = protocol[SYM_REQS][0][SYM_RESP];
+          if (nextResponse === void 0)
+            break;
+          protocol[SYM_REQS].shift();
+          ret = protocol.push(nextResponse);
+        }
+        return ret;
+      }
+      __name(processResponses, "processResponses");
+      const SYM_TYPE = /* @__PURE__ */ Symbol("Inbound Request Type");
+      const SYM_RESP = /* @__PURE__ */ Symbol("Inbound Request Response");
+      const SYM_CTX = /* @__PURE__ */ Symbol("Inbound Request Context");
+      class AgentInboundRequest {
+        static {
+          __name(this, "AgentInboundRequest");
+        }
+        constructor(type, ctx) {
+          this[SYM_TYPE] = type;
+          this[SYM_RESP] = void 0;
+          this[SYM_CTX] = ctx;
+        }
+        hasResponded() {
+          return this[SYM_RESP] !== void 0;
+        }
+        getType() {
+          return this[SYM_TYPE];
+        }
+        getContext() {
+          return this[SYM_CTX];
+        }
+      }
+      function respond(protocol, req, data) {
+        req[SYM_RESP] = data;
+        return processResponses(protocol);
+      }
+      __name(respond, "respond");
+      function cleanup(protocol) {
+        protocol[SYM_BUFFER] = null;
+        if (protocol[SYM_MODE] === ROLE_CLIENT) {
+          const reqs = protocol[SYM_REQS];
+          if (reqs && reqs.length) {
+            protocol[SYM_REQS] = [];
+            for (const req of reqs)
+              req.cb(new Error("No reply from server"));
+          }
+        }
+        try {
+          protocol.end();
+        } catch {
+        }
+        setImmediate(() => {
+          if (!protocol[SYM_ENDED])
+            protocol.emit("end");
+          if (!protocol[SYM_CLOSED])
+            protocol.emit("close");
+        });
+      }
+      __name(cleanup, "cleanup");
+      function onClose() {
+        this[SYM_CLOSED] = true;
+      }
+      __name(onClose, "onClose");
+      function onEnd() {
+        this[SYM_ENDED] = true;
+      }
+      __name(onEnd, "onEnd");
+      const SYM_REQS = /* @__PURE__ */ Symbol("Requests");
+      const SYM_MODE = /* @__PURE__ */ Symbol("Agent Protocol Role");
+      const SYM_BUFFER = /* @__PURE__ */ Symbol("Agent Protocol Buffer");
+      const SYM_MSGLEN = /* @__PURE__ */ Symbol("Agent Protocol Current Message Length");
+      const SYM_CLOSED = /* @__PURE__ */ Symbol("Agent Protocol Closed");
+      const SYM_ENDED = /* @__PURE__ */ Symbol("Agent Protocol Ended");
+      return class AgentProtocol extends Duplex {
+        static {
+          __name(this, "AgentProtocol");
+        }
+        /*
+            Notes:
+              - `constraint` type consists of:
+                   byte                    constraint_type
+                   byte[]                  constraint_data
+                where `constraint_type` is one of:
+                  * SSH_AGENT_CONSTRAIN_LIFETIME
+                    - `constraint_data` consists of:
+                         uint32                  seconds
+                  * SSH_AGENT_CONSTRAIN_CONFIRM
+                    - `constraint_data` N/A
+                  * SSH_AGENT_CONSTRAIN_EXTENSION
+                    - `constraint_data` consists of:
+                         string                  extension name
+                         byte[]                  extension-specific details
+        */
+        constructor(isClient) {
+          super({ autoDestroy: true, emitClose: false });
+          this[SYM_MODE] = isClient ? ROLE_CLIENT : ROLE_SERVER;
+          this[SYM_REQS] = [];
+          this[SYM_BUFFER] = null;
+          this[SYM_MSGLEN] = -1;
+          this.once("end", onEnd);
+          this.once("close", onClose);
+        }
+        _read(n) {
+        }
+        _write(data, encoding, cb) {
+          if (this[SYM_BUFFER] === null)
+            this[SYM_BUFFER] = data;
+          else
+            this[SYM_BUFFER] = concat(this[SYM_BUFFER], data);
+          let buffer = this[SYM_BUFFER];
+          let bufferLen = buffer.length;
+          let p = 0;
+          while (p < bufferLen) {
+            if (bufferLen < 5)
+              break;
+            if (this[SYM_MSGLEN] === -1)
+              this[SYM_MSGLEN] = readUInt32BE(buffer, p);
+            if (bufferLen < 4 + this[SYM_MSGLEN])
+              break;
+            const msgType = buffer[p += 4];
+            ++p;
+            if (this[SYM_MODE] === ROLE_CLIENT) {
+              if (this[SYM_REQS].length === 0)
+                return cb(new Error("Received unexpected message from server"));
+              const req = this[SYM_REQS].shift();
+              switch (msgType) {
+                case SSH_AGENT_FAILURE:
+                  req.cb(new Error("Agent responded with failure"));
+                  break;
+                case SSH_AGENT_IDENTITIES_ANSWER: {
+                  if (req.type !== SSH_AGENTC_REQUEST_IDENTITIES)
+                    return cb(new Error("Agent responded with wrong message type"));
+                  binaryParser.init(buffer, p);
+                  const numKeys = binaryParser.readUInt32BE();
+                  if (numKeys === void 0) {
+                    binaryParser.clear();
+                    return cb(new Error("Malformed agent response"));
+                  }
+                  const keys = [];
+                  for (let i = 0; i < numKeys; ++i) {
+                    let pubKey = binaryParser.readString();
+                    if (pubKey === void 0) {
+                      binaryParser.clear();
+                      return cb(new Error("Malformed agent response"));
+                    }
+                    const comment = binaryParser.readString(true);
+                    if (comment === void 0) {
+                      binaryParser.clear();
+                      return cb(new Error("Malformed agent response"));
+                    }
+                    pubKey = parseKey(pubKey);
+                    if (pubKey instanceof Error)
+                      continue;
+                    pubKey.comment = pubKey.comment || comment;
+                    keys.push(pubKey);
+                  }
+                  p = binaryParser.pos();
+                  binaryParser.clear();
+                  req.cb(null, keys);
+                  break;
+                }
+                case SSH_AGENT_SIGN_RESPONSE: {
+                  if (req.type !== SSH_AGENTC_SIGN_REQUEST)
+                    return cb(new Error("Agent responded with wrong message type"));
+                  binaryParser.init(buffer, p);
+                  let signature = binaryParser.readString();
+                  p = binaryParser.pos();
+                  binaryParser.clear();
+                  if (signature === void 0)
+                    return cb(new Error("Malformed agent response"));
+                  binaryParser.init(signature, 0);
+                  binaryParser.readString(true);
+                  signature = binaryParser.readString();
+                  binaryParser.clear();
+                  if (signature === void 0)
+                    return cb(new Error("Malformed OpenSSH signature format"));
+                  req.cb(null, signature);
+                  break;
+                }
+                default:
+                  return cb(
+                    new Error("Agent responded with unsupported message type")
+                  );
+              }
+            } else {
+              switch (msgType) {
+                case SSH_AGENTC_REQUEST_IDENTITIES: {
+                  const req = new AgentInboundRequest(msgType);
+                  this[SYM_REQS].push(req);
+                  this.emit("identities", req);
+                  break;
+                }
+                case SSH_AGENTC_SIGN_REQUEST: {
+                  binaryParser.init(buffer, p);
+                  let pubKey = binaryParser.readString();
+                  const data2 = binaryParser.readString();
+                  const flagsVal = binaryParser.readUInt32BE();
+                  p = binaryParser.pos();
+                  binaryParser.clear();
+                  if (flagsVal === void 0) {
+                    const req2 = new AgentInboundRequest(msgType);
+                    this[SYM_REQS].push(req2);
+                    return this.failureReply(req2);
+                  }
+                  pubKey = parseKey(pubKey);
+                  if (pubKey instanceof Error) {
+                    const req2 = new AgentInboundRequest(msgType);
+                    this[SYM_REQS].push(req2);
+                    return this.failureReply(req2);
+                  }
+                  const flags = {
+                    hash: void 0
+                  };
+                  let ctx;
+                  if (pubKey.type === "ssh-rsa") {
+                    if (flagsVal & SSH_AGENT_RSA_SHA2_256) {
+                      ctx = "rsa-sha2-256";
+                      flags.hash = "sha256";
+                    } else if (flagsVal & SSH_AGENT_RSA_SHA2_512) {
+                      ctx = "rsa-sha2-512";
+                      flags.hash = "sha512";
+                    }
+                  }
+                  if (ctx === void 0)
+                    ctx = pubKey.type;
+                  const req = new AgentInboundRequest(msgType, ctx);
+                  this[SYM_REQS].push(req);
+                  this.emit("sign", req, pubKey, data2, flags);
+                  break;
+                }
+                default: {
+                  const req = new AgentInboundRequest(msgType);
+                  this[SYM_REQS].push(req);
+                  this.failureReply(req);
+                }
+              }
+            }
+            this[SYM_MSGLEN] = -1;
+            if (p === bufferLen) {
+              this[SYM_BUFFER] = null;
+              break;
+            } else {
+              this[SYM_BUFFER] = buffer = buffer.slice(p);
+              bufferLen = buffer.length;
+              p = 0;
+            }
+          }
+          cb();
+        }
+        _destroy(err, cb) {
+          cleanup(this);
+          cb();
+        }
+        _final(cb) {
+          cleanup(this);
+          cb();
+        }
+        // Client->Server messages =================================================
+        sign(pubKey, data, options, cb) {
+          if (this[SYM_MODE] !== ROLE_CLIENT)
+            throw new Error("Client-only method called with server role");
+          if (typeof options === "function") {
+            cb = options;
+            options = void 0;
+          } else if (typeof options !== "object" || options === null) {
+            options = void 0;
+          }
+          let flags = 0;
+          pubKey = parseKey(pubKey);
+          if (pubKey instanceof Error)
+            throw new Error("Invalid public key argument");
+          if (pubKey.type === "ssh-rsa" && options) {
+            switch (options.hash) {
+              case "sha256":
+                flags = SSH_AGENT_RSA_SHA2_256;
+                break;
+              case "sha512":
+                flags = SSH_AGENT_RSA_SHA2_512;
+                break;
+            }
+          }
+          pubKey = pubKey.getPublicSSH();
+          const type = SSH_AGENTC_SIGN_REQUEST;
+          const keyLen = pubKey.length;
+          const dataLen = data.length;
+          let p = 0;
+          const buf = Buffer.allocUnsafe(4 + 1 + 4 + keyLen + 4 + dataLen + 4);
+          writeUInt32BE(buf, buf.length - 4, p);
+          buf[p += 4] = type;
+          writeUInt32BE(buf, keyLen, ++p);
+          pubKey.copy(buf, p += 4);
+          writeUInt32BE(buf, dataLen, p += keyLen);
+          data.copy(buf, p += 4);
+          writeUInt32BE(buf, flags, p += dataLen);
+          if (typeof cb !== "function")
+            cb = noop;
+          this[SYM_REQS].push({ type, cb });
+          return this.push(buf);
+        }
+        getIdentities(cb) {
+          if (this[SYM_MODE] !== ROLE_CLIENT)
+            throw new Error("Client-only method called with server role");
+          const type = SSH_AGENTC_REQUEST_IDENTITIES;
+          let p = 0;
+          const buf = Buffer.allocUnsafe(4 + 1);
+          writeUInt32BE(buf, buf.length - 4, p);
+          buf[p += 4] = type;
+          if (typeof cb !== "function")
+            cb = noop;
+          this[SYM_REQS].push({ type, cb });
+          return this.push(buf);
+        }
+        // Server->Client messages =================================================
+        failureReply(req) {
+          if (this[SYM_MODE] !== ROLE_SERVER)
+            throw new Error("Server-only method called with client role");
+          if (!(req instanceof AgentInboundRequest))
+            throw new Error("Wrong request argument");
+          if (req.hasResponded())
+            return true;
+          let p = 0;
+          const buf = Buffer.allocUnsafe(4 + 1);
+          writeUInt32BE(buf, buf.length - 4, p);
+          buf[p += 4] = SSH_AGENT_FAILURE;
+          return respond(this, req, buf);
+        }
+        getIdentitiesReply(req, keys) {
+          if (this[SYM_MODE] !== ROLE_SERVER)
+            throw new Error("Server-only method called with client role");
+          if (!(req instanceof AgentInboundRequest))
+            throw new Error("Wrong request argument");
+          if (req.hasResponded())
+            return true;
+          if (req.getType() !== SSH_AGENTC_REQUEST_IDENTITIES)
+            throw new Error("Invalid response to request");
+          if (!Array.isArray(keys))
+            throw new Error("Keys argument must be an array");
+          let totalKeysLen = 4;
+          const newKeys = [];
+          for (let i = 0; i < keys.length; ++i) {
+            const entry = keys[i];
+            if (typeof entry !== "object" || entry === null)
+              throw new Error(`Invalid key entry: ${entry}`);
+            let pubKey;
+            let comment;
+            if (isParsedKey(entry)) {
+              pubKey = entry;
+            } else if (isParsedKey(entry.pubKey)) {
+              pubKey = entry.pubKey;
+            } else {
+              if (typeof entry.pubKey !== "object" || entry.pubKey === null)
+                continue;
+              ({ pubKey, comment } = entry.pubKey);
+              pubKey = parseKey(pubKey);
+              if (pubKey instanceof Error)
+                continue;
+            }
+            comment = pubKey.comment || comment;
+            pubKey = pubKey.getPublicSSH();
+            totalKeysLen += 4 + pubKey.length;
+            if (comment && typeof comment === "string")
+              comment = Buffer.from(comment);
+            else if (!Buffer.isBuffer(comment))
+              comment = EMPTY_BUF;
+            totalKeysLen += 4 + comment.length;
+            newKeys.push({ pubKey, comment });
+          }
+          let p = 0;
+          const buf = Buffer.allocUnsafe(4 + 1 + totalKeysLen);
+          writeUInt32BE(buf, buf.length - 4, p);
+          buf[p += 4] = SSH_AGENT_IDENTITIES_ANSWER;
+          writeUInt32BE(buf, newKeys.length, ++p);
+          p += 4;
+          for (let i = 0; i < newKeys.length; ++i) {
+            const { pubKey, comment } = newKeys[i];
+            writeUInt32BE(buf, pubKey.length, p);
+            pubKey.copy(buf, p += 4);
+            writeUInt32BE(buf, comment.length, p += pubKey.length);
+            p += 4;
+            if (comment.length) {
+              comment.copy(buf, p);
+              p += comment.length;
+            }
+          }
+          return respond(this, req, buf);
+        }
+        signReply(req, signature) {
+          if (this[SYM_MODE] !== ROLE_SERVER)
+            throw new Error("Server-only method called with client role");
+          if (!(req instanceof AgentInboundRequest))
+            throw new Error("Wrong request argument");
+          if (req.hasResponded())
+            return true;
+          if (req.getType() !== SSH_AGENTC_SIGN_REQUEST)
+            throw new Error("Invalid response to request");
+          if (!Buffer.isBuffer(signature))
+            throw new Error("Signature argument must be a Buffer");
+          if (signature.length === 0)
+            throw new Error("Signature argument must be non-empty");
+          let p = 0;
+          const sigFormat = req.getContext();
+          const sigFormatLen = Buffer.byteLength(sigFormat);
+          const buf = Buffer.allocUnsafe(
+            4 + 1 + 4 + 4 + sigFormatLen + 4 + signature.length
+          );
+          writeUInt32BE(buf, buf.length - 4, p);
+          buf[p += 4] = SSH_AGENT_SIGN_RESPONSE;
+          writeUInt32BE(buf, 4 + sigFormatLen + 4 + signature.length, ++p);
+          writeUInt32BE(buf, sigFormatLen, p += 4);
+          buf.utf8Write(sigFormat, p += 4, sigFormatLen);
+          writeUInt32BE(buf, signature.length, p += sigFormatLen);
+          signature.copy(buf, p += 4);
+          return respond(this, req, buf);
+        }
+      };
+    })();
+    var SYM_AGENT = /* @__PURE__ */ Symbol("Agent");
+    var SYM_AGENT_KEYS = /* @__PURE__ */ Symbol("Agent Keys");
+    var SYM_AGENT_KEYS_IDX = /* @__PURE__ */ Symbol("Agent Keys Index");
+    var SYM_AGENT_CBS = /* @__PURE__ */ Symbol("Agent Init Callbacks");
+    var AgentContext = class {
+      static {
+        __name(this, "AgentContext");
+      }
+      constructor(agent) {
+        if (typeof agent === "string")
+          agent = createAgent(agent);
+        else if (!isAgent(agent))
+          throw new Error("Invalid agent argument");
+        this[SYM_AGENT] = agent;
+        this[SYM_AGENT_KEYS] = null;
+        this[SYM_AGENT_KEYS_IDX] = -1;
+        this[SYM_AGENT_CBS] = null;
+      }
+      init(cb) {
+        if (typeof cb !== "function")
+          cb = noop;
+        if (this[SYM_AGENT_KEYS] === null) {
+          if (this[SYM_AGENT_CBS] === null) {
+            this[SYM_AGENT_CBS] = [cb];
+            const doCbs = /* @__PURE__ */ __name((...args) => {
+              process.nextTick(() => {
+                const cbs = this[SYM_AGENT_CBS];
+                this[SYM_AGENT_CBS] = null;
+                for (const cb2 of cbs)
+                  cb2(...args);
+              });
+            }, "doCbs");
+            this[SYM_AGENT].getIdentities(once((err, keys) => {
+              if (err)
+                return doCbs(err);
+              if (!Array.isArray(keys)) {
+                return doCbs(new Error(
+                  "Agent implementation failed to provide keys"
+                ));
+              }
+              const newKeys = [];
+              for (let key of keys) {
+                key = parseKey(key);
+                if (key instanceof Error) {
+                  continue;
+                }
+                newKeys.push(key);
+              }
+              this[SYM_AGENT_KEYS] = newKeys;
+              this[SYM_AGENT_KEYS_IDX] = -1;
+              doCbs();
+            }));
+          } else {
+            this[SYM_AGENT_CBS].push(cb);
+          }
+        } else {
+          process.nextTick(cb);
+        }
+      }
+      nextKey() {
+        if (this[SYM_AGENT_KEYS] === null || ++this[SYM_AGENT_KEYS_IDX] >= this[SYM_AGENT_KEYS].length) {
+          return false;
+        }
+        return this[SYM_AGENT_KEYS][this[SYM_AGENT_KEYS_IDX]];
+      }
+      currentKey() {
+        if (this[SYM_AGENT_KEYS] === null || this[SYM_AGENT_KEYS_IDX] >= this[SYM_AGENT_KEYS].length) {
+          return null;
+        }
+        return this[SYM_AGENT_KEYS][this[SYM_AGENT_KEYS_IDX]];
+      }
+      pos() {
+        if (this[SYM_AGENT_KEYS] === null || this[SYM_AGENT_KEYS_IDX] >= this[SYM_AGENT_KEYS].length) {
+          return -1;
+        }
+        return this[SYM_AGENT_KEYS_IDX];
+      }
+      reset() {
+        this[SYM_AGENT_KEYS_IDX] = -1;
+      }
+      sign(...args) {
+        this[SYM_AGENT].sign(...args);
+      }
+    };
+    function isAgent(val) {
+      return val instanceof BaseAgent;
+    }
+    __name(isAgent, "isAgent");
+    module.exports = {
+      AgentContext,
+      AgentProtocol,
+      BaseAgent,
+      createAgent,
+      CygwinAgent,
+      isAgent,
+      OpenSSHAgent,
+      PageantAgent
+    };
+  }
+});
+
+// node-built-in-modules:http
+import libDefault15 from "http";
+var require_http2 = __commonJS({
+  "node-built-in-modules:http"(exports, module) {
+    module.exports = libDefault15;
+  }
+});
+
+// node-built-in-modules:dns
+import libDefault16 from "dns";
+var require_dns = __commonJS({
+  "node-built-in-modules:dns"(exports, module) {
+    module.exports = libDefault16;
+  }
+});
+
+// node-built-in-modules:zlib
+import libDefault17 from "zlib";
+var require_zlib = __commonJS({
+  "node-built-in-modules:zlib"(exports, module) {
+    module.exports = libDefault17;
+  }
+});
+
+// node_modules/ssh2/lib/protocol/zlib.js
+var require_zlib2 = __commonJS({
+  "node_modules/ssh2/lib/protocol/zlib.js"(exports, module) {
+    "use strict";
+    var { kMaxLength } = require_buffer();
+    var {
+      createInflate,
+      constants: {
+        DEFLATE,
+        INFLATE,
+        Z_DEFAULT_CHUNK,
+        Z_DEFAULT_COMPRESSION,
+        Z_DEFAULT_MEMLEVEL,
+        Z_DEFAULT_STRATEGY,
+        Z_DEFAULT_WINDOWBITS,
+        Z_PARTIAL_FLUSH
+      }
+    } = require_zlib();
+    var ZlibHandle = createInflate()._handle.constructor;
+    function processCallback() {
+      throw new Error("Should not get here");
+    }
+    __name(processCallback, "processCallback");
+    function zlibOnError(message, errno, code) {
+      const self2 = this._owner;
+      const error = new Error(message);
+      error.errno = errno;
+      error.code = code;
+      self2._err = error;
+    }
+    __name(zlibOnError, "zlibOnError");
+    function _close(engine) {
+      if (!engine._handle)
+        return;
+      engine._handle.close();
+      engine._handle = null;
+    }
+    __name(_close, "_close");
+    var Zlib = class {
+      static {
+        __name(this, "Zlib");
+      }
+      constructor(mode) {
+        const windowBits = Z_DEFAULT_WINDOWBITS;
+        const level = Z_DEFAULT_COMPRESSION;
+        const memLevel = Z_DEFAULT_MEMLEVEL;
+        const strategy = Z_DEFAULT_STRATEGY;
+        const dictionary = void 0;
+        this._err = void 0;
+        this._writeState = new Uint32Array(2);
+        this._chunkSize = Z_DEFAULT_CHUNK;
+        this._maxOutputLength = kMaxLength;
+        this._outBuffer = Buffer.allocUnsafe(this._chunkSize);
+        this._outOffset = 0;
+        this._handle = new ZlibHandle(mode);
+        this._handle._owner = this;
+        this._handle.onerror = zlibOnError;
+        this._handle.init(
+          windowBits,
+          level,
+          memLevel,
+          strategy,
+          this._writeState,
+          processCallback,
+          dictionary
+        );
+      }
+      writeSync(chunk, retChunks) {
+        const handle = this._handle;
+        if (!handle)
+          throw new Error("Invalid Zlib instance");
+        let availInBefore = chunk.length;
+        let availOutBefore = this._chunkSize - this._outOffset;
+        let inOff = 0;
+        let availOutAfter;
+        let availInAfter;
+        let buffers;
+        let nread = 0;
+        const state = this._writeState;
+        let buffer = this._outBuffer;
+        let offset = this._outOffset;
+        const chunkSize = this._chunkSize;
+        while (true) {
+          handle.writeSync(
+            Z_PARTIAL_FLUSH,
+            chunk,
+            // in
+            inOff,
+            // in_off
+            availInBefore,
+            // in_len
+            buffer,
+            // out
+            offset,
+            // out_off
+            availOutBefore
+          );
+          if (this._err)
+            throw this._err;
+          availOutAfter = state[0];
+          availInAfter = state[1];
+          const inDelta = availInBefore - availInAfter;
+          const have = availOutBefore - availOutAfter;
+          if (have > 0) {
+            const out = offset === 0 && have === buffer.length ? buffer : buffer.slice(offset, offset + have);
+            offset += have;
+            if (!buffers)
+              buffers = out;
+            else if (buffers.push === void 0)
+              buffers = [buffers, out];
+            else
+              buffers.push(out);
+            nread += out.byteLength;
+            if (nread > this._maxOutputLength) {
+              _close(this);
+              throw new Error(
+                `Output length exceeded maximum of ${this._maxOutputLength}`
+              );
+            }
+          } else if (have !== 0) {
+            throw new Error("have should not go down");
+          }
+          if (availOutAfter === 0 || offset >= chunkSize) {
+            availOutBefore = chunkSize;
+            offset = 0;
+            buffer = Buffer.allocUnsafe(chunkSize);
+          }
+          if (availOutAfter === 0) {
+            inOff += inDelta;
+            availInBefore = availInAfter;
+          } else {
+            break;
+          }
+        }
+        this._outBuffer = buffer;
+        this._outOffset = offset;
+        if (nread === 0)
+          buffers = Buffer.alloc(0);
+        if (retChunks) {
+          buffers.totalLen = nread;
+          return buffers;
+        }
+        if (buffers.push === void 0)
+          return buffers;
+        const output = Buffer.allocUnsafe(nread);
+        for (let i = 0, p = 0; i < buffers.length; ++i) {
+          const buf = buffers[i];
+          output.set(buf, p);
+          p += buf.length;
+        }
+        return output;
+      }
+    };
+    var ZlibPacketWriter = class {
+      static {
+        __name(this, "ZlibPacketWriter");
+      }
+      constructor(protocol) {
+        this.allocStart = 0;
+        this.allocStartKEX = 0;
+        this._protocol = protocol;
+        this._zlib = new Zlib(DEFLATE);
+      }
+      cleanup() {
+        if (this._zlib)
+          _close(this._zlib);
+      }
+      alloc(payloadSize, force) {
+        return Buffer.allocUnsafe(payloadSize);
+      }
+      finalize(payload, force) {
+        if (this._protocol._kexinit === void 0 || force) {
+          const output = this._zlib.writeSync(payload, true);
+          const packet = this._protocol._cipher.allocPacket(output.totalLen);
+          if (output.push === void 0) {
+            packet.set(output, 5);
+          } else {
+            for (let i = 0, p = 5; i < output.length; ++i) {
+              const chunk = output[i];
+              packet.set(chunk, p);
+              p += chunk.length;
+            }
+          }
+          return packet;
+        }
+        return payload;
+      }
+    };
+    var PacketWriter = class {
+      static {
+        __name(this, "PacketWriter");
+      }
+      constructor(protocol) {
+        this.allocStart = 5;
+        this.allocStartKEX = 5;
+        this._protocol = protocol;
+      }
+      cleanup() {
+      }
+      alloc(payloadSize, force) {
+        if (this._protocol._kexinit === void 0 || force)
+          return this._protocol._cipher.allocPacket(payloadSize);
+        return Buffer.allocUnsafe(payloadSize);
+      }
+      finalize(packet, force) {
+        return packet;
+      }
+    };
+    var ZlibPacketReader = class {
+      static {
+        __name(this, "ZlibPacketReader");
+      }
+      constructor() {
+        this._zlib = new Zlib(INFLATE);
+      }
+      cleanup() {
+        if (this._zlib)
+          _close(this._zlib);
+      }
+      read(data) {
+        return this._zlib.writeSync(data, false);
+      }
+    };
+    var PacketReader = class {
+      static {
+        __name(this, "PacketReader");
+      }
+      cleanup() {
+      }
+      read(data) {
+        return data;
+      }
+    };
+    module.exports = {
+      PacketReader,
+      PacketWriter,
+      ZlibPacketReader,
+      ZlibPacketWriter
+    };
+  }
+});
+
+// node_modules/ssh2/lib/protocol/handlers.misc.js
+var require_handlers_misc = __commonJS({
+  "node_modules/ssh2/lib/protocol/handlers.misc.js"(exports, module) {
+    "use strict";
+    var {
+      bufferSlice,
+      bufferParser,
+      doFatalError,
+      sigSSHToASN1,
+      writeUInt32BE
+    } = require_utils4();
+    var {
+      CHANNEL_OPEN_FAILURE,
+      COMPAT,
+      MESSAGE,
+      TERMINAL_MODE
+    } = require_constants3();
+    var {
+      parseKey
+    } = require_keyParser();
+    var TERMINAL_MODE_BY_VALUE = Array.from(Object.entries(TERMINAL_MODE)).reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+    module.exports = {
+      // Transport layer protocol ==================================================
+      [MESSAGE.DISCONNECT]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const reason = bufferParser.readUInt32BE();
+        const desc = bufferParser.readString(true);
+        const lang = bufferParser.readString();
+        bufferParser.clear();
+        if (lang === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed DISCONNECT packet"
+          );
+        }
+        self2._debug && self2._debug(
+          `Inbound: Received DISCONNECT (${reason}, "${desc}")`
+        );
+        const handler = self2._handlers.DISCONNECT;
+        handler && handler(self2, reason, desc);
+      },
+      [MESSAGE.IGNORE]: (self2, payload) => {
+        self2._debug && self2._debug("Inbound: Received IGNORE");
+      },
+      [MESSAGE.UNIMPLEMENTED]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const seqno = bufferParser.readUInt32BE();
+        bufferParser.clear();
+        if (seqno === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed UNIMPLEMENTED packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: Received UNIMPLEMENTED (seqno ${seqno})`);
+      },
+      [MESSAGE.DEBUG]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const display = bufferParser.readBool();
+        const msg = bufferParser.readString(true);
+        const lang = bufferParser.readString();
+        bufferParser.clear();
+        if (lang === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed DEBUG packet"
+          );
+        }
+        self2._debug && self2._debug("Inbound: Received DEBUG");
+        const handler = self2._handlers.DEBUG;
+        handler && handler(self2, display, msg);
+      },
+      [MESSAGE.SERVICE_REQUEST]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const name = bufferParser.readString(true);
+        bufferParser.clear();
+        if (name === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed SERVICE_REQUEST packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: Received SERVICE_REQUEST (${name})`);
+        const handler = self2._handlers.SERVICE_REQUEST;
+        handler && handler(self2, name);
+      },
+      [MESSAGE.SERVICE_ACCEPT]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const name = bufferParser.readString(true);
+        bufferParser.clear();
+        if (name === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed SERVICE_ACCEPT packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: Received SERVICE_ACCEPT (${name})`);
+        const handler = self2._handlers.SERVICE_ACCEPT;
+        handler && handler(self2, name);
+      },
+      [MESSAGE.EXT_INFO]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const numExts = bufferParser.readUInt32BE();
+        let exts;
+        if (numExts !== void 0) {
+          exts = [];
+          for (let i = 0; i < numExts; ++i) {
+            const name = bufferParser.readString(true);
+            const data = bufferParser.readString();
+            if (data !== void 0) {
+              switch (name) {
+                case "server-sig-algs": {
+                  const algs = data.latin1Slice(0, data.length).split(",");
+                  exts.push({ name, algs });
+                  continue;
+                }
+                default:
+                  continue;
+              }
+            }
+            exts = void 0;
+            break;
+          }
+        }
+        bufferParser.clear();
+        if (exts === void 0)
+          return doFatalError(self2, "Inbound: Malformed EXT_INFO packet");
+        self2._debug && self2._debug("Inbound: Received EXT_INFO");
+        const handler = self2._handlers.EXT_INFO;
+        handler && handler(self2, exts);
+      },
+      // User auth protocol -- generic =============================================
+      [MESSAGE.USERAUTH_REQUEST]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const user = bufferParser.readString(true);
+        const service = bufferParser.readString(true);
+        const method = bufferParser.readString(true);
+        let methodData;
+        let methodDesc;
+        switch (method) {
+          case "none":
+            methodData = null;
+            break;
+          case "password": {
+            const isChange = bufferParser.readBool();
+            if (isChange !== void 0) {
+              methodData = bufferParser.readString(true);
+              if (methodData !== void 0 && isChange) {
+                const newPassword = bufferParser.readString(true);
+                if (newPassword !== void 0)
+                  methodData = { oldPassword: methodData, newPassword };
+                else
+                  methodData = void 0;
+              }
+            }
+            break;
+          }
+          case "publickey": {
+            const hasSig = bufferParser.readBool();
+            if (hasSig !== void 0) {
+              const keyAlgo = bufferParser.readString(true);
+              let realKeyAlgo = keyAlgo;
+              const key = bufferParser.readString();
+              let hashAlgo;
+              switch (keyAlgo) {
+                case "rsa-sha2-256":
+                  realKeyAlgo = "ssh-rsa";
+                  hashAlgo = "sha256";
+                  break;
+                case "rsa-sha2-512":
+                  realKeyAlgo = "ssh-rsa";
+                  hashAlgo = "sha512";
+                  break;
+              }
+              if (hasSig) {
+                const blobEnd = bufferParser.pos();
+                let signature = bufferParser.readString();
+                if (signature !== void 0) {
+                  if (signature.length > 4 + keyAlgo.length + 4 && signature.utf8Slice(4, 4 + keyAlgo.length) === keyAlgo) {
+                    signature = bufferSlice(signature, 4 + keyAlgo.length + 4);
+                  }
+                  signature = sigSSHToASN1(signature, realKeyAlgo);
+                  if (signature) {
+                    const sessionID = self2._kex.sessionID;
+                    const blob = Buffer.allocUnsafe(4 + sessionID.length + blobEnd);
+                    writeUInt32BE(blob, sessionID.length, 0);
+                    blob.set(sessionID, 4);
+                    blob.set(
+                      new Uint8Array(payload.buffer, payload.byteOffset, blobEnd),
+                      4 + sessionID.length
+                    );
+                    methodData = {
+                      keyAlgo: realKeyAlgo,
+                      key,
+                      signature,
+                      blob,
+                      hashAlgo
+                    };
+                  }
+                }
+              } else {
+                methodData = { keyAlgo: realKeyAlgo, key, hashAlgo };
+                methodDesc = "publickey -- check";
+              }
+            }
+            break;
+          }
+          case "hostbased": {
+            const keyAlgo = bufferParser.readString(true);
+            let realKeyAlgo = keyAlgo;
+            const key = bufferParser.readString();
+            const localHostname = bufferParser.readString(true);
+            const localUsername = bufferParser.readString(true);
+            let hashAlgo;
+            switch (keyAlgo) {
+              case "rsa-sha2-256":
+                realKeyAlgo = "ssh-rsa";
+                hashAlgo = "sha256";
+                break;
+              case "rsa-sha2-512":
+                realKeyAlgo = "ssh-rsa";
+                hashAlgo = "sha512";
+                break;
+            }
+            const blobEnd = bufferParser.pos();
+            let signature = bufferParser.readString();
+            if (signature !== void 0) {
+              if (signature.length > 4 + keyAlgo.length + 4 && signature.utf8Slice(4, 4 + keyAlgo.length) === keyAlgo) {
+                signature = bufferSlice(signature, 4 + keyAlgo.length + 4);
+              }
+              signature = sigSSHToASN1(signature, realKeyAlgo);
+              if (signature !== void 0) {
+                const sessionID = self2._kex.sessionID;
+                const blob = Buffer.allocUnsafe(4 + sessionID.length + blobEnd);
+                writeUInt32BE(blob, sessionID.length, 0);
+                blob.set(sessionID, 4);
+                blob.set(
+                  new Uint8Array(payload.buffer, payload.byteOffset, blobEnd),
+                  4 + sessionID.length
+                );
+                methodData = {
+                  keyAlgo: realKeyAlgo,
+                  key,
+                  signature,
+                  blob,
+                  localHostname,
+                  localUsername,
+                  hashAlgo
+                };
+              }
+            }
+            break;
+          }
+          case "keyboard-interactive":
+            bufferParser.skipString();
+            methodData = bufferParser.readList();
+            break;
+          default:
+            if (method !== void 0)
+              methodData = bufferParser.readRaw();
+        }
+        bufferParser.clear();
+        if (methodData === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed USERAUTH_REQUEST packet"
+          );
+        }
+        if (methodDesc === void 0)
+          methodDesc = method;
+        self2._authsQueue.push(method);
+        self2._debug && self2._debug(`Inbound: Received USERAUTH_REQUEST (${methodDesc})`);
+        const handler = self2._handlers.USERAUTH_REQUEST;
+        handler && handler(self2, user, service, method, methodData);
+      },
+      [MESSAGE.USERAUTH_FAILURE]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const authMethods = bufferParser.readList();
+        const partialSuccess = bufferParser.readBool();
+        bufferParser.clear();
+        if (partialSuccess === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed USERAUTH_FAILURE packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: Received USERAUTH_FAILURE (${authMethods})`);
+        self2._authsQueue.shift();
+        const handler = self2._handlers.USERAUTH_FAILURE;
+        handler && handler(self2, authMethods, partialSuccess);
+      },
+      [MESSAGE.USERAUTH_SUCCESS]: (self2, payload) => {
+        self2._debug && self2._debug("Inbound: Received USERAUTH_SUCCESS");
+        self2._authsQueue.shift();
+        const handler = self2._handlers.USERAUTH_SUCCESS;
+        handler && handler(self2);
+      },
+      [MESSAGE.USERAUTH_BANNER]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const msg = bufferParser.readString(true);
+        const lang = bufferParser.readString();
+        bufferParser.clear();
+        if (lang === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed USERAUTH_BANNER packet"
+          );
+        }
+        self2._debug && self2._debug("Inbound: Received USERAUTH_BANNER");
+        const handler = self2._handlers.USERAUTH_BANNER;
+        handler && handler(self2, msg);
+      },
+      // User auth protocol -- method-specific =====================================
+      60: (self2, payload) => {
+        if (!self2._authsQueue.length) {
+          self2._debug && self2._debug("Inbound: Received payload type 60 without auth");
+          return;
+        }
+        switch (self2._authsQueue[0]) {
+          case "password": {
+            bufferParser.init(payload, 1);
+            const prompt = bufferParser.readString(true);
+            const lang = bufferParser.readString();
+            bufferParser.clear();
+            if (lang === void 0) {
+              return doFatalError(
+                self2,
+                "Inbound: Malformed USERAUTH_PASSWD_CHANGEREQ packet"
+              );
+            }
+            self2._debug && self2._debug("Inbound: Received USERAUTH_PASSWD_CHANGEREQ");
+            const handler = self2._handlers.USERAUTH_PASSWD_CHANGEREQ;
+            handler && handler(self2, prompt);
+            break;
+          }
+          case "publickey": {
+            bufferParser.init(payload, 1);
+            const keyAlgo = bufferParser.readString(true);
+            const key = bufferParser.readString();
+            bufferParser.clear();
+            if (key === void 0) {
+              return doFatalError(
+                self2,
+                "Inbound: Malformed USERAUTH_PK_OK packet"
+              );
+            }
+            self2._debug && self2._debug("Inbound: Received USERAUTH_PK_OK");
+            self2._authsQueue.shift();
+            const handler = self2._handlers.USERAUTH_PK_OK;
+            handler && handler(self2, keyAlgo, key);
+            break;
+          }
+          case "keyboard-interactive": {
+            bufferParser.init(payload, 1);
+            const name = bufferParser.readString(true);
+            const instructions = bufferParser.readString(true);
+            bufferParser.readString();
+            const numPrompts = bufferParser.readUInt32BE();
+            let prompts;
+            if (numPrompts !== void 0) {
+              prompts = new Array(numPrompts);
+              let i;
+              for (i = 0; i < numPrompts; ++i) {
+                const prompt = bufferParser.readString(true);
+                const echo = bufferParser.readBool();
+                if (echo === void 0)
+                  break;
+                prompts[i] = { prompt, echo };
+              }
+              if (i !== numPrompts)
+                prompts = void 0;
+            }
+            bufferParser.clear();
+            if (prompts === void 0) {
+              return doFatalError(
+                self2,
+                "Inbound: Malformed USERAUTH_INFO_REQUEST packet"
+              );
+            }
+            self2._debug && self2._debug("Inbound: Received USERAUTH_INFO_REQUEST");
+            const handler = self2._handlers.USERAUTH_INFO_REQUEST;
+            handler && handler(self2, name, instructions, prompts);
+            break;
+          }
+          default:
+            self2._debug && self2._debug("Inbound: Received unexpected payload type 60");
+        }
+      },
+      61: (self2, payload) => {
+        if (!self2._authsQueue.length) {
+          self2._debug && self2._debug("Inbound: Received payload type 61 without auth");
+          return;
+        }
+        if (self2._authsQueue[0] !== "keyboard-interactive") {
+          return doFatalError(
+            self2,
+            "Inbound: Received unexpected payload type 61"
+          );
+        }
+        bufferParser.init(payload, 1);
+        const numResponses = bufferParser.readUInt32BE();
+        let responses;
+        if (numResponses !== void 0) {
+          responses = new Array(numResponses);
+          let i;
+          for (i = 0; i < numResponses; ++i) {
+            const response = bufferParser.readString(true);
+            if (response === void 0)
+              break;
+            responses[i] = response;
+          }
+          if (i !== numResponses)
+            responses = void 0;
+        }
+        bufferParser.clear();
+        if (responses === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed USERAUTH_INFO_RESPONSE packet"
+          );
+        }
+        self2._debug && self2._debug("Inbound: Received USERAUTH_INFO_RESPONSE");
+        const handler = self2._handlers.USERAUTH_INFO_RESPONSE;
+        handler && handler(self2, responses);
+      },
+      // Connection protocol -- generic ============================================
+      [MESSAGE.GLOBAL_REQUEST]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const name = bufferParser.readString(true);
+        const wantReply = bufferParser.readBool();
+        let data;
+        if (wantReply !== void 0) {
+          switch (name) {
+            case "tcpip-forward":
+            case "cancel-tcpip-forward": {
+              const bindAddr = bufferParser.readString(true);
+              const bindPort = bufferParser.readUInt32BE();
+              if (bindPort !== void 0)
+                data = { bindAddr, bindPort };
+              break;
+            }
+            case "streamlocal-forward@openssh.com":
+            case "cancel-streamlocal-forward@openssh.com": {
+              const socketPath = bufferParser.readString(true);
+              if (socketPath !== void 0)
+                data = { socketPath };
+              break;
+            }
+            case "no-more-sessions@openssh.com":
+              data = null;
+              break;
+            case "hostkeys-00@openssh.com": {
+              data = [];
+              while (bufferParser.avail() > 0) {
+                const keyRaw = bufferParser.readString();
+                if (keyRaw === void 0) {
+                  data = void 0;
+                  break;
+                }
+                const key = parseKey(keyRaw);
+                if (!(key instanceof Error))
+                  data.push(key);
+              }
+              break;
+            }
+            default:
+              data = bufferParser.readRaw();
+          }
+        }
+        bufferParser.clear();
+        if (data === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed GLOBAL_REQUEST packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: GLOBAL_REQUEST (${name})`);
+        const handler = self2._handlers.GLOBAL_REQUEST;
+        if (handler)
+          handler(self2, name, wantReply, data);
+        else
+          self2.requestFailure();
+      },
+      [MESSAGE.REQUEST_SUCCESS]: (self2, payload) => {
+        const data = payload.length > 1 ? bufferSlice(payload, 1) : null;
+        self2._debug && self2._debug("Inbound: REQUEST_SUCCESS");
+        const handler = self2._handlers.REQUEST_SUCCESS;
+        handler && handler(self2, data);
+      },
+      [MESSAGE.REQUEST_FAILURE]: (self2, payload) => {
+        self2._debug && self2._debug("Inbound: Received REQUEST_FAILURE");
+        const handler = self2._handlers.REQUEST_FAILURE;
+        handler && handler(self2);
+      },
+      // Connection protocol -- channel-related ====================================
+      [MESSAGE.CHANNEL_OPEN]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const type = bufferParser.readString(true);
+        const sender = bufferParser.readUInt32BE();
+        const window2 = bufferParser.readUInt32BE();
+        const packetSize = bufferParser.readUInt32BE();
+        let channelInfo;
+        switch (type) {
+          case "forwarded-tcpip":
+          // S->C
+          case "direct-tcpip": {
+            const destIP = bufferParser.readString(true);
+            const destPort = bufferParser.readUInt32BE();
+            const srcIP = bufferParser.readString(true);
+            const srcPort = bufferParser.readUInt32BE();
+            if (srcPort !== void 0) {
+              channelInfo = {
+                type,
+                sender,
+                window: window2,
+                packetSize,
+                data: { destIP, destPort, srcIP, srcPort }
+              };
+            }
+            break;
+          }
+          case "forwarded-streamlocal@openssh.com":
+          // S->C
+          case "direct-streamlocal@openssh.com": {
+            const socketPath = bufferParser.readString(true);
+            if (socketPath !== void 0) {
+              channelInfo = {
+                type,
+                sender,
+                window: window2,
+                packetSize,
+                data: { socketPath }
+              };
+            }
+            break;
+          }
+          case "x11": {
+            const srcIP = bufferParser.readString(true);
+            const srcPort = bufferParser.readUInt32BE();
+            if (srcPort !== void 0) {
+              channelInfo = {
+                type,
+                sender,
+                window: window2,
+                packetSize,
+                data: { srcIP, srcPort }
+              };
+            }
+            break;
+          }
+          default:
+            channelInfo = {
+              type,
+              sender,
+              window: window2,
+              packetSize,
+              data: {}
+            };
+        }
+        bufferParser.clear();
+        if (channelInfo === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_OPEN packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: CHANNEL_OPEN (s:${sender}, ${type})`);
+        const handler = self2._handlers.CHANNEL_OPEN;
+        if (handler) {
+          handler(self2, channelInfo);
+        } else {
+          self2.channelOpenFail(
+            channelInfo.sender,
+            CHANNEL_OPEN_FAILURE.ADMINISTRATIVELY_PROHIBITED,
+            "",
+            ""
+          );
+        }
+      },
+      [MESSAGE.CHANNEL_OPEN_CONFIRMATION]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        const sender = bufferParser.readUInt32BE();
+        const window2 = bufferParser.readUInt32BE();
+        const packetSize = bufferParser.readUInt32BE();
+        const data = bufferParser.avail() ? bufferParser.readRaw() : void 0;
+        bufferParser.clear();
+        if (packetSize === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_OPEN_CONFIRMATION packet"
+          );
+        }
+        self2._debug && self2._debug(
+          `Inbound: CHANNEL_OPEN_CONFIRMATION (r:${recipient}, s:${sender})`
+        );
+        const handler = self2._handlers.CHANNEL_OPEN_CONFIRMATION;
+        if (handler)
+          handler(self2, { recipient, sender, window: window2, packetSize, data });
+      },
+      [MESSAGE.CHANNEL_OPEN_FAILURE]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        const reason = bufferParser.readUInt32BE();
+        const description = bufferParser.readString(true);
+        const lang = bufferParser.readString();
+        bufferParser.clear();
+        if (lang === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_OPEN_FAILURE packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: CHANNEL_OPEN_FAILURE (r:${recipient})`);
+        const handler = self2._handlers.CHANNEL_OPEN_FAILURE;
+        handler && handler(self2, recipient, reason, description);
+      },
+      [MESSAGE.CHANNEL_WINDOW_ADJUST]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        const bytesToAdd = bufferParser.readUInt32BE();
+        bufferParser.clear();
+        if (bytesToAdd === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_WINDOW_ADJUST packet"
+          );
+        }
+        self2._debug && self2._debug(
+          `Inbound: CHANNEL_WINDOW_ADJUST (r:${recipient}, ${bytesToAdd})`
+        );
+        const handler = self2._handlers.CHANNEL_WINDOW_ADJUST;
+        handler && handler(self2, recipient, bytesToAdd);
+      },
+      [MESSAGE.CHANNEL_DATA]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        const data = bufferParser.readString();
+        bufferParser.clear();
+        if (data === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_DATA packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: CHANNEL_DATA (r:${recipient}, ${data.length})`);
+        const handler = self2._handlers.CHANNEL_DATA;
+        handler && handler(self2, recipient, data);
+      },
+      [MESSAGE.CHANNEL_EXTENDED_DATA]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        const type = bufferParser.readUInt32BE();
+        const data = bufferParser.readString();
+        bufferParser.clear();
+        if (data === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_EXTENDED_DATA packet"
+          );
+        }
+        self2._debug && self2._debug(
+          `Inbound: CHANNEL_EXTENDED_DATA (r:${recipient}, ${data.length})`
+        );
+        const handler = self2._handlers.CHANNEL_EXTENDED_DATA;
+        handler && handler(self2, recipient, data, type);
+      },
+      [MESSAGE.CHANNEL_EOF]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        bufferParser.clear();
+        if (recipient === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_EOF packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: CHANNEL_EOF (r:${recipient})`);
+        const handler = self2._handlers.CHANNEL_EOF;
+        handler && handler(self2, recipient);
+      },
+      [MESSAGE.CHANNEL_CLOSE]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        bufferParser.clear();
+        if (recipient === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_CLOSE packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: CHANNEL_CLOSE (r:${recipient})`);
+        const handler = self2._handlers.CHANNEL_CLOSE;
+        handler && handler(self2, recipient);
+      },
+      [MESSAGE.CHANNEL_REQUEST]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        const type = bufferParser.readString(true);
+        const wantReply = bufferParser.readBool();
+        let data;
+        if (wantReply !== void 0) {
+          switch (type) {
+            case "exit-status":
+              data = bufferParser.readUInt32BE();
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type}: ${data})`
+              );
+              break;
+            case "exit-signal": {
+              let signal;
+              let coreDumped;
+              if (self2._compatFlags & COMPAT.OLD_EXIT) {
+                const num = bufferParser.readUInt32BE();
+                switch (num) {
+                  case 1:
+                    signal = "HUP";
+                    break;
+                  case 2:
+                    signal = "INT";
+                    break;
+                  case 3:
+                    signal = "QUIT";
+                    break;
+                  case 6:
+                    signal = "ABRT";
+                    break;
+                  case 9:
+                    signal = "KILL";
+                    break;
+                  case 14:
+                    signal = "ALRM";
+                    break;
+                  case 15:
+                    signal = "TERM";
+                    break;
+                  default:
+                    if (num !== void 0) {
+                      signal = `UNKNOWN (${num})`;
+                    }
+                }
+                coreDumped = false;
+              } else {
+                signal = bufferParser.readString(true);
+                coreDumped = bufferParser.readBool();
+                if (coreDumped === void 0)
+                  signal = void 0;
+              }
+              const errorMessage2 = bufferParser.readString(true);
+              if (bufferParser.skipString() !== void 0)
+                data = { signal, coreDumped, errorMessage: errorMessage2 };
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type}: ${signal})`
+              );
+              break;
+            }
+            case "pty-req": {
+              const term = bufferParser.readString(true);
+              const cols = bufferParser.readUInt32BE();
+              const rows = bufferParser.readUInt32BE();
+              const width = bufferParser.readUInt32BE();
+              const height = bufferParser.readUInt32BE();
+              const modesBinary = bufferParser.readString();
+              if (modesBinary !== void 0) {
+                bufferParser.init(modesBinary, 1);
+                let modes = {};
+                while (bufferParser.avail()) {
+                  const opcode = bufferParser.readByte();
+                  if (opcode === TERMINAL_MODE.TTY_OP_END)
+                    break;
+                  const name = TERMINAL_MODE_BY_VALUE[opcode];
+                  const value = bufferParser.readUInt32BE();
+                  if (opcode === void 0 || name === void 0 || value === void 0) {
+                    modes = void 0;
+                    break;
+                  }
+                  modes[name] = value;
+                }
+                if (modes !== void 0)
+                  data = { term, cols, rows, width, height, modes };
+              }
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type})`
+              );
+              break;
+            }
+            case "window-change": {
+              const cols = bufferParser.readUInt32BE();
+              const rows = bufferParser.readUInt32BE();
+              const width = bufferParser.readUInt32BE();
+              const height = bufferParser.readUInt32BE();
+              if (height !== void 0)
+                data = { cols, rows, width, height };
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type})`
+              );
+              break;
+            }
+            case "x11-req": {
+              const single = bufferParser.readBool();
+              const protocol = bufferParser.readString(true);
+              const cookie = bufferParser.readString();
+              const screen = bufferParser.readUInt32BE();
+              if (screen !== void 0)
+                data = { single, protocol, cookie, screen };
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type})`
+              );
+              break;
+            }
+            case "env": {
+              const name = bufferParser.readString(true);
+              const value = bufferParser.readString(true);
+              if (value !== void 0)
+                data = { name, value };
+              if (self2._debug) {
+                self2._debug(
+                  `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type}: ${name}=${value})`
+                );
+              }
+              break;
+            }
+            case "shell":
+              data = null;
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type})`
+              );
+              break;
+            case "exec":
+              data = bufferParser.readString(true);
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type}: ${data})`
+              );
+              break;
+            case "subsystem":
+              data = bufferParser.readString(true);
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type}: ${data})`
+              );
+              break;
+            case "signal":
+              data = bufferParser.readString(true);
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type}: ${data})`
+              );
+              break;
+            case "xon-xoff":
+              data = bufferParser.readBool();
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type}: ${data})`
+              );
+              break;
+            case "auth-agent-req@openssh.com":
+              data = null;
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type})`
+              );
+              break;
+            default:
+              data = bufferParser.avail() ? bufferParser.readRaw() : null;
+              self2._debug && self2._debug(
+                `Inbound: CHANNEL_REQUEST (r:${recipient}, ${type})`
+              );
+          }
+        }
+        bufferParser.clear();
+        if (data === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_REQUEST packet"
+          );
+        }
+        const handler = self2._handlers.CHANNEL_REQUEST;
+        handler && handler(self2, recipient, type, wantReply, data);
+      },
+      [MESSAGE.CHANNEL_SUCCESS]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        bufferParser.clear();
+        if (recipient === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_SUCCESS packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: CHANNEL_SUCCESS (r:${recipient})`);
+        const handler = self2._handlers.CHANNEL_SUCCESS;
+        handler && handler(self2, recipient);
+      },
+      [MESSAGE.CHANNEL_FAILURE]: (self2, payload) => {
+        bufferParser.init(payload, 1);
+        const recipient = bufferParser.readUInt32BE();
+        bufferParser.clear();
+        if (recipient === void 0) {
+          return doFatalError(
+            self2,
+            "Inbound: Malformed CHANNEL_FAILURE packet"
+          );
+        }
+        self2._debug && self2._debug(`Inbound: CHANNEL_FAILURE (r:${recipient})`);
+        const handler = self2._handlers.CHANNEL_FAILURE;
+        handler && handler(self2, recipient);
+      }
+    };
+  }
+});
+
+// node_modules/ssh2/lib/protocol/handlers.js
+var require_handlers = __commonJS({
+  "node_modules/ssh2/lib/protocol/handlers.js"(exports, module) {
+    "use strict";
+    var MESSAGE_HANDLERS = new Array(256);
+    [
+      require_kex().HANDLERS,
+      require_handlers_misc()
+    ].forEach((handlers) => {
+      for (let [type, handler] of Object.entries(handlers)) {
+        type = +type;
+        if (isFinite(type) && type >= 0 && type < MESSAGE_HANDLERS.length)
+          MESSAGE_HANDLERS[type] = handler;
+      }
+    });
+    module.exports = MESSAGE_HANDLERS;
+  }
+});
+
+// node_modules/ssh2/lib/protocol/kex.js
+var require_kex = __commonJS({
+  "node_modules/ssh2/lib/protocol/kex.js"(exports, module) {
+    "use strict";
+    var {
+      createDiffieHellman,
+      createDiffieHellmanGroup,
+      createECDH,
+      createHash,
+      createPublicKey,
+      diffieHellman,
+      generateKeyPairSync,
+      randomFillSync
+    } = require_crypto();
+    var { Ber } = require_lib();
+    var {
+      COMPAT,
+      curve25519Supported,
+      DEFAULT_KEX,
+      DEFAULT_SERVER_HOST_KEY,
+      DEFAULT_CIPHER,
+      DEFAULT_MAC,
+      DEFAULT_COMPRESSION,
+      DISCONNECT_REASON,
+      MESSAGE
+    } = require_constants3();
+    var {
+      CIPHER_INFO,
+      createCipher,
+      createDecipher,
+      MAC_INFO
+    } = require_crypto2();
+    var { parseDERKey } = require_keyParser();
+    var {
+      bufferFill,
+      bufferParser,
+      convertSignature,
+      doFatalError,
+      FastBuffer,
+      sigSSHToASN1,
+      writeUInt32BE
+    } = require_utils4();
+    var {
+      PacketReader,
+      PacketWriter,
+      ZlibPacketReader,
+      ZlibPacketWriter
+    } = require_zlib2();
+    var MESSAGE_HANDLERS;
+    var GEX_MIN_BITS = 2048;
+    var GEX_MAX_BITS = 8192;
+    var EMPTY_BUFFER = Buffer.alloc(0);
+    function kexinit(self2) {
+      let payload;
+      if (self2._compatFlags & COMPAT.BAD_DHGEX) {
+        const entry = self2._offer.lists.kex;
+        let kex = entry.array;
+        let found = false;
+        for (let i = 0; i < kex.length; ++i) {
+          if (kex[i].includes("group-exchange")) {
+            if (!found) {
+              found = true;
+              kex = kex.slice();
+            }
+            kex.splice(i--, 1);
+          }
+        }
+        if (found) {
+          let len = 1 + 16 + self2._offer.totalSize + 1 + 4;
+          const newKexBuf = Buffer.from(kex.join(","));
+          len -= entry.buffer.length - newKexBuf.length;
+          const all = self2._offer.lists.all;
+          const rest = new Uint8Array(
+            all.buffer,
+            all.byteOffset + 4 + entry.buffer.length,
+            all.length - (4 + entry.buffer.length)
+          );
+          payload = Buffer.allocUnsafe(len);
+          writeUInt32BE(payload, newKexBuf.length, 17);
+          payload.set(newKexBuf, 17 + 4);
+          payload.set(rest, 17 + 4 + newKexBuf.length);
+        }
+      }
+      if (payload === void 0) {
+        payload = Buffer.allocUnsafe(1 + 16 + self2._offer.totalSize + 1 + 4);
+        self2._offer.copyAllTo(payload, 17);
+      }
+      self2._debug && self2._debug("Outbound: Sending KEXINIT");
+      payload[0] = MESSAGE.KEXINIT;
+      randomFillSync(payload, 1, 16);
+      bufferFill(payload, 0, payload.length - 5);
+      self2._kexinit = payload;
+      self2._packetRW.write.allocStart = 0;
+      {
+        const p = self2._packetRW.write.allocStartKEX;
+        const packet = self2._packetRW.write.alloc(payload.length, true);
+        packet.set(payload, p);
+        self2._cipher.encrypt(self2._packetRW.write.finalize(packet, true));
+      }
+    }
+    __name(kexinit, "kexinit");
+    function handleKexInit(self2, payload) {
+      const init = {
+        kex: void 0,
+        serverHostKey: void 0,
+        cs: {
+          cipher: void 0,
+          mac: void 0,
+          compress: void 0,
+          lang: void 0
+        },
+        sc: {
+          cipher: void 0,
+          mac: void 0,
+          compress: void 0,
+          lang: void 0
+        }
+      };
+      bufferParser.init(payload, 17);
+      if ((init.kex = bufferParser.readList()) === void 0 || (init.serverHostKey = bufferParser.readList()) === void 0 || (init.cs.cipher = bufferParser.readList()) === void 0 || (init.sc.cipher = bufferParser.readList()) === void 0 || (init.cs.mac = bufferParser.readList()) === void 0 || (init.sc.mac = bufferParser.readList()) === void 0 || (init.cs.compress = bufferParser.readList()) === void 0 || (init.sc.compress = bufferParser.readList()) === void 0 || (init.cs.lang = bufferParser.readList()) === void 0 || (init.sc.lang = bufferParser.readList()) === void 0) {
+        bufferParser.clear();
+        return doFatalError(
+          self2,
+          "Received malformed KEXINIT",
+          "handshake",
+          DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+        );
+      }
+      const pos = bufferParser.pos();
+      const firstFollows = pos < payload.length && payload[pos] === 1;
+      bufferParser.clear();
+      const local = self2._offer;
+      const remote = init;
+      let localKex = local.lists.kex.array;
+      if (self2._compatFlags & COMPAT.BAD_DHGEX) {
+        let found = false;
+        for (let i2 = 0; i2 < localKex.length; ++i2) {
+          if (localKex[i2].indexOf("group-exchange") !== -1) {
+            if (!found) {
+              found = true;
+              localKex = localKex.slice();
+            }
+            localKex.splice(i2--, 1);
+          }
+        }
+      }
+      let clientList;
+      let serverList;
+      let i;
+      const debug = self2._debug;
+      debug && debug("Inbound: Handshake in progress");
+      debug && debug(`Handshake: (local) KEX method: ${localKex}`);
+      debug && debug(`Handshake: (remote) KEX method: ${remote.kex}`);
+      let remoteExtInfoEnabled;
+      if (self2._server) {
+        serverList = localKex;
+        clientList = remote.kex;
+        remoteExtInfoEnabled = clientList.indexOf("ext-info-c") !== -1;
+      } else {
+        serverList = remote.kex;
+        clientList = localKex;
+        remoteExtInfoEnabled = serverList.indexOf("ext-info-s") !== -1;
+      }
+      if (self2._strictMode === void 0) {
+        if (self2._server) {
+          self2._strictMode = clientList.indexOf("kex-strict-c-v00@openssh.com") !== -1;
+        } else {
+          self2._strictMode = serverList.indexOf("kex-strict-s-v00@openssh.com") !== -1;
+        }
+        if (self2._strictMode) {
+          debug && debug("Handshake: strict KEX mode enabled");
+          if (self2._decipher.inSeqno !== 1) {
+            if (debug)
+              debug("Handshake: KEXINIT not first packet in strict KEX mode");
+            return doFatalError(
+              self2,
+              "Handshake failed: KEXINIT not first packet in strict KEX mode",
+              "handshake",
+              DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+            );
+          }
+        }
+      }
+      for (i = 0; i < clientList.length && serverList.indexOf(clientList[i]) === -1; ++i) ;
+      if (i === clientList.length) {
+        debug && debug("Handshake: no matching key exchange algorithm");
+        return doFatalError(
+          self2,
+          "Handshake failed: no matching key exchange algorithm",
+          "handshake",
+          DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+        );
+      }
+      init.kex = clientList[i];
+      debug && debug(`Handshake: KEX algorithm: ${clientList[i]}`);
+      if (firstFollows && (!remote.kex.length || clientList[i] !== remote.kex[0])) {
+        self2._skipNextInboundPacket = true;
+      }
+      const localSrvHostKey = local.lists.serverHostKey.array;
+      debug && debug(`Handshake: (local) Host key format: ${localSrvHostKey}`);
+      debug && debug(
+        `Handshake: (remote) Host key format: ${remote.serverHostKey}`
+      );
+      if (self2._server) {
+        serverList = localSrvHostKey;
+        clientList = remote.serverHostKey;
+      } else {
+        serverList = remote.serverHostKey;
+        clientList = localSrvHostKey;
+      }
+      for (i = 0; i < clientList.length && serverList.indexOf(clientList[i]) === -1; ++i) ;
+      if (i === clientList.length) {
+        debug && debug("Handshake: No matching host key format");
+        return doFatalError(
+          self2,
+          "Handshake failed: no matching host key format",
+          "handshake",
+          DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+        );
+      }
+      init.serverHostKey = clientList[i];
+      debug && debug(`Handshake: Host key format: ${clientList[i]}`);
+      const localCSCipher = local.lists.cs.cipher.array;
+      debug && debug(`Handshake: (local) C->S cipher: ${localCSCipher}`);
+      debug && debug(`Handshake: (remote) C->S cipher: ${remote.cs.cipher}`);
+      if (self2._server) {
+        serverList = localCSCipher;
+        clientList = remote.cs.cipher;
+      } else {
+        serverList = remote.cs.cipher;
+        clientList = localCSCipher;
+      }
+      for (i = 0; i < clientList.length && serverList.indexOf(clientList[i]) === -1; ++i) ;
+      if (i === clientList.length) {
+        debug && debug("Handshake: No matching C->S cipher");
+        return doFatalError(
+          self2,
+          "Handshake failed: no matching C->S cipher",
+          "handshake",
+          DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+        );
+      }
+      init.cs.cipher = clientList[i];
+      debug && debug(`Handshake: C->S Cipher: ${clientList[i]}`);
+      const localSCCipher = local.lists.sc.cipher.array;
+      debug && debug(`Handshake: (local) S->C cipher: ${localSCCipher}`);
+      debug && debug(`Handshake: (remote) S->C cipher: ${remote.sc.cipher}`);
+      if (self2._server) {
+        serverList = localSCCipher;
+        clientList = remote.sc.cipher;
+      } else {
+        serverList = remote.sc.cipher;
+        clientList = localSCCipher;
+      }
+      for (i = 0; i < clientList.length && serverList.indexOf(clientList[i]) === -1; ++i) ;
+      if (i === clientList.length) {
+        debug && debug("Handshake: No matching S->C cipher");
+        return doFatalError(
+          self2,
+          "Handshake failed: no matching S->C cipher",
+          "handshake",
+          DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+        );
+      }
+      init.sc.cipher = clientList[i];
+      debug && debug(`Handshake: S->C cipher: ${clientList[i]}`);
+      const localCSMAC = local.lists.cs.mac.array;
+      debug && debug(`Handshake: (local) C->S MAC: ${localCSMAC}`);
+      debug && debug(`Handshake: (remote) C->S MAC: ${remote.cs.mac}`);
+      if (CIPHER_INFO[init.cs.cipher].authLen > 0) {
+        init.cs.mac = "";
+        debug && debug("Handshake: C->S MAC: <implicit>");
+      } else {
+        if (self2._server) {
+          serverList = localCSMAC;
+          clientList = remote.cs.mac;
+        } else {
+          serverList = remote.cs.mac;
+          clientList = localCSMAC;
+        }
+        for (i = 0; i < clientList.length && serverList.indexOf(clientList[i]) === -1; ++i) ;
+        if (i === clientList.length) {
+          debug && debug("Handshake: No matching C->S MAC");
+          return doFatalError(
+            self2,
+            "Handshake failed: no matching C->S MAC",
+            "handshake",
+            DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+          );
+        }
+        init.cs.mac = clientList[i];
+        debug && debug(`Handshake: C->S MAC: ${clientList[i]}`);
+      }
+      const localSCMAC = local.lists.sc.mac.array;
+      debug && debug(`Handshake: (local) S->C MAC: ${localSCMAC}`);
+      debug && debug(`Handshake: (remote) S->C MAC: ${remote.sc.mac}`);
+      if (CIPHER_INFO[init.sc.cipher].authLen > 0) {
+        init.sc.mac = "";
+        debug && debug("Handshake: S->C MAC: <implicit>");
+      } else {
+        if (self2._server) {
+          serverList = localSCMAC;
+          clientList = remote.sc.mac;
+        } else {
+          serverList = remote.sc.mac;
+          clientList = localSCMAC;
+        }
+        for (i = 0; i < clientList.length && serverList.indexOf(clientList[i]) === -1; ++i) ;
+        if (i === clientList.length) {
+          debug && debug("Handshake: No matching S->C MAC");
+          return doFatalError(
+            self2,
+            "Handshake failed: no matching S->C MAC",
+            "handshake",
+            DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+          );
+        }
+        init.sc.mac = clientList[i];
+        debug && debug(`Handshake: S->C MAC: ${clientList[i]}`);
+      }
+      const localCSCompress = local.lists.cs.compress.array;
+      debug && debug(`Handshake: (local) C->S compression: ${localCSCompress}`);
+      debug && debug(`Handshake: (remote) C->S compression: ${remote.cs.compress}`);
+      if (self2._server) {
+        serverList = localCSCompress;
+        clientList = remote.cs.compress;
+      } else {
+        serverList = remote.cs.compress;
+        clientList = localCSCompress;
+      }
+      for (i = 0; i < clientList.length && serverList.indexOf(clientList[i]) === -1; ++i) ;
+      if (i === clientList.length) {
+        debug && debug("Handshake: No matching C->S compression");
+        return doFatalError(
+          self2,
+          "Handshake failed: no matching C->S compression",
+          "handshake",
+          DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+        );
+      }
+      init.cs.compress = clientList[i];
+      debug && debug(`Handshake: C->S compression: ${clientList[i]}`);
+      const localSCCompress = local.lists.sc.compress.array;
+      debug && debug(`Handshake: (local) S->C compression: ${localSCCompress}`);
+      debug && debug(`Handshake: (remote) S->C compression: ${remote.sc.compress}`);
+      if (self2._server) {
+        serverList = localSCCompress;
+        clientList = remote.sc.compress;
+      } else {
+        serverList = remote.sc.compress;
+        clientList = localSCCompress;
+      }
+      for (i = 0; i < clientList.length && serverList.indexOf(clientList[i]) === -1; ++i) ;
+      if (i === clientList.length) {
+        debug && debug("Handshake: No matching S->C compression");
+        return doFatalError(
+          self2,
+          "Handshake failed: no matching S->C compression",
+          "handshake",
+          DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+        );
+      }
+      init.sc.compress = clientList[i];
+      debug && debug(`Handshake: S->C compression: ${clientList[i]}`);
+      init.cs.lang = "";
+      init.sc.lang = "";
+      if (self2._kex) {
+        if (!self2._kexinit) {
+          kexinit(self2);
+        }
+        self2._decipher._onPayload = onKEXPayload.bind(self2, { firstPacket: false });
+      }
+      self2._kex = createKeyExchange(init, self2, payload);
+      self2._kex.remoteExtInfoEnabled = remoteExtInfoEnabled;
+      self2._kex.start();
+    }
+    __name(handleKexInit, "handleKexInit");
+    var createKeyExchange = /* @__PURE__ */ (() => {
+      function convertToMpint(buf) {
+        let idx = 0;
+        let length = buf.length;
+        while (buf[idx] === 0) {
+          ++idx;
+          --length;
+        }
+        let newBuf;
+        if (buf[idx] & 128) {
+          newBuf = Buffer.allocUnsafe(1 + length);
+          newBuf[0] = 0;
+          buf.copy(newBuf, 1, idx);
+          buf = newBuf;
+        } else if (length !== buf.length) {
+          newBuf = Buffer.allocUnsafe(length);
+          buf.copy(newBuf, 0, idx);
+          buf = newBuf;
+        }
+        return buf;
+      }
+      __name(convertToMpint, "convertToMpint");
+      class KeyExchange {
+        static {
+          __name(this, "KeyExchange");
+        }
+        constructor(negotiated, protocol, remoteKexinit) {
+          this._protocol = protocol;
+          this.sessionID = protocol._kex ? protocol._kex.sessionID : void 0;
+          this.negotiated = negotiated;
+          this.remoteExtInfoEnabled = false;
+          this._step = 1;
+          this._public = null;
+          this._dh = null;
+          this._sentNEWKEYS = false;
+          this._receivedNEWKEYS = false;
+          this._finished = false;
+          this._hostVerified = false;
+          this._kexinit = protocol._kexinit;
+          this._remoteKexinit = remoteKexinit;
+          this._identRaw = protocol._identRaw;
+          this._remoteIdentRaw = protocol._remoteIdentRaw;
+          this._hostKey = void 0;
+          this._dhData = void 0;
+          this._sig = void 0;
+        }
+        finish(scOnly) {
+          if (this._finished)
+            return false;
+          this._finished = true;
+          const isServer = this._protocol._server;
+          const negotiated = this.negotiated;
+          const pubKey = this.convertPublicKey(this._dhData);
+          let secret = this.computeSecret(this._dhData);
+          if (secret instanceof Error) {
+            secret.message = `Error while computing DH secret (${this.type}): ${secret.message}`;
+            secret.level = "handshake";
+            return doFatalError(
+              this._protocol,
+              secret,
+              DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+            );
+          }
+          const hash = createHash(this.hashName);
+          hashString(hash, isServer ? this._remoteIdentRaw : this._identRaw);
+          hashString(hash, isServer ? this._identRaw : this._remoteIdentRaw);
+          hashString(hash, isServer ? this._remoteKexinit : this._kexinit);
+          hashString(hash, isServer ? this._kexinit : this._remoteKexinit);
+          const serverPublicHostKey = isServer ? this._hostKey.getPublicSSH() : this._hostKey;
+          hashString(hash, serverPublicHostKey);
+          if (this.type === "groupex") {
+            const params = this.getDHParams();
+            const num = Buffer.allocUnsafe(4);
+            writeUInt32BE(num, this._minBits, 0);
+            hash.update(num);
+            writeUInt32BE(num, this._prefBits, 0);
+            hash.update(num);
+            writeUInt32BE(num, this._maxBits, 0);
+            hash.update(num);
+            hashString(hash, params.prime);
+            hashString(hash, params.generator);
+          }
+          hashString(hash, isServer ? pubKey : this.getPublicKey());
+          const serverPublicKey = isServer ? this.getPublicKey() : pubKey;
+          hashString(hash, serverPublicKey);
+          hashString(hash, secret);
+          const exchangeHash = hash.digest();
+          if (!isServer) {
+            bufferParser.init(this._sig, 0);
+            const sigType = bufferParser.readString(true);
+            if (!sigType) {
+              return doFatalError(
+                this._protocol,
+                "Malformed packet while reading signature",
+                "handshake",
+                DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+              );
+            }
+            if (sigType !== negotiated.serverHostKey) {
+              return doFatalError(
+                this._protocol,
+                `Wrong signature type: ${sigType}, expected: ${negotiated.serverHostKey}`,
+                "handshake",
+                DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+              );
+            }
+            let sigValue = bufferParser.readString();
+            bufferParser.clear();
+            if (sigValue === void 0) {
+              return doFatalError(
+                this._protocol,
+                "Malformed packet while reading signature",
+                "handshake",
+                DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+              );
+            }
+            if (!(sigValue = sigSSHToASN1(sigValue, sigType))) {
+              return doFatalError(
+                this._protocol,
+                "Malformed signature",
+                "handshake",
+                DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+              );
+            }
+            let parsedHostKey;
+            {
+              bufferParser.init(this._hostKey, 0);
+              const name = bufferParser.readString(true);
+              const hostKey = this._hostKey.slice(bufferParser.pos());
+              bufferParser.clear();
+              parsedHostKey = parseDERKey(hostKey, name);
+              if (parsedHostKey instanceof Error) {
+                parsedHostKey.level = "handshake";
+                return doFatalError(
+                  this._protocol,
+                  parsedHostKey,
+                  DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                );
+              }
+            }
+            let hashAlgo;
+            switch (this.negotiated.serverHostKey) {
+              case "rsa-sha2-256":
+                hashAlgo = "sha256";
+                break;
+              case "rsa-sha2-512":
+                hashAlgo = "sha512";
+                break;
+            }
+            this._protocol._debug && this._protocol._debug("Verifying signature ...");
+            const verified = parsedHostKey.verify(exchangeHash, sigValue, hashAlgo);
+            if (verified !== true) {
+              if (verified instanceof Error) {
+                this._protocol._debug && this._protocol._debug(
+                  `Signature verification failed: ${verified.stack}`
+                );
+              } else {
+                this._protocol._debug && this._protocol._debug(
+                  "Signature verification failed"
+                );
+              }
+              return doFatalError(
+                this._protocol,
+                "Handshake failed: signature verification failed",
+                "handshake",
+                DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+              );
+            }
+            this._protocol._debug && this._protocol._debug("Verified signature");
+          } else {
+            let hashAlgo;
+            switch (this.negotiated.serverHostKey) {
+              case "rsa-sha2-256":
+                hashAlgo = "sha256";
+                break;
+              case "rsa-sha2-512":
+                hashAlgo = "sha512";
+                break;
+            }
+            this._protocol._debug && this._protocol._debug(
+              "Generating signature ..."
+            );
+            let signature = this._hostKey.sign(exchangeHash, hashAlgo);
+            if (signature instanceof Error) {
+              return doFatalError(
+                this._protocol,
+                `Handshake failed: signature generation failed for ${this._hostKey.type} host key: ${signature.message}`,
+                "handshake",
+                DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+              );
+            }
+            signature = convertSignature(signature, this._hostKey.type);
+            if (signature === false) {
+              return doFatalError(
+                this._protocol,
+                `Handshake failed: signature conversion failed for ${this._hostKey.type} host key`,
+                "handshake",
+                DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+              );
+            }
+            const sigType = this.negotiated.serverHostKey;
+            const sigTypeLen = Buffer.byteLength(sigType);
+            const sigLen = 4 + sigTypeLen + 4 + signature.length;
+            let p = this._protocol._packetRW.write.allocStartKEX;
+            const packet = this._protocol._packetRW.write.alloc(
+              1 + 4 + serverPublicHostKey.length + 4 + serverPublicKey.length + 4 + sigLen,
+              true
+            );
+            packet[p] = MESSAGE.KEXDH_REPLY;
+            writeUInt32BE(packet, serverPublicHostKey.length, ++p);
+            packet.set(serverPublicHostKey, p += 4);
+            writeUInt32BE(
+              packet,
+              serverPublicKey.length,
+              p += serverPublicHostKey.length
+            );
+            packet.set(serverPublicKey, p += 4);
+            writeUInt32BE(packet, sigLen, p += serverPublicKey.length);
+            writeUInt32BE(packet, sigTypeLen, p += 4);
+            packet.utf8Write(sigType, p += 4, sigTypeLen);
+            writeUInt32BE(packet, signature.length, p += sigTypeLen);
+            packet.set(signature, p += 4);
+            if (this._protocol._debug) {
+              let type;
+              switch (this.type) {
+                case "group":
+                  type = "KEXDH_REPLY";
+                  break;
+                case "groupex":
+                  type = "KEXDH_GEX_REPLY";
+                  break;
+                default:
+                  type = "KEXECDH_REPLY";
+              }
+              this._protocol._debug(`Outbound: Sending ${type}`);
+            }
+            this._protocol._cipher.encrypt(
+              this._protocol._packetRW.write.finalize(packet, true)
+            );
+          }
+          if (isServer || !scOnly)
+            trySendNEWKEYS(this);
+          let hsCipherConfig;
+          let hsWrite;
+          const completeHandshake = /* @__PURE__ */ __name((partial) => {
+            if (hsCipherConfig) {
+              trySendNEWKEYS(this);
+              hsCipherConfig.outbound.seqno = this._protocol._cipher.outSeqno;
+              this._protocol._cipher.free();
+              this._protocol._cipher = createCipher(hsCipherConfig);
+              this._protocol._packetRW.write = hsWrite;
+              hsCipherConfig = void 0;
+              hsWrite = void 0;
+              this._protocol._onHandshakeComplete(negotiated);
+              return false;
+            }
+            if (!this.sessionID)
+              this.sessionID = exchangeHash;
+            {
+              const newSecret = Buffer.allocUnsafe(4 + secret.length);
+              writeUInt32BE(newSecret, secret.length, 0);
+              newSecret.set(secret, 4);
+              secret = newSecret;
+            }
+            const csCipherInfo = CIPHER_INFO[negotiated.cs.cipher];
+            const scCipherInfo = CIPHER_INFO[negotiated.sc.cipher];
+            const csIV = generateKEXVal(
+              csCipherInfo.ivLen,
+              this.hashName,
+              secret,
+              exchangeHash,
+              this.sessionID,
+              "A"
+            );
+            const scIV = generateKEXVal(
+              scCipherInfo.ivLen,
+              this.hashName,
+              secret,
+              exchangeHash,
+              this.sessionID,
+              "B"
+            );
+            const csKey = generateKEXVal(
+              csCipherInfo.keyLen,
+              this.hashName,
+              secret,
+              exchangeHash,
+              this.sessionID,
+              "C"
+            );
+            const scKey = generateKEXVal(
+              scCipherInfo.keyLen,
+              this.hashName,
+              secret,
+              exchangeHash,
+              this.sessionID,
+              "D"
+            );
+            let csMacInfo;
+            let csMacKey;
+            if (!csCipherInfo.authLen) {
+              csMacInfo = MAC_INFO[negotiated.cs.mac];
+              csMacKey = generateKEXVal(
+                csMacInfo.len,
+                this.hashName,
+                secret,
+                exchangeHash,
+                this.sessionID,
+                "E"
+              );
+            }
+            let scMacInfo;
+            let scMacKey;
+            if (!scCipherInfo.authLen) {
+              scMacInfo = MAC_INFO[negotiated.sc.mac];
+              scMacKey = generateKEXVal(
+                scMacInfo.len,
+                this.hashName,
+                secret,
+                exchangeHash,
+                this.sessionID,
+                "F"
+              );
+            }
+            const config = {
+              inbound: {
+                onPayload: this._protocol._onPayload,
+                seqno: this._protocol._decipher.inSeqno,
+                decipherInfo: !isServer ? scCipherInfo : csCipherInfo,
+                decipherIV: !isServer ? scIV : csIV,
+                decipherKey: !isServer ? scKey : csKey,
+                macInfo: !isServer ? scMacInfo : csMacInfo,
+                macKey: !isServer ? scMacKey : csMacKey
+              },
+              outbound: {
+                onWrite: this._protocol._onWrite,
+                seqno: this._protocol._cipher.outSeqno,
+                cipherInfo: isServer ? scCipherInfo : csCipherInfo,
+                cipherIV: isServer ? scIV : csIV,
+                cipherKey: isServer ? scKey : csKey,
+                macInfo: isServer ? scMacInfo : csMacInfo,
+                macKey: isServer ? scMacKey : csMacKey
+              }
+            };
+            this._protocol._decipher.free();
+            hsCipherConfig = config;
+            this._protocol._decipher = createDecipher(config);
+            const rw = {
+              read: void 0,
+              write: void 0
+            };
+            switch (negotiated.cs.compress) {
+              case "zlib":
+                if (isServer)
+                  rw.read = new ZlibPacketReader();
+                else
+                  rw.write = new ZlibPacketWriter(this._protocol);
+                break;
+              case "zlib@openssh.com":
+                if (this._protocol._authenticated) {
+                  if (isServer)
+                    rw.read = new ZlibPacketReader();
+                  else
+                    rw.write = new ZlibPacketWriter(this._protocol);
+                  break;
+                }
+              // FALLTHROUGH
+              default:
+                if (isServer)
+                  rw.read = new PacketReader();
+                else
+                  rw.write = new PacketWriter(this._protocol);
+            }
+            switch (negotiated.sc.compress) {
+              case "zlib":
+                if (isServer)
+                  rw.write = new ZlibPacketWriter(this._protocol);
+                else
+                  rw.read = new ZlibPacketReader();
+                break;
+              case "zlib@openssh.com":
+                if (this._protocol._authenticated) {
+                  if (isServer)
+                    rw.write = new ZlibPacketWriter(this._protocol);
+                  else
+                    rw.read = new ZlibPacketReader();
+                  break;
+                }
+              // FALLTHROUGH
+              default:
+                if (isServer)
+                  rw.write = new PacketWriter(this._protocol);
+                else
+                  rw.read = new PacketReader();
+            }
+            this._protocol._packetRW.read.cleanup();
+            this._protocol._packetRW.write.cleanup();
+            this._protocol._packetRW.read = rw.read;
+            hsWrite = rw.write;
+            this._public = null;
+            this._dh = null;
+            this._kexinit = this._protocol._kexinit = void 0;
+            this._remoteKexinit = void 0;
+            this._identRaw = void 0;
+            this._remoteIdentRaw = void 0;
+            this._hostKey = void 0;
+            this._dhData = void 0;
+            this._sig = void 0;
+            if (!partial)
+              return completeHandshake();
+            return false;
+          }, "completeHandshake");
+          if (isServer || scOnly)
+            this.finish = completeHandshake;
+          if (!isServer)
+            return completeHandshake(scOnly);
+        }
+        start() {
+          if (!this._protocol._server) {
+            if (this._protocol._debug) {
+              let type;
+              switch (this.type) {
+                case "group":
+                  type = "KEXDH_INIT";
+                  break;
+                default:
+                  type = "KEXECDH_INIT";
+              }
+              this._protocol._debug(`Outbound: Sending ${type}`);
+            }
+            const pubKey = this.getPublicKey();
+            let p = this._protocol._packetRW.write.allocStartKEX;
+            const packet = this._protocol._packetRW.write.alloc(
+              1 + 4 + pubKey.length,
+              true
+            );
+            packet[p] = MESSAGE.KEXDH_INIT;
+            writeUInt32BE(packet, pubKey.length, ++p);
+            packet.set(pubKey, p += 4);
+            this._protocol._cipher.encrypt(
+              this._protocol._packetRW.write.finalize(packet, true)
+            );
+          }
+        }
+        getPublicKey() {
+          this.generateKeys();
+          const key = this._public;
+          if (key)
+            return this.convertPublicKey(key);
+        }
+        convertPublicKey(key) {
+          let newKey;
+          let idx = 0;
+          let len = key.length;
+          while (key[idx] === 0) {
+            ++idx;
+            --len;
+          }
+          if (key[idx] & 128) {
+            newKey = Buffer.allocUnsafe(1 + len);
+            newKey[0] = 0;
+            key.copy(newKey, 1, idx);
+            return newKey;
+          }
+          if (len !== key.length) {
+            newKey = Buffer.allocUnsafe(len);
+            key.copy(newKey, 0, idx);
+            key = newKey;
+          }
+          return key;
+        }
+        computeSecret(otherPublicKey) {
+          this.generateKeys();
+          try {
+            return convertToMpint(this._dh.computeSecret(otherPublicKey));
+          } catch (ex) {
+            return ex;
+          }
+        }
+        parse(payload) {
+          const type = payload[0];
+          switch (this._step) {
+            case 1:
+              if (this._protocol._server) {
+                if (type !== MESSAGE.KEXDH_INIT) {
+                  return doFatalError(
+                    this._protocol,
+                    `Received packet ${type} instead of ${MESSAGE.KEXDH_INIT}`,
+                    "handshake",
+                    DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                  );
+                }
+                this._protocol._debug && this._protocol._debug(
+                  "Received DH Init"
+                );
+                bufferParser.init(payload, 1);
+                const dhData = bufferParser.readString();
+                bufferParser.clear();
+                if (dhData === void 0) {
+                  return doFatalError(
+                    this._protocol,
+                    "Received malformed KEX*_INIT",
+                    "handshake",
+                    DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                  );
+                }
+                this._dhData = dhData;
+                let hostKey = this._protocol._hostKeys[this.negotiated.serverHostKey];
+                if (Array.isArray(hostKey))
+                  hostKey = hostKey[0];
+                this._hostKey = hostKey;
+                this.finish();
+              } else {
+                if (type !== MESSAGE.KEXDH_REPLY) {
+                  return doFatalError(
+                    this._protocol,
+                    `Received packet ${type} instead of ${MESSAGE.KEXDH_REPLY}`,
+                    "handshake",
+                    DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                  );
+                }
+                this._protocol._debug && this._protocol._debug(
+                  "Received DH Reply"
+                );
+                bufferParser.init(payload, 1);
+                let hostPubKey;
+                let dhData;
+                let sig;
+                if ((hostPubKey = bufferParser.readString()) === void 0 || (dhData = bufferParser.readString()) === void 0 || (sig = bufferParser.readString()) === void 0) {
+                  bufferParser.clear();
+                  return doFatalError(
+                    this._protocol,
+                    "Received malformed KEX*_REPLY",
+                    "handshake",
+                    DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                  );
+                }
+                bufferParser.clear();
+                bufferParser.init(hostPubKey, 0);
+                const hostPubKeyType = bufferParser.readString(true);
+                bufferParser.clear();
+                if (hostPubKeyType === void 0) {
+                  return doFatalError(
+                    this._protocol,
+                    "Received malformed host public key",
+                    "handshake",
+                    DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                  );
+                }
+                if (hostPubKeyType !== this.negotiated.serverHostKey) {
+                  switch (this.negotiated.serverHostKey) {
+                    case "rsa-sha2-256":
+                    case "rsa-sha2-512":
+                      if (hostPubKeyType === "ssh-rsa")
+                        break;
+                    // FALLTHROUGH
+                    default:
+                      return doFatalError(
+                        this._protocol,
+                        "Host key does not match negotiated type",
+                        "handshake",
+                        DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                      );
+                  }
+                }
+                this._hostKey = hostPubKey;
+                this._dhData = dhData;
+                this._sig = sig;
+                let checked = false;
+                let ret;
+                if (this._protocol._hostVerifier === void 0) {
+                  ret = true;
+                  this._protocol._debug && this._protocol._debug(
+                    "Host accepted by default (no verification)"
+                  );
+                } else {
+                  ret = this._protocol._hostVerifier(hostPubKey, (permitted) => {
+                    if (checked)
+                      return;
+                    checked = true;
+                    if (permitted === false) {
+                      this._protocol._debug && this._protocol._debug(
+                        "Host denied (verification failed)"
+                      );
+                      return doFatalError(
+                        this._protocol,
+                        "Host denied (verification failed)",
+                        "handshake",
+                        DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                      );
+                    }
+                    this._protocol._debug && this._protocol._debug(
+                      "Host accepted (verified)"
+                    );
+                    this._hostVerified = true;
+                    if (this._receivedNEWKEYS)
+                      this.finish();
+                    else
+                      trySendNEWKEYS(this);
+                  });
+                }
+                if (ret === void 0) {
+                  ++this._step;
+                  return;
+                }
+                checked = true;
+                if (ret === false) {
+                  this._protocol._debug && this._protocol._debug(
+                    "Host denied (verification failed)"
+                  );
+                  return doFatalError(
+                    this._protocol,
+                    "Host denied (verification failed)",
+                    "handshake",
+                    DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                  );
+                }
+                this._protocol._debug && this._protocol._debug(
+                  "Host accepted (verified)"
+                );
+                this._hostVerified = true;
+                trySendNEWKEYS(this);
+              }
+              ++this._step;
+              break;
+            case 2:
+              if (type !== MESSAGE.NEWKEYS) {
+                return doFatalError(
+                  this._protocol,
+                  `Received packet ${type} instead of ${MESSAGE.NEWKEYS}`,
+                  "handshake",
+                  DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                );
+              }
+              this._protocol._debug && this._protocol._debug(
+                "Inbound: NEWKEYS"
+              );
+              this._receivedNEWKEYS = true;
+              if (this._protocol._strictMode)
+                this._protocol._decipher.inSeqno = 0;
+              ++this._step;
+              return this.finish(!this._protocol._server && !this._hostVerified);
+            default:
+              return doFatalError(
+                this._protocol,
+                `Received unexpected packet ${type} after NEWKEYS`,
+                "handshake",
+                DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+              );
+          }
+        }
+      }
+      class Curve25519Exchange extends KeyExchange {
+        static {
+          __name(this, "Curve25519Exchange");
+        }
+        constructor(hashName, ...args) {
+          super(...args);
+          this.type = "25519";
+          this.hashName = hashName;
+          this._keys = null;
+        }
+        generateKeys() {
+          if (!this._keys)
+            this._keys = generateKeyPairSync("x25519");
+        }
+        getPublicKey() {
+          this.generateKeys();
+          const key = this._keys.publicKey.export({ type: "spki", format: "der" });
+          return key.slice(-32);
+        }
+        convertPublicKey(key) {
+          let newKey;
+          let idx = 0;
+          let len = key.length;
+          while (key[idx] === 0) {
+            ++idx;
+            --len;
+          }
+          if (key.length === 32)
+            return key;
+          if (len !== key.length) {
+            newKey = Buffer.allocUnsafe(len);
+            key.copy(newKey, 0, idx);
+            key = newKey;
+          }
+          return key;
+        }
+        computeSecret(otherPublicKey) {
+          this.generateKeys();
+          try {
+            const asnWriter = new Ber.Writer();
+            asnWriter.startSequence();
+            asnWriter.startSequence();
+            asnWriter.writeOID("1.3.101.110");
+            asnWriter.endSequence();
+            asnWriter.startSequence(Ber.BitString);
+            asnWriter.writeByte(0);
+            asnWriter._ensure(otherPublicKey.length);
+            otherPublicKey.copy(
+              asnWriter._buf,
+              asnWriter._offset,
+              0,
+              otherPublicKey.length
+            );
+            asnWriter._offset += otherPublicKey.length;
+            asnWriter.endSequence();
+            asnWriter.endSequence();
+            return convertToMpint(diffieHellman({
+              privateKey: this._keys.privateKey,
+              publicKey: createPublicKey({
+                key: asnWriter.buffer,
+                type: "spki",
+                format: "der"
+              })
+            }));
+          } catch (ex) {
+            return ex;
+          }
+        }
+      }
+      class ECDHExchange extends KeyExchange {
+        static {
+          __name(this, "ECDHExchange");
+        }
+        constructor(curveName, hashName, ...args) {
+          super(...args);
+          this.type = "ecdh";
+          this.curveName = curveName;
+          this.hashName = hashName;
+        }
+        generateKeys() {
+          if (!this._dh) {
+            this._dh = createECDH(this.curveName);
+            this._public = this._dh.generateKeys();
+          }
+        }
+      }
+      class DHGroupExchange extends KeyExchange {
+        static {
+          __name(this, "DHGroupExchange");
+        }
+        constructor(hashName, ...args) {
+          super(...args);
+          this.type = "groupex";
+          this.hashName = hashName;
+          this._prime = null;
+          this._generator = null;
+          this._minBits = GEX_MIN_BITS;
+          this._prefBits = dhEstimate(this.negotiated);
+          if (this._protocol._compatFlags & COMPAT.BUG_DHGEX_LARGE)
+            this._prefBits = Math.min(this._prefBits, 4096);
+          this._maxBits = GEX_MAX_BITS;
+        }
+        start() {
+          if (this._protocol._server)
+            return;
+          this._protocol._debug && this._protocol._debug(
+            "Outbound: Sending KEXDH_GEX_REQUEST"
+          );
+          let p = this._protocol._packetRW.write.allocStartKEX;
+          const packet = this._protocol._packetRW.write.alloc(
+            1 + 4 + 4 + 4,
+            true
+          );
+          packet[p] = MESSAGE.KEXDH_GEX_REQUEST;
+          writeUInt32BE(packet, this._minBits, ++p);
+          writeUInt32BE(packet, this._prefBits, p += 4);
+          writeUInt32BE(packet, this._maxBits, p += 4);
+          this._protocol._cipher.encrypt(
+            this._protocol._packetRW.write.finalize(packet, true)
+          );
+        }
+        generateKeys() {
+          if (!this._dh && this._prime && this._generator) {
+            this._dh = createDiffieHellman(this._prime, this._generator);
+            this._public = this._dh.generateKeys();
+          }
+        }
+        setDHParams(prime, generator) {
+          if (!Buffer.isBuffer(prime))
+            throw new Error("Invalid prime value");
+          if (!Buffer.isBuffer(generator))
+            throw new Error("Invalid generator value");
+          this._prime = prime;
+          this._generator = generator;
+        }
+        getDHParams() {
+          if (this._dh) {
+            return {
+              prime: convertToMpint(this._dh.getPrime()),
+              generator: convertToMpint(this._dh.getGenerator())
+            };
+          }
+        }
+        parse(payload) {
+          const type = payload[0];
+          switch (this._step) {
+            case 1: {
+              if (this._protocol._server) {
+                if (type !== MESSAGE.KEXDH_GEX_REQUEST) {
+                  return doFatalError(
+                    this._protocol,
+                    `Received packet ${type} instead of ` + MESSAGE.KEXDH_GEX_REQUEST,
+                    "handshake",
+                    DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                  );
+                }
+                return doFatalError(
+                  this._protocol,
+                  "Group exchange not implemented for server",
+                  "handshake",
+                  DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                );
+              }
+              if (type !== MESSAGE.KEXDH_GEX_GROUP) {
+                return doFatalError(
+                  this._protocol,
+                  `Received packet ${type} instead of ${MESSAGE.KEXDH_GEX_GROUP}`,
+                  "handshake",
+                  DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                );
+              }
+              this._protocol._debug && this._protocol._debug(
+                "Received DH GEX Group"
+              );
+              bufferParser.init(payload, 1);
+              let prime;
+              let gen;
+              if ((prime = bufferParser.readString()) === void 0 || (gen = bufferParser.readString()) === void 0) {
+                bufferParser.clear();
+                return doFatalError(
+                  this._protocol,
+                  "Received malformed KEXDH_GEX_GROUP",
+                  "handshake",
+                  DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                );
+              }
+              bufferParser.clear();
+              this.setDHParams(prime, gen);
+              this.generateKeys();
+              const pubkey = this.getPublicKey();
+              this._protocol._debug && this._protocol._debug(
+                "Outbound: Sending KEXDH_GEX_INIT"
+              );
+              let p = this._protocol._packetRW.write.allocStartKEX;
+              const packet = this._protocol._packetRW.write.alloc(1 + 4 + pubkey.length, true);
+              packet[p] = MESSAGE.KEXDH_GEX_INIT;
+              writeUInt32BE(packet, pubkey.length, ++p);
+              packet.set(pubkey, p += 4);
+              this._protocol._cipher.encrypt(
+                this._protocol._packetRW.write.finalize(packet, true)
+              );
+              ++this._step;
+              break;
+            }
+            case 2:
+              if (this._protocol._server) {
+                if (type !== MESSAGE.KEXDH_GEX_INIT) {
+                  return doFatalError(
+                    this._protocol,
+                    `Received packet ${type} instead of ${MESSAGE.KEXDH_GEX_INIT}`,
+                    "handshake",
+                    DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                  );
+                }
+                this._protocol._debug && this._protocol._debug(
+                  "Received DH GEX Init"
+                );
+                return doFatalError(
+                  this._protocol,
+                  "Group exchange not implemented for server",
+                  "handshake",
+                  DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                );
+              } else if (type !== MESSAGE.KEXDH_GEX_REPLY) {
+                return doFatalError(
+                  this._protocol,
+                  `Received packet ${type} instead of ${MESSAGE.KEXDH_GEX_REPLY}`,
+                  "handshake",
+                  DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+                );
+              }
+              this._protocol._debug && this._protocol._debug(
+                "Received DH GEX Reply"
+              );
+              this._step = 1;
+              payload[0] = MESSAGE.KEXDH_REPLY;
+              this.parse = KeyExchange.prototype.parse;
+              this.parse(payload);
+          }
+        }
+      }
+      class DHExchange extends KeyExchange {
+        static {
+          __name(this, "DHExchange");
+        }
+        constructor(groupName, hashName, ...args) {
+          super(...args);
+          this.type = "group";
+          this.groupName = groupName;
+          this.hashName = hashName;
+        }
+        start() {
+          if (!this._protocol._server) {
+            this._protocol._debug && this._protocol._debug(
+              "Outbound: Sending KEXDH_INIT"
+            );
+            const pubKey = this.getPublicKey();
+            let p = this._protocol._packetRW.write.allocStartKEX;
+            const packet = this._protocol._packetRW.write.alloc(1 + 4 + pubKey.length, true);
+            packet[p] = MESSAGE.KEXDH_INIT;
+            writeUInt32BE(packet, pubKey.length, ++p);
+            packet.set(pubKey, p += 4);
+            this._protocol._cipher.encrypt(
+              this._protocol._packetRW.write.finalize(packet, true)
+            );
+          }
+        }
+        generateKeys() {
+          if (!this._dh) {
+            this._dh = createDiffieHellmanGroup(this.groupName);
+            this._public = this._dh.generateKeys();
+          }
+        }
+        getDHParams() {
+          if (this._dh) {
+            return {
+              prime: convertToMpint(this._dh.getPrime()),
+              generator: convertToMpint(this._dh.getGenerator())
+            };
+          }
+        }
+      }
+      return (negotiated, ...args) => {
+        if (typeof negotiated !== "object" || negotiated === null)
+          throw new Error("Invalid negotiated argument");
+        const kexType = negotiated.kex;
+        if (typeof kexType === "string") {
+          args = [negotiated, ...args];
+          switch (kexType) {
+            case "curve25519-sha256":
+            case "curve25519-sha256@libssh.org":
+              if (!curve25519Supported)
+                break;
+              return new Curve25519Exchange("sha256", ...args);
+            case "ecdh-sha2-nistp256":
+              return new ECDHExchange("prime256v1", "sha256", ...args);
+            case "ecdh-sha2-nistp384":
+              return new ECDHExchange("secp384r1", "sha384", ...args);
+            case "ecdh-sha2-nistp521":
+              return new ECDHExchange("secp521r1", "sha512", ...args);
+            case "diffie-hellman-group1-sha1":
+              return new DHExchange("modp2", "sha1", ...args);
+            case "diffie-hellman-group14-sha1":
+              return new DHExchange("modp14", "sha1", ...args);
+            case "diffie-hellman-group14-sha256":
+              return new DHExchange("modp14", "sha256", ...args);
+            case "diffie-hellman-group15-sha512":
+              return new DHExchange("modp15", "sha512", ...args);
+            case "diffie-hellman-group16-sha512":
+              return new DHExchange("modp16", "sha512", ...args);
+            case "diffie-hellman-group17-sha512":
+              return new DHExchange("modp17", "sha512", ...args);
+            case "diffie-hellman-group18-sha512":
+              return new DHExchange("modp18", "sha512", ...args);
+            case "diffie-hellman-group-exchange-sha1":
+              return new DHGroupExchange("sha1", ...args);
+            case "diffie-hellman-group-exchange-sha256":
+              return new DHGroupExchange("sha256", ...args);
+          }
+          throw new Error(`Unsupported key exchange algorithm: ${kexType}`);
+        }
+        throw new Error(`Invalid key exchange type: ${kexType}`);
+      };
+    })();
+    var KexInit = /* @__PURE__ */ (() => {
+      const KEX_PROPERTY_NAMES = [
+        "kex",
+        "serverHostKey",
+        ["cs", "cipher"],
+        ["sc", "cipher"],
+        ["cs", "mac"],
+        ["sc", "mac"],
+        ["cs", "compress"],
+        ["sc", "compress"],
+        ["cs", "lang"],
+        ["sc", "lang"]
+      ];
+      return class KexInit {
+        static {
+          __name(this, "KexInit");
+        }
+        constructor(obj) {
+          if (typeof obj !== "object" || obj === null)
+            throw new TypeError("Argument must be an object");
+          const lists = {
+            kex: void 0,
+            serverHostKey: void 0,
+            cs: {
+              cipher: void 0,
+              mac: void 0,
+              compress: void 0,
+              lang: void 0
+            },
+            sc: {
+              cipher: void 0,
+              mac: void 0,
+              compress: void 0,
+              lang: void 0
+            },
+            all: void 0
+          };
+          let totalSize = 0;
+          for (const prop of KEX_PROPERTY_NAMES) {
+            let base;
+            let val;
+            let desc;
+            let key;
+            if (typeof prop === "string") {
+              base = lists;
+              val = obj[prop];
+              desc = key = prop;
+            } else {
+              const parent = prop[0];
+              base = lists[parent];
+              key = prop[1];
+              val = obj[parent][key];
+              desc = `${parent}.${key}`;
+            }
+            const entry = { array: void 0, buffer: void 0 };
+            if (Buffer.isBuffer(val)) {
+              entry.array = ("" + val).split(",");
+              entry.buffer = val;
+              totalSize += 4 + val.length;
+            } else {
+              if (typeof val === "string")
+                val = val.split(",");
+              if (Array.isArray(val)) {
+                entry.array = val;
+                entry.buffer = Buffer.from(val.join(","));
+              } else {
+                throw new TypeError(`Invalid \`${desc}\` type: ${typeof val}`);
+              }
+              totalSize += 4 + entry.buffer.length;
+            }
+            base[key] = entry;
+          }
+          const all = Buffer.allocUnsafe(totalSize);
+          lists.all = all;
+          let allPos = 0;
+          for (const prop of KEX_PROPERTY_NAMES) {
+            let data;
+            if (typeof prop === "string")
+              data = lists[prop].buffer;
+            else
+              data = lists[prop[0]][prop[1]].buffer;
+            allPos = writeUInt32BE(all, data.length, allPos);
+            all.set(data, allPos);
+            allPos += data.length;
+          }
+          this.totalSize = totalSize;
+          this.lists = lists;
+        }
+        copyAllTo(buf, offset) {
+          const src = this.lists.all;
+          if (typeof offset !== "number")
+            throw new TypeError(`Invalid offset value: ${typeof offset}`);
+          if (buf.length - offset < src.length)
+            throw new Error("Insufficient space to copy list");
+          buf.set(src, offset);
+          return src.length;
+        }
+      };
+    })();
+    var hashString = (() => {
+      const LEN = Buffer.allocUnsafe(4);
+      return (hash, buf) => {
+        writeUInt32BE(LEN, buf.length, 0);
+        hash.update(LEN);
+        hash.update(buf);
+      };
+    })();
+    function generateKEXVal(len, hashName, secret, exchangeHash, sessionID, char) {
+      let ret;
+      if (len) {
+        let digest = createHash(hashName).update(secret).update(exchangeHash).update(char).update(sessionID).digest();
+        while (digest.length < len) {
+          const chunk = createHash(hashName).update(secret).update(exchangeHash).update(digest).digest();
+          const extended = Buffer.allocUnsafe(digest.length + chunk.length);
+          extended.set(digest, 0);
+          extended.set(chunk, digest.length);
+          digest = extended;
+        }
+        if (digest.length === len)
+          ret = digest;
+        else
+          ret = new FastBuffer(digest.buffer, digest.byteOffset, len);
+      } else {
+        ret = EMPTY_BUFFER;
+      }
+      return ret;
+    }
+    __name(generateKEXVal, "generateKEXVal");
+    function onKEXPayload(state, payload) {
+      if (payload.length === 0) {
+        this._debug && this._debug("Inbound: Skipping empty packet payload");
+        return;
+      }
+      if (this._skipNextInboundPacket) {
+        this._skipNextInboundPacket = false;
+        return;
+      }
+      payload = this._packetRW.read.read(payload);
+      const type = payload[0];
+      if (!this._strictMode) {
+        switch (type) {
+          case MESSAGE.IGNORE:
+          case MESSAGE.UNIMPLEMENTED:
+          case MESSAGE.DEBUG:
+            if (!MESSAGE_HANDLERS)
+              MESSAGE_HANDLERS = require_handlers();
+            return MESSAGE_HANDLERS[type](this, payload);
+        }
+      }
+      switch (type) {
+        case MESSAGE.DISCONNECT:
+          if (!MESSAGE_HANDLERS)
+            MESSAGE_HANDLERS = require_handlers();
+          return MESSAGE_HANDLERS[type](this, payload);
+        case MESSAGE.KEXINIT:
+          if (!state.firstPacket) {
+            return doFatalError(
+              this,
+              "Received extra KEXINIT during handshake",
+              "handshake",
+              DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+            );
+          }
+          state.firstPacket = false;
+          return handleKexInit(this, payload);
+        default:
+          if (type < 20 || type > 49) {
+            return doFatalError(
+              this,
+              `Received unexpected packet type ${type}`,
+              "handshake",
+              DISCONNECT_REASON.KEY_EXCHANGE_FAILED
+            );
+          }
+      }
+      return this._kex.parse(payload);
+    }
+    __name(onKEXPayload, "onKEXPayload");
+    function dhEstimate(neg) {
+      const csCipher = CIPHER_INFO[neg.cs.cipher];
+      const scCipher = CIPHER_INFO[neg.sc.cipher];
+      const bits = Math.max(
+        0,
+        csCipher.sslName === "des-ede3-cbc" ? 14 : csCipher.keyLen,
+        csCipher.blockLen,
+        csCipher.ivLen,
+        scCipher.sslName === "des-ede3-cbc" ? 14 : scCipher.keyLen,
+        scCipher.blockLen,
+        scCipher.ivLen
+      ) * 8;
+      if (bits <= 112)
+        return 2048;
+      if (bits <= 128)
+        return 3072;
+      if (bits <= 192)
+        return 7680;
+      return 8192;
+    }
+    __name(dhEstimate, "dhEstimate");
+    function trySendNEWKEYS(kex) {
+      if (!kex._sentNEWKEYS) {
+        kex._protocol._debug && kex._protocol._debug(
+          "Outbound: Sending NEWKEYS"
+        );
+        const p = kex._protocol._packetRW.write.allocStartKEX;
+        const packet = kex._protocol._packetRW.write.alloc(1, true);
+        packet[p] = MESSAGE.NEWKEYS;
+        kex._protocol._cipher.encrypt(
+          kex._protocol._packetRW.write.finalize(packet, true)
+        );
+        kex._sentNEWKEYS = true;
+        if (kex._protocol._strictMode)
+          kex._protocol._cipher.outSeqno = 0;
+      }
+    }
+    __name(trySendNEWKEYS, "trySendNEWKEYS");
+    module.exports = {
+      KexInit,
+      kexinit,
+      onKEXPayload,
+      DEFAULT_KEXINIT_CLIENT: new KexInit({
+        kex: DEFAULT_KEX.concat(["ext-info-c", "kex-strict-c-v00@openssh.com"]),
+        serverHostKey: DEFAULT_SERVER_HOST_KEY,
+        cs: {
+          cipher: DEFAULT_CIPHER,
+          mac: DEFAULT_MAC,
+          compress: DEFAULT_COMPRESSION,
+          lang: []
+        },
+        sc: {
+          cipher: DEFAULT_CIPHER,
+          mac: DEFAULT_MAC,
+          compress: DEFAULT_COMPRESSION,
+          lang: []
+        }
+      }),
+      DEFAULT_KEXINIT_SERVER: new KexInit({
+        kex: DEFAULT_KEX.concat(["kex-strict-s-v00@openssh.com"]),
+        serverHostKey: DEFAULT_SERVER_HOST_KEY,
+        cs: {
+          cipher: DEFAULT_CIPHER,
+          mac: DEFAULT_MAC,
+          compress: DEFAULT_COMPRESSION,
+          lang: []
+        },
+        sc: {
+          cipher: DEFAULT_CIPHER,
+          mac: DEFAULT_MAC,
+          compress: DEFAULT_COMPRESSION,
+          lang: []
+        }
+      }),
+      HANDLERS: {
+        [MESSAGE.KEXINIT]: handleKexInit
+      }
+    };
+  }
+});
+
+// node_modules/ssh2/package.json
+var require_package2 = __commonJS({
+  "node_modules/ssh2/package.json"(exports, module) {
+    module.exports = {
+      name: "ssh2",
+      version: "1.17.0",
+      author: "Brian White <mscdex@mscdex.net>",
+      description: "SSH2 client and server modules written in pure JavaScript for node.js",
+      main: "./lib/index.js",
+      engines: {
+        node: ">=10.16.0"
+      },
+      dependencies: {
+        asn1: "^0.2.6",
+        "bcrypt-pbkdf": "^1.0.2"
+      },
+      devDependencies: {
+        "@mscdex/eslint-config": "^1.1.0",
+        eslint: "^7.32.0"
+      },
+      optionalDependencies: {
+        "cpu-features": "~0.0.10",
+        nan: "^2.23.0"
+      },
+      scripts: {
+        install: "node install.js",
+        rebuild: "node install.js",
+        test: "node test/test.js",
+        lint: "eslint --cache --report-unused-disable-directives --ext=.js .eslintrc.js examples lib test",
+        "lint:fix": "npm run lint -- --fix"
+      },
+      keywords: [
+        "ssh",
+        "ssh2",
+        "sftp",
+        "secure",
+        "shell",
+        "exec",
+        "remote",
+        "client"
+      ],
+      licenses: [
+        {
+          type: "MIT",
+          url: "http://github.com/mscdex/ssh2/raw/master/LICENSE"
+        }
+      ],
+      repository: {
+        type: "git",
+        url: "http://github.com/mscdex/ssh2.git"
+      }
+    };
+  }
+});
+
+// node_modules/ssh2/lib/protocol/Protocol.js
+var require_Protocol = __commonJS({
+  "node_modules/ssh2/lib/protocol/Protocol.js"(exports, module) {
+    "use strict";
+    var { inspect } = require_util();
+    var { bindingAvailable, NullCipher, NullDecipher } = require_crypto2();
+    var {
+      COMPAT_CHECKS,
+      DISCONNECT_REASON,
+      eddsaSupported,
+      MESSAGE,
+      SIGNALS,
+      TERMINAL_MODE
+    } = require_constants3();
+    var {
+      DEFAULT_KEXINIT_CLIENT,
+      DEFAULT_KEXINIT_SERVER,
+      KexInit,
+      kexinit,
+      onKEXPayload
+    } = require_kex();
+    var {
+      parseKey
+    } = require_keyParser();
+    var MESSAGE_HANDLERS = require_handlers();
+    var {
+      bufferCopy,
+      bufferFill,
+      bufferSlice,
+      convertSignature,
+      sendPacket,
+      writeUInt32BE
+    } = require_utils4();
+    var {
+      PacketReader,
+      PacketWriter,
+      ZlibPacketReader,
+      ZlibPacketWriter
+    } = require_zlib2();
+    var MODULE_VER = require_package2().version;
+    var VALID_DISCONNECT_REASONS = new Map(
+      Object.values(DISCONNECT_REASON).map((n) => [n, 1])
+    );
+    var IDENT_RAW = Buffer.from(`SSH-2.0-ssh2js${MODULE_VER}`);
+    var IDENT = Buffer.from(`${IDENT_RAW}\r
+`);
+    var MAX_LINE_LEN = 8192;
+    var MAX_LINES = 1024;
+    var PING_PAYLOAD = Buffer.from([
+      MESSAGE.GLOBAL_REQUEST,
+      // "keepalive@openssh.com"
+      0,
+      0,
+      0,
+      21,
+      107,
+      101,
+      101,
+      112,
+      97,
+      108,
+      105,
+      118,
+      101,
+      64,
+      111,
+      112,
+      101,
+      110,
+      115,
+      115,
+      104,
+      46,
+      99,
+      111,
+      109,
+      // Request a reply
+      1
+    ]);
+    var NO_TERMINAL_MODES_BUFFER = Buffer.from([TERMINAL_MODE.TTY_OP_END]);
+    function noop() {
+    }
+    __name(noop, "noop");
+    var Protocol = class {
+      static {
+        __name(this, "Protocol");
+      }
+      constructor(config) {
+        const onWrite = config.onWrite;
+        if (typeof onWrite !== "function")
+          throw new Error("Missing onWrite function");
+        this._onWrite = (data) => {
+          onWrite(data);
+        };
+        const onError = config.onError;
+        if (typeof onError !== "function")
+          throw new Error("Missing onError function");
+        this._onError = (err) => {
+          onError(err);
+        };
+        const debug = config.debug;
+        this._debug = typeof debug === "function" ? (msg) => {
+          debug(msg);
+        } : void 0;
+        const onHeader = config.onHeader;
+        this._onHeader = typeof onHeader === "function" ? (...args) => {
+          onHeader(...args);
+        } : noop;
+        const onPacket = config.onPacket;
+        this._onPacket = typeof onPacket === "function" ? () => {
+          onPacket();
+        } : noop;
+        let onHandshakeComplete = config.onHandshakeComplete;
+        if (typeof onHandshakeComplete !== "function")
+          onHandshakeComplete = noop;
+        let firstHandshake;
+        this._onHandshakeComplete = (...args) => {
+          this._debug && this._debug("Handshake completed");
+          if (firstHandshake === void 0)
+            firstHandshake = true;
+          else
+            firstHandshake = false;
+          const oldQueue = this._queue;
+          if (oldQueue) {
+            this._queue = void 0;
+            this._debug && this._debug(
+              `Draining outbound queue (${oldQueue.length}) ...`
+            );
+            for (let i = 0; i < oldQueue.length; ++i) {
+              const data = oldQueue[i];
+              let finalized = this._packetRW.write.finalize(data);
+              if (finalized === data) {
+                const packet = this._cipher.allocPacket(data.length);
+                packet.set(data, 5);
+                finalized = packet;
+              }
+              sendPacket(this, finalized);
+            }
+            this._debug && this._debug("... finished draining outbound queue");
+          }
+          if (firstHandshake && this._server && this._kex.remoteExtInfoEnabled)
+            sendExtInfo(this);
+          onHandshakeComplete(...args);
+        };
+        this._queue = void 0;
+        const messageHandlers = config.messageHandlers;
+        if (typeof messageHandlers === "object" && messageHandlers !== null)
+          this._handlers = messageHandlers;
+        else
+          this._handlers = {};
+        this._onPayload = onPayload.bind(this);
+        this._server = !!config.server;
+        this._banner = void 0;
+        let greeting;
+        if (this._server) {
+          if (typeof config.hostKeys !== "object" || config.hostKeys === null)
+            throw new Error("Missing server host key(s)");
+          this._hostKeys = config.hostKeys;
+          if (typeof config.greeting === "string" && config.greeting.length) {
+            greeting = config.greeting.slice(-2) === "\r\n" ? config.greeting : `${config.greeting}\r
+`;
+          }
+          if (typeof config.banner === "string" && config.banner.length) {
+            this._banner = config.banner.slice(-2) === "\r\n" ? config.banner : `${config.banner}\r
+`;
+          }
+        } else {
+          this._hostKeys = void 0;
+        }
+        let offer = config.offer;
+        if (typeof offer !== "object" || offer === null) {
+          offer = this._server ? DEFAULT_KEXINIT_SERVER : DEFAULT_KEXINIT_CLIENT;
+        } else if (offer.constructor !== KexInit) {
+          if (this._server) {
+            offer.kex = offer.kex.concat(["kex-strict-s-v00@openssh.com"]);
+          } else {
+            offer.kex = offer.kex.concat([
+              "ext-info-c",
+              "kex-strict-c-v00@openssh.com"
+            ]);
+          }
+          offer = new KexInit(offer);
+        }
+        this._kex = void 0;
+        this._strictMode = void 0;
+        this._kexinit = void 0;
+        this._offer = offer;
+        this._cipher = new NullCipher(0, this._onWrite);
+        this._decipher = void 0;
+        this._skipNextInboundPacket = false;
+        this._packetRW = {
+          read: new PacketReader(),
+          write: new PacketWriter(this)
+        };
+        this._hostVerifier = !this._server && typeof config.hostVerifier === "function" ? config.hostVerifier : void 0;
+        this._parse = parseHeader;
+        this._buffer = void 0;
+        this._authsQueue = [];
+        this._authenticated = false;
+        this._remoteIdentRaw = void 0;
+        let sentIdent;
+        if (typeof config.ident === "string") {
+          this._identRaw = Buffer.from(`SSH-2.0-${config.ident}`);
+          sentIdent = Buffer.allocUnsafe(this._identRaw.length + 2);
+          sentIdent.set(this._identRaw, 0);
+          sentIdent[sentIdent.length - 2] = 13;
+          sentIdent[sentIdent.length - 1] = 10;
+        } else if (Buffer.isBuffer(config.ident)) {
+          const fullIdent = Buffer.allocUnsafe(8 + config.ident.length);
+          fullIdent.latin1Write("SSH-2.0-", 0, 8);
+          fullIdent.set(config.ident, 8);
+          this._identRaw = fullIdent;
+          sentIdent = Buffer.allocUnsafe(fullIdent.length + 2);
+          sentIdent.set(fullIdent, 0);
+          sentIdent[sentIdent.length - 2] = 13;
+          sentIdent[sentIdent.length - 1] = 10;
+        } else {
+          this._identRaw = IDENT_RAW;
+          sentIdent = IDENT;
+        }
+        this._compatFlags = 0;
+        if (this._debug) {
+          if (bindingAvailable)
+            this._debug("Custom crypto binding available");
+          else
+            this._debug("Custom crypto binding not available");
+        }
+        this._debug && this._debug(
+          `Local ident: ${inspect(this._identRaw.toString())}`
+        );
+        this.start = () => {
+          this.start = void 0;
+          if (greeting)
+            this._onWrite(greeting);
+          this._onWrite(sentIdent);
+        };
+      }
+      _destruct(reason) {
+        this._packetRW.read.cleanup();
+        this._packetRW.write.cleanup();
+        this._cipher && this._cipher.free();
+        this._decipher && this._decipher.free();
+        if (typeof reason !== "string" || reason.length === 0)
+          reason = "fatal error";
+        this.parse = () => {
+          throw new Error(`Instance unusable after ${reason}`);
+        };
+        this._onWrite = () => {
+          throw new Error(`Instance unusable after ${reason}`);
+        };
+        this._destruct = void 0;
+      }
+      cleanup() {
+        this._destruct && this._destruct();
+      }
+      parse(chunk, i, len) {
+        while (i < len)
+          i = this._parse(chunk, i, len);
+      }
+      // Protocol message API
+      // ===========================================================================
+      // Common/Shared =============================================================
+      // ===========================================================================
+      // Global
+      // ------
+      disconnect(reason) {
+        const pktLen = 1 + 4 + 4 + 4;
+        let p = this._packetRW.write.allocStartKEX;
+        const packet = this._packetRW.write.alloc(pktLen, true);
+        const end = p + pktLen;
+        if (!VALID_DISCONNECT_REASONS.has(reason))
+          reason = DISCONNECT_REASON.PROTOCOL_ERROR;
+        packet[p] = MESSAGE.DISCONNECT;
+        writeUInt32BE(packet, reason, ++p);
+        packet.fill(0, p += 4, end);
+        this._debug && this._debug(`Outbound: Sending DISCONNECT (${reason})`);
+        sendPacket(this, this._packetRW.write.finalize(packet, true), true);
+      }
+      ping() {
+        const p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(PING_PAYLOAD.length);
+        packet.set(PING_PAYLOAD, p);
+        this._debug && this._debug(
+          "Outbound: Sending ping (GLOBAL_REQUEST: keepalive@openssh.com)"
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      rekey() {
+        if (this._kexinit === void 0) {
+          this._debug && this._debug("Outbound: Initiated explicit rekey");
+          this._queue = [];
+          kexinit(this);
+        } else {
+          this._debug && this._debug("Outbound: Ignoring rekey during handshake");
+        }
+      }
+      // 'ssh-connection' service-specific
+      // ---------------------------------
+      requestSuccess(data) {
+        let p = this._packetRW.write.allocStart;
+        let packet;
+        if (Buffer.isBuffer(data)) {
+          packet = this._packetRW.write.alloc(1 + data.length);
+          packet[p] = MESSAGE.REQUEST_SUCCESS;
+          packet.set(data, ++p);
+        } else {
+          packet = this._packetRW.write.alloc(1);
+          packet[p] = MESSAGE.REQUEST_SUCCESS;
+        }
+        this._debug && this._debug("Outbound: Sending REQUEST_SUCCESS");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      requestFailure() {
+        const p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1);
+        packet[p] = MESSAGE.REQUEST_FAILURE;
+        this._debug && this._debug("Outbound: Sending REQUEST_FAILURE");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelSuccess(chan) {
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4);
+        packet[p] = MESSAGE.CHANNEL_SUCCESS;
+        writeUInt32BE(packet, chan, ++p);
+        this._debug && this._debug(`Outbound: Sending CHANNEL_SUCCESS (r:${chan})`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelFailure(chan) {
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4);
+        packet[p] = MESSAGE.CHANNEL_FAILURE;
+        writeUInt32BE(packet, chan, ++p);
+        this._debug && this._debug(`Outbound: Sending CHANNEL_FAILURE (r:${chan})`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelEOF(chan) {
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4);
+        packet[p] = MESSAGE.CHANNEL_EOF;
+        writeUInt32BE(packet, chan, ++p);
+        this._debug && this._debug(`Outbound: Sending CHANNEL_EOF (r:${chan})`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelClose(chan) {
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4);
+        packet[p] = MESSAGE.CHANNEL_CLOSE;
+        writeUInt32BE(packet, chan, ++p);
+        this._debug && this._debug(`Outbound: Sending CHANNEL_CLOSE (r:${chan})`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelWindowAdjust(chan, amount) {
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4);
+        packet[p] = MESSAGE.CHANNEL_WINDOW_ADJUST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, amount, p += 4);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_WINDOW_ADJUST (r:${chan}, ${amount})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelData(chan, data) {
+        const isBuffer = Buffer.isBuffer(data);
+        const dataLen = isBuffer ? data.length : Buffer.byteLength(data);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + dataLen);
+        packet[p] = MESSAGE.CHANNEL_DATA;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, dataLen, p += 4);
+        if (isBuffer)
+          packet.set(data, p += 4);
+        else
+          packet.utf8Write(data, p += 4, dataLen);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_DATA (r:${chan}, ${dataLen})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelExtData(chan, data, type) {
+        const isBuffer = Buffer.isBuffer(data);
+        const dataLen = isBuffer ? data.length : Buffer.byteLength(data);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + 4 + dataLen);
+        packet[p] = MESSAGE.CHANNEL_EXTENDED_DATA;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, type, p += 4);
+        writeUInt32BE(packet, dataLen, p += 4);
+        if (isBuffer)
+          packet.set(data, p += 4);
+        else
+          packet.utf8Write(data, p += 4, dataLen);
+        this._debug && this._debug(`Outbound: Sending CHANNEL_EXTENDED_DATA (r:${chan})`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelOpenConfirm(remote, local, initWindow, maxPacket) {
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + 4 + 4);
+        packet[p] = MESSAGE.CHANNEL_OPEN_CONFIRMATION;
+        writeUInt32BE(packet, remote, ++p);
+        writeUInt32BE(packet, local, p += 4);
+        writeUInt32BE(packet, initWindow, p += 4);
+        writeUInt32BE(packet, maxPacket, p += 4);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_OPEN_CONFIRMATION (r:${remote}, l:${local})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      channelOpenFail(remote, reason, desc) {
+        if (typeof desc !== "string")
+          desc = "";
+        const descLen = Buffer.byteLength(desc);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + 4 + descLen + 4);
+        packet[p] = MESSAGE.CHANNEL_OPEN_FAILURE;
+        writeUInt32BE(packet, remote, ++p);
+        writeUInt32BE(packet, reason, p += 4);
+        writeUInt32BE(packet, descLen, p += 4);
+        p += 4;
+        if (descLen) {
+          packet.utf8Write(desc, p, descLen);
+          p += descLen;
+        }
+        writeUInt32BE(packet, 0, p);
+        this._debug && this._debug(`Outbound: Sending CHANNEL_OPEN_FAILURE (r:${remote})`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      // ===========================================================================
+      // Client-specific ===========================================================
+      // ===========================================================================
+      // Global
+      // ------
+      service(name) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const nameLen = Buffer.byteLength(name);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + nameLen);
+        packet[p] = MESSAGE.SERVICE_REQUEST;
+        writeUInt32BE(packet, nameLen, ++p);
+        packet.utf8Write(name, p += 4, nameLen);
+        this._debug && this._debug(`Outbound: Sending SERVICE_REQUEST (${name})`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      // 'ssh-userauth' service-specific
+      // -------------------------------
+      authPassword(username, password, newPassword) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const userLen = Buffer.byteLength(username);
+        const passLen = Buffer.byteLength(password);
+        const newPassLen = newPassword ? Buffer.byteLength(newPassword) : 0;
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + userLen + 4 + 14 + 4 + 8 + 1 + 4 + passLen + (newPassword ? 4 + newPassLen : 0)
+        );
+        packet[p] = MESSAGE.USERAUTH_REQUEST;
+        writeUInt32BE(packet, userLen, ++p);
+        packet.utf8Write(username, p += 4, userLen);
+        writeUInt32BE(packet, 14, p += userLen);
+        packet.utf8Write("ssh-connection", p += 4, 14);
+        writeUInt32BE(packet, 8, p += 14);
+        packet.utf8Write("password", p += 4, 8);
+        packet[p += 8] = newPassword ? 1 : 0;
+        writeUInt32BE(packet, passLen, ++p);
+        if (Buffer.isBuffer(password))
+          bufferCopy(password, packet, 0, passLen, p += 4);
+        else
+          packet.utf8Write(password, p += 4, passLen);
+        if (newPassword) {
+          writeUInt32BE(packet, newPassLen, p += passLen);
+          if (Buffer.isBuffer(newPassword))
+            bufferCopy(newPassword, packet, 0, newPassLen, p += 4);
+          else
+            packet.utf8Write(newPassword, p += 4, newPassLen);
+          this._debug && this._debug(
+            "Outbound: Sending USERAUTH_REQUEST (changed password)"
+          );
+        } else {
+          this._debug && this._debug(
+            "Outbound: Sending USERAUTH_REQUEST (password)"
+          );
+        }
+        this._authsQueue.push("password");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      authPK(username, pubKey, keyAlgo, cbSign) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        pubKey = parseKey(pubKey);
+        if (pubKey instanceof Error)
+          throw new Error("Invalid key");
+        const keyType = pubKey.type;
+        pubKey = pubKey.getPublicSSH();
+        if (typeof keyAlgo === "function") {
+          cbSign = keyAlgo;
+          keyAlgo = void 0;
+        }
+        if (!keyAlgo)
+          keyAlgo = keyType;
+        const userLen = Buffer.byteLength(username);
+        const algoLen = Buffer.byteLength(keyAlgo);
+        const pubKeyLen = pubKey.length;
+        const sessionID = this._kex.sessionID;
+        const sesLen = sessionID.length;
+        const payloadLen = (cbSign ? 4 + sesLen : 0) + 1 + 4 + userLen + 4 + 14 + 4 + 9 + 1 + 4 + algoLen + 4 + pubKeyLen;
+        let packet;
+        let p;
+        if (cbSign) {
+          packet = Buffer.allocUnsafe(payloadLen);
+          p = 0;
+          writeUInt32BE(packet, sesLen, p);
+          packet.set(sessionID, p += 4);
+          p += sesLen;
+        } else {
+          packet = this._packetRW.write.alloc(payloadLen);
+          p = this._packetRW.write.allocStart;
+        }
+        packet[p] = MESSAGE.USERAUTH_REQUEST;
+        writeUInt32BE(packet, userLen, ++p);
+        packet.utf8Write(username, p += 4, userLen);
+        writeUInt32BE(packet, 14, p += userLen);
+        packet.utf8Write("ssh-connection", p += 4, 14);
+        writeUInt32BE(packet, 9, p += 14);
+        packet.utf8Write("publickey", p += 4, 9);
+        packet[p += 9] = cbSign ? 1 : 0;
+        writeUInt32BE(packet, algoLen, ++p);
+        packet.utf8Write(keyAlgo, p += 4, algoLen);
+        writeUInt32BE(packet, pubKeyLen, p += algoLen);
+        packet.set(pubKey, p += 4);
+        if (!cbSign) {
+          this._authsQueue.push("publickey");
+          this._debug && this._debug(
+            "Outbound: Sending USERAUTH_REQUEST (publickey -- check)"
+          );
+          sendPacket(this, this._packetRW.write.finalize(packet));
+          return;
+        }
+        cbSign(packet, (signature) => {
+          signature = convertSignature(signature, keyType);
+          if (signature === false)
+            throw new Error("Error while converting handshake signature");
+          const sigLen = signature.length;
+          p = this._packetRW.write.allocStart;
+          packet = this._packetRW.write.alloc(
+            1 + 4 + userLen + 4 + 14 + 4 + 9 + 1 + 4 + algoLen + 4 + pubKeyLen + 4 + 4 + algoLen + 4 + sigLen
+          );
+          packet[p] = MESSAGE.USERAUTH_REQUEST;
+          writeUInt32BE(packet, userLen, ++p);
+          packet.utf8Write(username, p += 4, userLen);
+          writeUInt32BE(packet, 14, p += userLen);
+          packet.utf8Write("ssh-connection", p += 4, 14);
+          writeUInt32BE(packet, 9, p += 14);
+          packet.utf8Write("publickey", p += 4, 9);
+          packet[p += 9] = 1;
+          writeUInt32BE(packet, algoLen, ++p);
+          packet.utf8Write(keyAlgo, p += 4, algoLen);
+          writeUInt32BE(packet, pubKeyLen, p += algoLen);
+          packet.set(pubKey, p += 4);
+          writeUInt32BE(packet, 4 + algoLen + 4 + sigLen, p += pubKeyLen);
+          writeUInt32BE(packet, algoLen, p += 4);
+          packet.utf8Write(keyAlgo, p += 4, algoLen);
+          writeUInt32BE(packet, sigLen, p += algoLen);
+          packet.set(signature, p += 4);
+          this._authsQueue.push("publickey");
+          this._debug && this._debug(
+            "Outbound: Sending USERAUTH_REQUEST (publickey)"
+          );
+          sendPacket(this, this._packetRW.write.finalize(packet));
+        });
+      }
+      authHostbased(username, pubKey, hostname, userlocal, keyAlgo, cbSign) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        pubKey = parseKey(pubKey);
+        if (pubKey instanceof Error)
+          throw new Error("Invalid key");
+        const keyType = pubKey.type;
+        pubKey = pubKey.getPublicSSH();
+        if (typeof keyAlgo === "function") {
+          cbSign = keyAlgo;
+          keyAlgo = void 0;
+        }
+        if (!keyAlgo)
+          keyAlgo = keyType;
+        const userLen = Buffer.byteLength(username);
+        const algoLen = Buffer.byteLength(keyAlgo);
+        const pubKeyLen = pubKey.length;
+        const sessionID = this._kex.sessionID;
+        const sesLen = sessionID.length;
+        const hostnameLen = Buffer.byteLength(hostname);
+        const userlocalLen = Buffer.byteLength(userlocal);
+        const data = Buffer.allocUnsafe(
+          4 + sesLen + 1 + 4 + userLen + 4 + 14 + 4 + 9 + 4 + algoLen + 4 + pubKeyLen + 4 + hostnameLen + 4 + userlocalLen
+        );
+        let p = 0;
+        writeUInt32BE(data, sesLen, p);
+        data.set(sessionID, p += 4);
+        data[p += sesLen] = MESSAGE.USERAUTH_REQUEST;
+        writeUInt32BE(data, userLen, ++p);
+        data.utf8Write(username, p += 4, userLen);
+        writeUInt32BE(data, 14, p += userLen);
+        data.utf8Write("ssh-connection", p += 4, 14);
+        writeUInt32BE(data, 9, p += 14);
+        data.utf8Write("hostbased", p += 4, 9);
+        writeUInt32BE(data, algoLen, p += 9);
+        data.utf8Write(keyAlgo, p += 4, algoLen);
+        writeUInt32BE(data, pubKeyLen, p += algoLen);
+        data.set(pubKey, p += 4);
+        writeUInt32BE(data, hostnameLen, p += pubKeyLen);
+        data.utf8Write(hostname, p += 4, hostnameLen);
+        writeUInt32BE(data, userlocalLen, p += hostnameLen);
+        data.utf8Write(userlocal, p += 4, userlocalLen);
+        cbSign(data, (signature) => {
+          signature = convertSignature(signature, keyType);
+          if (!signature)
+            throw new Error("Error while converting handshake signature");
+          const sigLen = signature.length;
+          const reqDataLen = data.length - sesLen - 4;
+          p = this._packetRW.write.allocStart;
+          const packet = this._packetRW.write.alloc(
+            reqDataLen + 4 + 4 + algoLen + 4 + sigLen
+          );
+          bufferCopy(data, packet, 4 + sesLen, data.length, p);
+          writeUInt32BE(packet, 4 + algoLen + 4 + sigLen, p += reqDataLen);
+          writeUInt32BE(packet, algoLen, p += 4);
+          packet.utf8Write(keyAlgo, p += 4, algoLen);
+          writeUInt32BE(packet, sigLen, p += algoLen);
+          packet.set(signature, p += 4);
+          this._authsQueue.push("hostbased");
+          this._debug && this._debug(
+            "Outbound: Sending USERAUTH_REQUEST (hostbased)"
+          );
+          sendPacket(this, this._packetRW.write.finalize(packet));
+        });
+      }
+      authKeyboard(username) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const userLen = Buffer.byteLength(username);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + userLen + 4 + 14 + 4 + 20 + 4 + 4
+        );
+        packet[p] = MESSAGE.USERAUTH_REQUEST;
+        writeUInt32BE(packet, userLen, ++p);
+        packet.utf8Write(username, p += 4, userLen);
+        writeUInt32BE(packet, 14, p += userLen);
+        packet.utf8Write("ssh-connection", p += 4, 14);
+        writeUInt32BE(packet, 20, p += 14);
+        packet.utf8Write("keyboard-interactive", p += 4, 20);
+        writeUInt32BE(packet, 0, p += 20);
+        writeUInt32BE(packet, 0, p += 4);
+        this._authsQueue.push("keyboard-interactive");
+        this._debug && this._debug(
+          "Outbound: Sending USERAUTH_REQUEST (keyboard-interactive)"
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      authNone(username) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const userLen = Buffer.byteLength(username);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + userLen + 4 + 14 + 4 + 4);
+        packet[p] = MESSAGE.USERAUTH_REQUEST;
+        writeUInt32BE(packet, userLen, ++p);
+        packet.utf8Write(username, p += 4, userLen);
+        writeUInt32BE(packet, 14, p += userLen);
+        packet.utf8Write("ssh-connection", p += 4, 14);
+        writeUInt32BE(packet, 4, p += 14);
+        packet.utf8Write("none", p += 4, 4);
+        this._authsQueue.push("none");
+        this._debug && this._debug("Outbound: Sending USERAUTH_REQUEST (none)");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      authInfoRes(responses) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        let responsesTotalLen = 0;
+        let responseLens;
+        if (responses) {
+          responseLens = new Array(responses.length);
+          for (let i = 0; i < responses.length; ++i) {
+            const len = Buffer.byteLength(responses[i]);
+            responseLens[i] = len;
+            responsesTotalLen += 4 + len;
+          }
+        }
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + responsesTotalLen);
+        packet[p] = MESSAGE.USERAUTH_INFO_RESPONSE;
+        if (responses) {
+          writeUInt32BE(packet, responses.length, ++p);
+          p += 4;
+          for (let i = 0; i < responses.length; ++i) {
+            const len = responseLens[i];
+            writeUInt32BE(packet, len, p);
+            p += 4;
+            if (len) {
+              packet.utf8Write(responses[i], p, len);
+              p += len;
+            }
+          }
+        } else {
+          writeUInt32BE(packet, 0, ++p);
+        }
+        this._debug && this._debug("Outbound: Sending USERAUTH_INFO_RESPONSE");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      // 'ssh-connection' service-specific
+      // ---------------------------------
+      tcpipForward(bindAddr, bindPort, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const addrLen = Buffer.byteLength(bindAddr);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 13 + 1 + 4 + addrLen + 4);
+        packet[p] = MESSAGE.GLOBAL_REQUEST;
+        writeUInt32BE(packet, 13, ++p);
+        packet.utf8Write("tcpip-forward", p += 4, 13);
+        packet[p += 13] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        writeUInt32BE(packet, addrLen, ++p);
+        packet.utf8Write(bindAddr, p += 4, addrLen);
+        writeUInt32BE(packet, bindPort, p += addrLen);
+        this._debug && this._debug("Outbound: Sending GLOBAL_REQUEST (tcpip-forward)");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      cancelTcpipForward(bindAddr, bindPort, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const addrLen = Buffer.byteLength(bindAddr);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 20 + 1 + 4 + addrLen + 4);
+        packet[p] = MESSAGE.GLOBAL_REQUEST;
+        writeUInt32BE(packet, 20, ++p);
+        packet.utf8Write("cancel-tcpip-forward", p += 4, 20);
+        packet[p += 20] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        writeUInt32BE(packet, addrLen, ++p);
+        packet.utf8Write(bindAddr, p += 4, addrLen);
+        writeUInt32BE(packet, bindPort, p += addrLen);
+        this._debug && this._debug("Outbound: Sending GLOBAL_REQUEST (cancel-tcpip-forward)");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      openssh_streamLocalForward(socketPath, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const socketPathLen = Buffer.byteLength(socketPath);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 31 + 1 + 4 + socketPathLen
+        );
+        packet[p] = MESSAGE.GLOBAL_REQUEST;
+        writeUInt32BE(packet, 31, ++p);
+        packet.utf8Write("streamlocal-forward@openssh.com", p += 4, 31);
+        packet[p += 31] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        writeUInt32BE(packet, socketPathLen, ++p);
+        packet.utf8Write(socketPath, p += 4, socketPathLen);
+        this._debug && this._debug(
+          "Outbound: Sending GLOBAL_REQUEST (streamlocal-forward@openssh.com)"
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      openssh_cancelStreamLocalForward(socketPath, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const socketPathLen = Buffer.byteLength(socketPath);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 38 + 1 + 4 + socketPathLen
+        );
+        packet[p] = MESSAGE.GLOBAL_REQUEST;
+        writeUInt32BE(packet, 38, ++p);
+        packet.utf8Write("cancel-streamlocal-forward@openssh.com", p += 4, 38);
+        packet[p += 38] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        writeUInt32BE(packet, socketPathLen, ++p);
+        packet.utf8Write(socketPath, p += 4, socketPathLen);
+        if (this._debug) {
+          this._debug(
+            "Outbound: Sending GLOBAL_REQUEST (cancel-streamlocal-forward@openssh.com)"
+          );
+        }
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      directTcpip(chan, initWindow, maxPacket, cfg) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const srcLen = Buffer.byteLength(cfg.srcIP);
+        const dstLen = Buffer.byteLength(cfg.dstIP);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 12 + 4 + 4 + 4 + 4 + srcLen + 4 + 4 + dstLen + 4
+        );
+        packet[p] = MESSAGE.CHANNEL_OPEN;
+        writeUInt32BE(packet, 12, ++p);
+        packet.utf8Write("direct-tcpip", p += 4, 12);
+        writeUInt32BE(packet, chan, p += 12);
+        writeUInt32BE(packet, initWindow, p += 4);
+        writeUInt32BE(packet, maxPacket, p += 4);
+        writeUInt32BE(packet, dstLen, p += 4);
+        packet.utf8Write(cfg.dstIP, p += 4, dstLen);
+        writeUInt32BE(packet, cfg.dstPort, p += dstLen);
+        writeUInt32BE(packet, srcLen, p += 4);
+        packet.utf8Write(cfg.srcIP, p += 4, srcLen);
+        writeUInt32BE(packet, cfg.srcPort, p += srcLen);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_OPEN (r:${chan}, direct-tcpip)`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      openssh_directStreamLocal(chan, initWindow, maxPacket, cfg) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const pathLen = Buffer.byteLength(cfg.socketPath);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 30 + 4 + 4 + 4 + 4 + pathLen + 4 + 4
+        );
+        packet[p] = MESSAGE.CHANNEL_OPEN;
+        writeUInt32BE(packet, 30, ++p);
+        packet.utf8Write("direct-streamlocal@openssh.com", p += 4, 30);
+        writeUInt32BE(packet, chan, p += 30);
+        writeUInt32BE(packet, initWindow, p += 4);
+        writeUInt32BE(packet, maxPacket, p += 4);
+        writeUInt32BE(packet, pathLen, p += 4);
+        packet.utf8Write(cfg.socketPath, p += 4, pathLen);
+        bufferFill(packet, 0, p += pathLen, p + 8);
+        if (this._debug) {
+          this._debug(
+            `Outbound: Sending CHANNEL_OPEN (r:${chan}, direct-streamlocal@openssh.com)`
+          );
+        }
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      openssh_noMoreSessions(wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 28 + 1);
+        packet[p] = MESSAGE.GLOBAL_REQUEST;
+        writeUInt32BE(packet, 28, ++p);
+        packet.utf8Write("no-more-sessions@openssh.com", p += 4, 28);
+        packet[p += 28] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        this._debug && this._debug(
+          "Outbound: Sending GLOBAL_REQUEST (no-more-sessions@openssh.com)"
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      session(chan, initWindow, maxPacket) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 7 + 4 + 4 + 4);
+        packet[p] = MESSAGE.CHANNEL_OPEN;
+        writeUInt32BE(packet, 7, ++p);
+        packet.utf8Write("session", p += 4, 7);
+        writeUInt32BE(packet, chan, p += 7);
+        writeUInt32BE(packet, initWindow, p += 4);
+        writeUInt32BE(packet, maxPacket, p += 4);
+        this._debug && this._debug(`Outbound: Sending CHANNEL_OPEN (r:${chan}, session)`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      windowChange(chan, rows, cols, height, width) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 4 + 13 + 1 + 4 + 4 + 4 + 4
+        );
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 13, p += 4);
+        packet.utf8Write("window-change", p += 4, 13);
+        packet[p += 13] = 0;
+        writeUInt32BE(packet, cols, ++p);
+        writeUInt32BE(packet, rows, p += 4);
+        writeUInt32BE(packet, width, p += 4);
+        writeUInt32BE(packet, height, p += 4);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_REQUEST (r:${chan}, window-change)`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      pty(chan, rows, cols, height, width, term, modes, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        if (!term || !term.length)
+          term = "vt100";
+        if (modes && !Buffer.isBuffer(modes) && !Array.isArray(modes) && typeof modes === "object" && modes !== null) {
+          modes = modesToBytes(modes);
+        }
+        if (!modes || !modes.length)
+          modes = NO_TERMINAL_MODES_BUFFER;
+        const termLen = term.length;
+        const modesLen = modes.length;
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 4 + 7 + 1 + 4 + termLen + 4 + 4 + 4 + 4 + 4 + modesLen
+        );
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 7, p += 4);
+        packet.utf8Write("pty-req", p += 4, 7);
+        packet[p += 7] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        writeUInt32BE(packet, termLen, ++p);
+        packet.utf8Write(term, p += 4, termLen);
+        writeUInt32BE(packet, cols, p += termLen);
+        writeUInt32BE(packet, rows, p += 4);
+        writeUInt32BE(packet, width, p += 4);
+        writeUInt32BE(packet, height, p += 4);
+        writeUInt32BE(packet, modesLen, p += 4);
+        p += 4;
+        if (Array.isArray(modes)) {
+          for (let i = 0; i < modesLen; ++i)
+            packet[p++] = modes[i];
+        } else if (Buffer.isBuffer(modes)) {
+          packet.set(modes, p);
+        }
+        this._debug && this._debug(`Outbound: Sending CHANNEL_REQUEST (r:${chan}, pty-req)`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      shell(chan, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + 5 + 1);
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 5, p += 4);
+        packet.utf8Write("shell", p += 4, 5);
+        packet[p += 5] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        this._debug && this._debug(`Outbound: Sending CHANNEL_REQUEST (r:${chan}, shell)`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      exec(chan, cmd, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const isBuf = Buffer.isBuffer(cmd);
+        const cmdLen = isBuf ? cmd.length : Buffer.byteLength(cmd);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + 4 + 1 + 4 + cmdLen);
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 4, p += 4);
+        packet.utf8Write("exec", p += 4, 4);
+        packet[p += 4] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        writeUInt32BE(packet, cmdLen, ++p);
+        if (isBuf)
+          packet.set(cmd, p += 4);
+        else
+          packet.utf8Write(cmd, p += 4, cmdLen);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_REQUEST (r:${chan}, exec: ${cmd})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      signal(chan, signal) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const origSignal = signal;
+        signal = signal.toUpperCase();
+        if (signal.slice(0, 3) === "SIG")
+          signal = signal.slice(3);
+        if (SIGNALS[signal] !== 1)
+          throw new Error(`Invalid signal: ${origSignal}`);
+        const signalLen = signal.length;
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 4 + 6 + 1 + 4 + signalLen
+        );
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 6, p += 4);
+        packet.utf8Write("signal", p += 4, 6);
+        packet[p += 6] = 0;
+        writeUInt32BE(packet, signalLen, ++p);
+        packet.utf8Write(signal, p += 4, signalLen);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_REQUEST (r:${chan}, signal: ${signal})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      env(chan, key, val, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const keyLen = Buffer.byteLength(key);
+        const isBuf = Buffer.isBuffer(val);
+        const valLen = isBuf ? val.length : Buffer.byteLength(val);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 4 + 3 + 1 + 4 + keyLen + 4 + valLen
+        );
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 3, p += 4);
+        packet.utf8Write("env", p += 4, 3);
+        packet[p += 3] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        writeUInt32BE(packet, keyLen, ++p);
+        packet.utf8Write(key, p += 4, keyLen);
+        writeUInt32BE(packet, valLen, p += keyLen);
+        if (isBuf)
+          packet.set(val, p += 4);
+        else
+          packet.utf8Write(val, p += 4, valLen);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_REQUEST (r:${chan}, env: ${key}=${val})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      x11Forward(chan, cfg, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const protocol = cfg.protocol;
+        const cookie = cfg.cookie;
+        const isBufProto = Buffer.isBuffer(protocol);
+        const protoLen = isBufProto ? protocol.length : Buffer.byteLength(protocol);
+        const isBufCookie = Buffer.isBuffer(cookie);
+        const cookieLen = isBufCookie ? cookie.length : Buffer.byteLength(cookie);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 4 + 7 + 1 + 1 + 4 + protoLen + 4 + cookieLen + 4
+        );
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 7, p += 4);
+        packet.utf8Write("x11-req", p += 4, 7);
+        packet[p += 7] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        packet[++p] = cfg.single ? 1 : 0;
+        writeUInt32BE(packet, protoLen, ++p);
+        if (isBufProto)
+          packet.set(protocol, p += 4);
+        else
+          packet.utf8Write(protocol, p += 4, protoLen);
+        writeUInt32BE(packet, cookieLen, p += protoLen);
+        if (isBufCookie)
+          packet.set(cookie, p += 4);
+        else
+          packet.latin1Write(cookie, p += 4, cookieLen);
+        writeUInt32BE(packet, cfg.screen || 0, p += cookieLen);
+        this._debug && this._debug(`Outbound: Sending CHANNEL_REQUEST (r:${chan}, x11-req)`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      subsystem(chan, name, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        const nameLen = Buffer.byteLength(name);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + 9 + 1 + 4 + nameLen);
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 9, p += 4);
+        packet.utf8Write("subsystem", p += 4, 9);
+        packet[p += 9] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        writeUInt32BE(packet, nameLen, ++p);
+        packet.utf8Write(name, p += 4, nameLen);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_REQUEST (r:${chan}, subsystem: ${name})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      openssh_agentForward(chan, wantReply) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + 26 + 1);
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 26, p += 4);
+        packet.utf8Write("auth-agent-req@openssh.com", p += 4, 26);
+        packet[p += 26] = wantReply === void 0 || wantReply === true ? 1 : 0;
+        if (this._debug) {
+          this._debug(
+            `Outbound: Sending CHANNEL_REQUEST (r:${chan}, auth-agent-req@openssh.com)`
+          );
+        }
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      openssh_hostKeysProve(keys) {
+        if (this._server)
+          throw new Error("Client-only method called in server mode");
+        let keysTotal = 0;
+        const publicKeys = [];
+        for (const key of keys) {
+          const publicKey = key.getPublicSSH();
+          keysTotal += 4 + publicKey.length;
+          publicKeys.push(publicKey);
+        }
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 29 + 1 + keysTotal);
+        packet[p] = MESSAGE.GLOBAL_REQUEST;
+        writeUInt32BE(packet, 29, ++p);
+        packet.utf8Write("hostkeys-prove-00@openssh.com", p += 4, 29);
+        packet[p += 29] = 1;
+        ++p;
+        for (const buf of publicKeys) {
+          writeUInt32BE(packet, buf.length, p);
+          bufferCopy(buf, packet, 0, buf.length, p += 4);
+          p += buf.length;
+        }
+        if (this._debug) {
+          this._debug(
+            "Outbound: Sending GLOBAL_REQUEST (hostkeys-prove-00@openssh.com)"
+          );
+        }
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      // ===========================================================================
+      // Server-specific ===========================================================
+      // ===========================================================================
+      // Global
+      // ------
+      serviceAccept(svcName) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        const svcNameLen = Buffer.byteLength(svcName);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + svcNameLen);
+        packet[p] = MESSAGE.SERVICE_ACCEPT;
+        writeUInt32BE(packet, svcNameLen, ++p);
+        packet.utf8Write(svcName, p += 4, svcNameLen);
+        this._debug && this._debug(`Outbound: Sending SERVICE_ACCEPT (${svcName})`);
+        sendPacket(this, this._packetRW.write.finalize(packet));
+        if (this._server && this._banner && svcName === "ssh-userauth") {
+          const banner = this._banner;
+          this._banner = void 0;
+          const bannerLen = Buffer.byteLength(banner);
+          p = this._packetRW.write.allocStart;
+          const packet2 = this._packetRW.write.alloc(1 + 4 + bannerLen + 4);
+          packet2[p] = MESSAGE.USERAUTH_BANNER;
+          writeUInt32BE(packet2, bannerLen, ++p);
+          packet2.utf8Write(banner, p += 4, bannerLen);
+          writeUInt32BE(packet2, 0, p += bannerLen);
+          this._debug && this._debug("Outbound: Sending USERAUTH_BANNER");
+          sendPacket(this, this._packetRW.write.finalize(packet2));
+        }
+      }
+      // 'ssh-connection' service-specific
+      forwardedTcpip(chan, initWindow, maxPacket, cfg) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        const boundAddrLen = Buffer.byteLength(cfg.boundAddr);
+        const remoteAddrLen = Buffer.byteLength(cfg.remoteAddr);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 15 + 4 + 4 + 4 + 4 + boundAddrLen + 4 + 4 + remoteAddrLen + 4
+        );
+        packet[p] = MESSAGE.CHANNEL_OPEN;
+        writeUInt32BE(packet, 15, ++p);
+        packet.utf8Write("forwarded-tcpip", p += 4, 15);
+        writeUInt32BE(packet, chan, p += 15);
+        writeUInt32BE(packet, initWindow, p += 4);
+        writeUInt32BE(packet, maxPacket, p += 4);
+        writeUInt32BE(packet, boundAddrLen, p += 4);
+        packet.utf8Write(cfg.boundAddr, p += 4, boundAddrLen);
+        writeUInt32BE(packet, cfg.boundPort, p += boundAddrLen);
+        writeUInt32BE(packet, remoteAddrLen, p += 4);
+        packet.utf8Write(cfg.remoteAddr, p += 4, remoteAddrLen);
+        writeUInt32BE(packet, cfg.remotePort, p += remoteAddrLen);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_OPEN (r:${chan}, forwarded-tcpip)`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      x11(chan, initWindow, maxPacket, cfg) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        const addrLen = Buffer.byteLength(cfg.originAddr);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 3 + 4 + 4 + 4 + 4 + addrLen + 4
+        );
+        packet[p] = MESSAGE.CHANNEL_OPEN;
+        writeUInt32BE(packet, 3, ++p);
+        packet.utf8Write("x11", p += 4, 3);
+        writeUInt32BE(packet, chan, p += 3);
+        writeUInt32BE(packet, initWindow, p += 4);
+        writeUInt32BE(packet, maxPacket, p += 4);
+        writeUInt32BE(packet, addrLen, p += 4);
+        packet.utf8Write(cfg.originAddr, p += 4, addrLen);
+        writeUInt32BE(packet, cfg.originPort, p += addrLen);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_OPEN (r:${chan}, x11)`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      openssh_authAgent(chan, initWindow, maxPacket) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 22 + 4 + 4 + 4);
+        packet[p] = MESSAGE.CHANNEL_OPEN;
+        writeUInt32BE(packet, 22, ++p);
+        packet.utf8Write("auth-agent@openssh.com", p += 4, 22);
+        writeUInt32BE(packet, chan, p += 22);
+        writeUInt32BE(packet, initWindow, p += 4);
+        writeUInt32BE(packet, maxPacket, p += 4);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_OPEN (r:${chan}, auth-agent@openssh.com)`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      openssh_forwardedStreamLocal(chan, initWindow, maxPacket, cfg) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        const pathLen = Buffer.byteLength(cfg.socketPath);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 33 + 4 + 4 + 4 + 4 + pathLen + 4
+        );
+        packet[p] = MESSAGE.CHANNEL_OPEN;
+        writeUInt32BE(packet, 33, ++p);
+        packet.utf8Write("forwarded-streamlocal@openssh.com", p += 4, 33);
+        writeUInt32BE(packet, chan, p += 33);
+        writeUInt32BE(packet, initWindow, p += 4);
+        writeUInt32BE(packet, maxPacket, p += 4);
+        writeUInt32BE(packet, pathLen, p += 4);
+        packet.utf8Write(cfg.socketPath, p += 4, pathLen);
+        writeUInt32BE(packet, 0, p += pathLen);
+        if (this._debug) {
+          this._debug(
+            `Outbound: Sending CHANNEL_OPEN (r:${chan}, forwarded-streamlocal@openssh.com)`
+          );
+        }
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      exitStatus(chan, status) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + 4 + 11 + 1 + 4);
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 11, p += 4);
+        packet.utf8Write("exit-status", p += 4, 11);
+        packet[p += 11] = 0;
+        writeUInt32BE(packet, status, ++p);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_REQUEST (r:${chan}, exit-status: ${status})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      exitSignal(chan, name, coreDumped, msg) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        const origSignal = name;
+        if (typeof origSignal !== "string" || !origSignal)
+          throw new Error(`Invalid signal: ${origSignal}`);
+        let signal = name.toUpperCase();
+        if (signal.slice(0, 3) === "SIG")
+          signal = signal.slice(3);
+        if (SIGNALS[signal] !== 1)
+          throw new Error(`Invalid signal: ${origSignal}`);
+        const nameLen = Buffer.byteLength(signal);
+        const msgLen = msg ? Buffer.byteLength(msg) : 0;
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + 4 + 11 + 1 + 4 + nameLen + 1 + 4 + msgLen + 4
+        );
+        packet[p] = MESSAGE.CHANNEL_REQUEST;
+        writeUInt32BE(packet, chan, ++p);
+        writeUInt32BE(packet, 11, p += 4);
+        packet.utf8Write("exit-signal", p += 4, 11);
+        packet[p += 11] = 0;
+        writeUInt32BE(packet, nameLen, ++p);
+        packet.utf8Write(signal, p += 4, nameLen);
+        packet[p += nameLen] = coreDumped ? 1 : 0;
+        writeUInt32BE(packet, msgLen, ++p);
+        p += 4;
+        if (msgLen) {
+          packet.utf8Write(msg, p, msgLen);
+          p += msgLen;
+        }
+        writeUInt32BE(packet, 0, p);
+        this._debug && this._debug(
+          `Outbound: Sending CHANNEL_REQUEST (r:${chan}, exit-signal: ${name})`
+        );
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      // 'ssh-userauth' service-specific
+      authFailure(authMethods, isPartial) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        if (this._authsQueue.length === 0)
+          throw new Error("No auth in progress");
+        let methods;
+        if (typeof authMethods === "boolean") {
+          isPartial = authMethods;
+          authMethods = void 0;
+        }
+        if (authMethods) {
+          methods = [];
+          for (let i = 0; i < authMethods.length; ++i) {
+            if (authMethods[i].toLowerCase() === "none")
+              continue;
+            methods.push(authMethods[i]);
+          }
+          methods = methods.join(",");
+        } else {
+          methods = "";
+        }
+        const methodsLen = methods.length;
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + methodsLen + 1);
+        packet[p] = MESSAGE.USERAUTH_FAILURE;
+        writeUInt32BE(packet, methodsLen, ++p);
+        packet.utf8Write(methods, p += 4, methodsLen);
+        packet[p += methodsLen] = isPartial === true ? 1 : 0;
+        this._authsQueue.shift();
+        this._debug && this._debug("Outbound: Sending USERAUTH_FAILURE");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      authSuccess() {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        if (this._authsQueue.length === 0)
+          throw new Error("No auth in progress");
+        const p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1);
+        packet[p] = MESSAGE.USERAUTH_SUCCESS;
+        this._authsQueue.shift();
+        this._authenticated = true;
+        this._debug && this._debug("Outbound: Sending USERAUTH_SUCCESS");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+        if (this._kex.negotiated.cs.compress === "zlib@openssh.com")
+          this._packetRW.read = new ZlibPacketReader();
+        if (this._kex.negotiated.sc.compress === "zlib@openssh.com")
+          this._packetRW.write = new ZlibPacketWriter(this);
+      }
+      authPKOK(keyAlgo, key) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        if (this._authsQueue.length === 0 || this._authsQueue[0] !== "publickey")
+          throw new Error('"publickey" auth not in progress');
+        const keyAlgoLen = Buffer.byteLength(keyAlgo);
+        const keyLen = key.length;
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + keyAlgoLen + 4 + keyLen);
+        packet[p] = MESSAGE.USERAUTH_PK_OK;
+        writeUInt32BE(packet, keyAlgoLen, ++p);
+        packet.utf8Write(keyAlgo, p += 4, keyAlgoLen);
+        writeUInt32BE(packet, keyLen, p += keyAlgoLen);
+        packet.set(key, p += 4);
+        this._authsQueue.shift();
+        this._debug && this._debug("Outbound: Sending USERAUTH_PK_OK");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      authPasswdChg(prompt) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        const promptLen = Buffer.byteLength(prompt);
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(1 + 4 + promptLen + 4);
+        packet[p] = MESSAGE.USERAUTH_PASSWD_CHANGEREQ;
+        writeUInt32BE(packet, promptLen, ++p);
+        packet.utf8Write(prompt, p += 4, promptLen);
+        writeUInt32BE(packet, 0, p += promptLen);
+        this._debug && this._debug("Outbound: Sending USERAUTH_PASSWD_CHANGEREQ");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+      authInfoReq(name, instructions, prompts) {
+        if (!this._server)
+          throw new Error("Server-only method called in client mode");
+        let promptsLen = 0;
+        const nameLen = name ? Buffer.byteLength(name) : 0;
+        const instrLen = instructions ? Buffer.byteLength(instructions) : 0;
+        for (let i = 0; i < prompts.length; ++i)
+          promptsLen += 4 + Buffer.byteLength(prompts[i].prompt) + 1;
+        let p = this._packetRW.write.allocStart;
+        const packet = this._packetRW.write.alloc(
+          1 + 4 + nameLen + 4 + instrLen + 4 + 4 + promptsLen
+        );
+        packet[p] = MESSAGE.USERAUTH_INFO_REQUEST;
+        writeUInt32BE(packet, nameLen, ++p);
+        p += 4;
+        if (name) {
+          packet.utf8Write(name, p, nameLen);
+          p += nameLen;
+        }
+        writeUInt32BE(packet, instrLen, p);
+        p += 4;
+        if (instructions) {
+          packet.utf8Write(instructions, p, instrLen);
+          p += instrLen;
+        }
+        writeUInt32BE(packet, 0, p);
+        writeUInt32BE(packet, prompts.length, p += 4);
+        p += 4;
+        for (let i = 0; i < prompts.length; ++i) {
+          const prompt = prompts[i];
+          const promptLen = Buffer.byteLength(prompt.prompt);
+          writeUInt32BE(packet, promptLen, p);
+          p += 4;
+          if (promptLen) {
+            packet.utf8Write(prompt.prompt, p, promptLen);
+            p += promptLen;
+          }
+          packet[p++] = prompt.echo ? 1 : 0;
+        }
+        this._debug && this._debug("Outbound: Sending USERAUTH_INFO_REQUEST");
+        sendPacket(this, this._packetRW.write.finalize(packet));
+      }
+    };
+    var RE_IDENT = /^SSH-(2\.0|1\.99)-([^ ]+)(?: (.*))?$/;
+    function parseHeader(chunk, p, len) {
+      let data;
+      let chunkOffset;
+      if (this._buffer) {
+        data = Buffer.allocUnsafe(this._buffer.length + (len - p));
+        data.set(this._buffer, 0);
+        if (p === 0) {
+          data.set(chunk, this._buffer.length);
+        } else {
+          data.set(
+            new Uint8Array(
+              chunk.buffer,
+              chunk.byteOffset + p,
+              len - p
+            ),
+            this._buffer.length
+          );
+        }
+        chunkOffset = this._buffer.length;
+        p = 0;
+      } else {
+        data = chunk;
+        chunkOffset = 0;
+      }
+      const op = p;
+      let start = p;
+      let end = p;
+      let needNL = false;
+      let lineLen = 0;
+      let lines = 0;
+      for (; p < data.length; ++p) {
+        const ch = data[p];
+        if (ch === 13) {
+          needNL = true;
+          continue;
+        }
+        if (ch === 10) {
+          if (end > start && end - start > 4 && data[start] === 83 && data[start + 1] === 83 && data[start + 2] === 72 && data[start + 3] === 45) {
+            const full = data.latin1Slice(op, end + 1);
+            const identRaw = start === op ? full : full.slice(start - op);
+            const m = RE_IDENT.exec(identRaw);
+            if (!m)
+              throw new Error("Invalid identification string");
+            const header = {
+              greeting: start === op ? "" : full.slice(0, start - op),
+              identRaw,
+              versions: {
+                protocol: m[1],
+                software: m[2]
+              },
+              comments: m[3]
+            };
+            this._remoteIdentRaw = Buffer.from(identRaw);
+            this._debug && this._debug(`Remote ident: ${inspect(identRaw)}`);
+            this._compatFlags = getCompatFlags(header);
+            this._buffer = void 0;
+            this._decipher = new NullDecipher(0, onKEXPayload.bind(this, { firstPacket: true }));
+            this._parse = parsePacket;
+            this._onHeader(header);
+            if (!this._destruct) {
+              return len;
+            }
+            kexinit(this);
+            return p + 1 - chunkOffset;
+          }
+          if (this._server)
+            throw new Error("Greetings from clients not permitted");
+          if (++lines > MAX_LINES)
+            throw new Error("Max greeting lines exceeded");
+          needNL = false;
+          start = p + 1;
+          lineLen = 0;
+        } else if (needNL) {
+          throw new Error("Invalid header: expected newline");
+        } else if (++lineLen >= MAX_LINE_LEN) {
+          throw new Error("Header line too long");
+        }
+        end = p;
+      }
+      if (!this._buffer)
+        this._buffer = bufferSlice(data, op);
+      return p - chunkOffset;
+    }
+    __name(parseHeader, "parseHeader");
+    function parsePacket(chunk, p, len) {
+      return this._decipher.decrypt(chunk, p, len);
+    }
+    __name(parsePacket, "parsePacket");
+    function onPayload(payload) {
+      this._onPacket();
+      if (payload.length === 0) {
+        this._debug && this._debug("Inbound: Skipping empty packet payload");
+        return;
+      }
+      payload = this._packetRW.read.read(payload);
+      const type = payload[0];
+      if (type === MESSAGE.USERAUTH_SUCCESS && !this._server && !this._authenticated) {
+        this._authenticated = true;
+        if (this._kex.negotiated.cs.compress === "zlib@openssh.com")
+          this._packetRW.write = new ZlibPacketWriter(this);
+        if (this._kex.negotiated.sc.compress === "zlib@openssh.com")
+          this._packetRW.read = new ZlibPacketReader();
+      }
+      const handler = MESSAGE_HANDLERS[type];
+      if (handler === void 0) {
+        this._debug && this._debug(`Inbound: Unsupported message type: ${type}`);
+        return;
+      }
+      return handler(this, payload);
+    }
+    __name(onPayload, "onPayload");
+    function getCompatFlags(header) {
+      const software = header.versions.software;
+      let flags = 0;
+      for (const rule of COMPAT_CHECKS) {
+        if (typeof rule[0] === "string") {
+          if (software === rule[0])
+            flags |= rule[1];
+        } else if (rule[0].test(software)) {
+          flags |= rule[1];
+        }
+      }
+      return flags;
+    }
+    __name(getCompatFlags, "getCompatFlags");
+    function modesToBytes(modes) {
+      const keys = Object.keys(modes);
+      const bytes = Buffer.allocUnsafe(5 * keys.length + 1);
+      let b = 0;
+      for (let i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+        if (key === "TTY_OP_END")
+          continue;
+        const opcode = TERMINAL_MODE[key];
+        if (opcode === void 0)
+          continue;
+        const val = modes[key];
+        if (typeof val === "number" && isFinite(val)) {
+          bytes[b++] = opcode;
+          bytes[b++] = val >>> 24;
+          bytes[b++] = val >>> 16;
+          bytes[b++] = val >>> 8;
+          bytes[b++] = val;
+        }
+      }
+      bytes[b++] = TERMINAL_MODE.TTY_OP_END;
+      if (b < bytes.length)
+        return bufferSlice(bytes, 0, b);
+      return bytes;
+    }
+    __name(modesToBytes, "modesToBytes");
+    function sendExtInfo(proto) {
+      let serverSigAlgs = "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521rsa-sha2-512,rsa-sha2-256,ssh-rsa,ssh-dss";
+      if (eddsaSupported)
+        serverSigAlgs = `ssh-ed25519,${serverSigAlgs}`;
+      const algsLen = Buffer.byteLength(serverSigAlgs);
+      let p = proto._packetRW.write.allocStart;
+      const packet = proto._packetRW.write.alloc(1 + 4 + 4 + 15 + 4 + algsLen);
+      packet[p] = MESSAGE.EXT_INFO;
+      writeUInt32BE(packet, 1, ++p);
+      writeUInt32BE(packet, 15, p += 4);
+      packet.utf8Write("server-sig-algs", p += 4, 15);
+      writeUInt32BE(packet, algsLen, p += 15);
+      packet.utf8Write(serverSigAlgs, p += 4, algsLen);
+      proto._debug && proto._debug("Outbound: Sending EXT_INFO");
+      sendPacket(proto, proto._packetRW.write.finalize(packet));
+    }
+    __name(sendExtInfo, "sendExtInfo");
+    module.exports = Protocol;
+  }
+});
+
+// node_modules/ssh2/lib/protocol/node-fs-compat.js
+var require_node_fs_compat = __commonJS({
+  "node_modules/ssh2/lib/protocol/node-fs-compat.js"(exports) {
+    "use strict";
+    var assert = require_assert();
+    var { inspect } = require_util();
+    function addNumericalSeparator(val) {
+      let res = "";
+      let i = val.length;
+      const start = val[0] === "-" ? 1 : 0;
+      for (; i >= start + 4; i -= 3)
+        res = `_${val.slice(i - 3, i)}${res}`;
+      return `${val.slice(0, i)}${res}`;
+    }
+    __name(addNumericalSeparator, "addNumericalSeparator");
+    function oneOf(expected, thing) {
+      assert(typeof thing === "string", "`thing` has to be of type string");
+      if (Array.isArray(expected)) {
+        const len = expected.length;
+        assert(len > 0, "At least one expected value needs to be specified");
+        expected = expected.map((i) => String(i));
+        if (len > 2) {
+          return `one of ${thing} ${expected.slice(0, len - 1).join(", ")}, or ` + expected[len - 1];
+        } else if (len === 2) {
+          return `one of ${thing} ${expected[0]} or ${expected[1]}`;
+        }
+        return `of ${thing} ${expected[0]}`;
+      }
+      return `of ${thing} ${String(expected)}`;
+    }
+    __name(oneOf, "oneOf");
+    exports.ERR_INTERNAL_ASSERTION = class ERR_INTERNAL_ASSERTION extends Error {
+      static {
+        __name(this, "ERR_INTERNAL_ASSERTION");
+      }
+      constructor(message) {
+        super();
+        Error.captureStackTrace(this, ERR_INTERNAL_ASSERTION);
+        const suffix = "This is caused by either a bug in ssh2 or incorrect usage of ssh2 internals.\nPlease open an issue with this stack trace at https://github.com/mscdex/ssh2/issues\n";
+        this.message = message === void 0 ? suffix : `${message}
+${suffix}`;
+      }
+    };
+    var MAX_32BIT_INT = 2 ** 32;
+    var MAX_32BIT_BIGINT = (() => {
+      try {
+        return new Function("return 2n ** 32n")();
+      } catch {
+      }
+    })();
+    exports.ERR_OUT_OF_RANGE = class ERR_OUT_OF_RANGE extends RangeError {
+      static {
+        __name(this, "ERR_OUT_OF_RANGE");
+      }
+      constructor(str, range, input, replaceDefaultBoolean) {
+        super();
+        Error.captureStackTrace(this, ERR_OUT_OF_RANGE);
+        assert(range, 'Missing "range" argument');
+        let msg = replaceDefaultBoolean ? str : `The value of "${str}" is out of range.`;
+        let received;
+        if (Number.isInteger(input) && Math.abs(input) > MAX_32BIT_INT) {
+          received = addNumericalSeparator(String(input));
+        } else if (typeof input === "bigint") {
+          received = String(input);
+          if (input > MAX_32BIT_BIGINT || input < -MAX_32BIT_BIGINT)
+            received = addNumericalSeparator(received);
+          received += "n";
+        } else {
+          received = inspect(input);
+        }
+        msg += ` It must be ${range}. Received ${received}`;
+        this.message = msg;
+      }
+    };
+    var ERR_INVALID_ARG_TYPE = class _ERR_INVALID_ARG_TYPE extends TypeError {
+      static {
+        __name(this, "ERR_INVALID_ARG_TYPE");
+      }
+      constructor(name, expected, actual) {
+        super();
+        Error.captureStackTrace(this, _ERR_INVALID_ARG_TYPE);
+        assert(typeof name === "string", `'name' must be a string`);
+        let determiner;
+        if (typeof expected === "string" && expected.startsWith("not ")) {
+          determiner = "must not be";
+          expected = expected.replace(/^not /, "");
+        } else {
+          determiner = "must be";
+        }
+        let msg;
+        if (name.endsWith(" argument")) {
+          msg = `The ${name} ${determiner} ${oneOf(expected, "type")}`;
+        } else {
+          const type = name.includes(".") ? "property" : "argument";
+          msg = `The "${name}" ${type} ${determiner} ${oneOf(expected, "type")}`;
+        }
+        msg += `. Received type ${typeof actual}`;
+        this.message = msg;
+      }
+    };
+    exports.ERR_INVALID_ARG_TYPE = ERR_INVALID_ARG_TYPE;
+    exports.validateNumber = /* @__PURE__ */ __name(function validateNumber(value, name) {
+      if (typeof value !== "number")
+        throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+    }, "validateNumber");
+  }
+});
+
+// node_modules/ssh2/lib/protocol/SFTP.js
+var require_SFTP = __commonJS({
+  "node_modules/ssh2/lib/protocol/SFTP.js"(exports, module) {
+    "use strict";
+    var EventEmitter = require_events();
+    var fs = require_fs();
+    var { constants } = fs;
+    var {
+      Readable: ReadableStream,
+      Writable: WritableStream
+    } = require_stream();
+    var { inherits, types: { isDate } } = require_util();
+    var FastBuffer = Buffer[Symbol.species];
+    var {
+      bufferCopy,
+      bufferSlice,
+      makeBufferParser,
+      writeUInt32BE
+    } = require_utils4();
+    var ATTR = {
+      SIZE: 1,
+      UIDGID: 2,
+      PERMISSIONS: 4,
+      ACMODTIME: 8,
+      EXTENDED: 2147483648
+    };
+    var ATTRS_BUF = Buffer.alloc(28);
+    var STATUS_CODE = {
+      OK: 0,
+      EOF: 1,
+      NO_SUCH_FILE: 2,
+      PERMISSION_DENIED: 3,
+      FAILURE: 4,
+      BAD_MESSAGE: 5,
+      NO_CONNECTION: 6,
+      CONNECTION_LOST: 7,
+      OP_UNSUPPORTED: 8
+    };
+    var VALID_STATUS_CODES = new Map(
+      Object.values(STATUS_CODE).map((n) => [n, 1])
+    );
+    var STATUS_CODE_STR = {
+      [STATUS_CODE.OK]: "No error",
+      [STATUS_CODE.EOF]: "End of file",
+      [STATUS_CODE.NO_SUCH_FILE]: "No such file or directory",
+      [STATUS_CODE.PERMISSION_DENIED]: "Permission denied",
+      [STATUS_CODE.FAILURE]: "Failure",
+      [STATUS_CODE.BAD_MESSAGE]: "Bad message",
+      [STATUS_CODE.NO_CONNECTION]: "No connection",
+      [STATUS_CODE.CONNECTION_LOST]: "Connection lost",
+      [STATUS_CODE.OP_UNSUPPORTED]: "Operation unsupported"
+    };
+    var REQUEST = {
+      INIT: 1,
+      OPEN: 3,
+      CLOSE: 4,
+      READ: 5,
+      WRITE: 6,
+      LSTAT: 7,
+      FSTAT: 8,
+      SETSTAT: 9,
+      FSETSTAT: 10,
+      OPENDIR: 11,
+      READDIR: 12,
+      REMOVE: 13,
+      MKDIR: 14,
+      RMDIR: 15,
+      REALPATH: 16,
+      STAT: 17,
+      RENAME: 18,
+      READLINK: 19,
+      SYMLINK: 20,
+      EXTENDED: 200
+    };
+    var RESPONSE = {
+      VERSION: 2,
+      STATUS: 101,
+      HANDLE: 102,
+      DATA: 103,
+      NAME: 104,
+      ATTRS: 105,
+      EXTENDED: 201
+    };
+    var OPEN_MODE = {
+      READ: 1,
+      WRITE: 2,
+      APPEND: 4,
+      CREAT: 8,
+      TRUNC: 16,
+      EXCL: 32
+    };
+    var PKT_RW_OVERHEAD = 2 * 1024;
+    var MAX_REQID = 2 ** 32 - 1;
+    var CLIENT_VERSION_BUFFER = Buffer.from([
+      0,
+      0,
+      0,
+      5,
+      REQUEST.INIT,
+      0,
+      0,
+      0,
+      3
+      /* version */
+    ]);
+    var SERVER_VERSION_BUFFER = Buffer.from([
+      0,
+      0,
+      0,
+      5,
+      RESPONSE.VERSION,
+      0,
+      0,
+      0,
+      3
+      /* version */
+    ]);
+    var RE_OPENSSH = /^SSH-2.0-(?:OpenSSH|dropbear)/;
+    var OPENSSH_MAX_PKT_LEN = 256 * 1024;
+    var bufferParser = makeBufferParser();
+    var fakeStderr = {
+      readable: false,
+      writable: false,
+      push: /* @__PURE__ */ __name((data) => {
+      }, "push"),
+      once: /* @__PURE__ */ __name(() => {
+      }, "once"),
+      on: /* @__PURE__ */ __name(() => {
+      }, "on"),
+      emit: /* @__PURE__ */ __name(() => {
+      }, "emit"),
+      end: /* @__PURE__ */ __name(() => {
+      }, "end")
+    };
+    function noop() {
+    }
+    __name(noop, "noop");
+    var SFTP = class extends EventEmitter {
+      static {
+        __name(this, "SFTP");
+      }
+      constructor(client, chanInfo, cfg) {
+        super();
+        if (typeof cfg !== "object" || !cfg)
+          cfg = {};
+        const remoteIdentRaw = client._protocol._remoteIdentRaw;
+        this.server = !!cfg.server;
+        this._debug = typeof cfg.debug === "function" ? cfg.debug : void 0;
+        this._isOpenSSH = remoteIdentRaw && RE_OPENSSH.test(remoteIdentRaw);
+        this._version = -1;
+        this._extensions = {};
+        this._biOpt = cfg.biOpt;
+        this._pktLenBytes = 0;
+        this._pktLen = 0;
+        this._pktPos = 0;
+        this._pktType = 0;
+        this._pktData = void 0;
+        this._writeReqid = -1;
+        this._requests = {};
+        this._maxInPktLen = OPENSSH_MAX_PKT_LEN;
+        this._maxOutPktLen = 34e3;
+        this._maxReadLen = (this._isOpenSSH ? OPENSSH_MAX_PKT_LEN : 34e3) - PKT_RW_OVERHEAD;
+        this._maxWriteLen = (this._isOpenSSH ? OPENSSH_MAX_PKT_LEN : 34e3) - PKT_RW_OVERHEAD;
+        this.maxOpenHandles = void 0;
+        this._client = client;
+        this._protocol = client._protocol;
+        this._callbacks = [];
+        this._hasX11 = false;
+        this._exit = {
+          code: void 0,
+          signal: void 0,
+          dump: void 0,
+          desc: void 0
+        };
+        this._waitWindow = false;
+        this._chunkcb = void 0;
+        this._buffer = [];
+        this.type = chanInfo.type;
+        this.subtype = void 0;
+        this.incoming = chanInfo.incoming;
+        this.outgoing = chanInfo.outgoing;
+        this.stderr = fakeStderr;
+        this.readable = true;
+      }
+      // This handles incoming data to parse
+      push(data) {
+        if (data === null) {
+          cleanupRequests(this);
+          if (!this.readable)
+            return;
+          this.readable = false;
+          this.emit("end");
+          return;
+        }
+        let p = 0;
+        while (p < data.length) {
+          if (this._pktLenBytes < 4) {
+            let nb = Math.min(4 - this._pktLenBytes, data.length - p);
+            this._pktLenBytes += nb;
+            while (nb--)
+              this._pktLen = (this._pktLen << 8) + data[p++];
+            if (this._pktLenBytes < 4)
+              return;
+            if (this._pktLen === 0)
+              return doFatalSFTPError(this, "Invalid packet length");
+            if (this._pktLen > this._maxInPktLen) {
+              const max = this._maxInPktLen;
+              return doFatalSFTPError(
+                this,
+                `Packet length ${this._pktLen} exceeds max length of ${max}`
+              );
+            }
+            if (p >= data.length)
+              return;
+          }
+          if (this._pktPos < this._pktLen) {
+            const nb = Math.min(this._pktLen - this._pktPos, data.length - p);
+            if (p !== 0 || nb !== data.length) {
+              if (nb === this._pktLen) {
+                this._pkt = new FastBuffer(data.buffer, data.byteOffset + p, nb);
+              } else {
+                if (!this._pkt)
+                  this._pkt = Buffer.allocUnsafe(this._pktLen);
+                this._pkt.set(
+                  new Uint8Array(data.buffer, data.byteOffset + p, nb),
+                  this._pktPos
+                );
+              }
+            } else if (nb === this._pktLen) {
+              this._pkt = data;
+            } else {
+              if (!this._pkt)
+                this._pkt = Buffer.allocUnsafe(this._pktLen);
+              this._pkt.set(data, this._pktPos);
+            }
+            p += nb;
+            this._pktPos += nb;
+            if (this._pktPos < this._pktLen)
+              return;
+          }
+          const type = this._pkt[0];
+          const payload = this._pkt;
+          this._pktLen = 0;
+          this._pktLenBytes = 0;
+          this._pkt = void 0;
+          this._pktPos = 0;
+          const handler = this.server ? SERVER_HANDLERS[type] : CLIENT_HANDLERS[type];
+          if (!handler)
+            return doFatalSFTPError(this, `Unknown packet type ${type}`);
+          if (this._version === -1) {
+            if (this.server) {
+              if (type !== REQUEST.INIT)
+                return doFatalSFTPError(this, `Expected INIT packet, got ${type}`);
+            } else if (type !== RESPONSE.VERSION) {
+              return doFatalSFTPError(this, `Expected VERSION packet, got ${type}`);
+            }
+          }
+          if (handler(this, payload) === false)
+            return;
+        }
+      }
+      end() {
+        this.destroy();
+      }
+      destroy() {
+        if (this.outgoing.state === "open" || this.outgoing.state === "eof") {
+          this.outgoing.state = "closing";
+          this._protocol.channelClose(this.outgoing.id);
+        }
+      }
+      _init() {
+        this._init = noop;
+        if (!this.server)
+          sendOrBuffer(this, CLIENT_VERSION_BUFFER);
+      }
+      // ===========================================================================
+      // Client-specific ===========================================================
+      // ===========================================================================
+      createReadStream(path, options) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        return new ReadStream(this, path, options);
+      }
+      createWriteStream(path, options) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        return new WriteStream(this, path, options);
+      }
+      open(path, flags_, attrs, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (typeof attrs === "function") {
+          cb = attrs;
+          attrs = void 0;
+        }
+        const flags = typeof flags_ === "number" ? flags_ : stringToFlags(flags_);
+        if (flags === null)
+          throw new Error(`Unknown flags string: ${flags_}`);
+        let attrsFlags = 0;
+        let attrsLen = 0;
+        if (typeof attrs === "string" || typeof attrs === "number")
+          attrs = { mode: attrs };
+        if (typeof attrs === "object" && attrs !== null) {
+          attrs = attrsToBytes(attrs);
+          attrsFlags = attrs.flags;
+          attrsLen = attrs.nb;
+        }
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen + 4 + 4 + attrsLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.OPEN;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        writeUInt32BE(buf, flags, p += pathLen);
+        writeUInt32BE(buf, attrsFlags, p += 4);
+        if (attrsLen) {
+          p += 4;
+          if (attrsLen === ATTRS_BUF.length)
+            buf.set(ATTRS_BUF, p);
+          else
+            bufferCopy(ATTRS_BUF, buf, 0, attrsLen, p);
+          p += attrsLen;
+        }
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} OPEN`
+        );
+      }
+      close(handle, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (!Buffer.isBuffer(handle))
+          throw new Error("handle is not a Buffer");
+        const handleLen = handle.length;
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + handleLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.CLOSE;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, handleLen, p);
+        buf.set(handle, p += 4);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} CLOSE`
+        );
+      }
+      read(handle, buf, off, len, position, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (!Buffer.isBuffer(handle))
+          throw new Error("handle is not a Buffer");
+        if (!Buffer.isBuffer(buf))
+          throw new Error("buffer is not a Buffer");
+        if (off >= buf.length)
+          throw new Error("offset is out of bounds");
+        if (off + len > buf.length)
+          throw new Error("length extends beyond buffer");
+        if (position === null)
+          throw new Error("null position currently unsupported");
+        read_(this, handle, buf, off, len, position, cb);
+      }
+      readData(handle, buf, off, len, position, cb) {
+        this.read(handle, buf, off, len, position, cb);
+      }
+      write(handle, buf, off, len, position, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (!Buffer.isBuffer(handle))
+          throw new Error("handle is not a Buffer");
+        if (!Buffer.isBuffer(buf))
+          throw new Error("buffer is not a Buffer");
+        if (off > buf.length)
+          throw new Error("offset is out of bounds");
+        if (off + len > buf.length)
+          throw new Error("length extends beyond buffer");
+        if (position === null)
+          throw new Error("null position currently unsupported");
+        if (!len) {
+          cb && process.nextTick(cb, void 0, 0);
+          return;
+        }
+        const maxDataLen = this._maxWriteLen;
+        const overflow = Math.max(len - maxDataLen, 0);
+        const origPosition = position;
+        if (overflow)
+          len = maxDataLen;
+        const handleLen = handle.length;
+        let p = 9;
+        const out = Buffer.allocUnsafe(4 + 1 + 4 + 4 + handleLen + 8 + 4 + len);
+        writeUInt32BE(out, out.length - 4, 0);
+        out[4] = REQUEST.WRITE;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(out, reqid, 5);
+        writeUInt32BE(out, handleLen, p);
+        out.set(handle, p += 4);
+        p += handleLen;
+        for (let i = 7; i >= 0; --i) {
+          out[p + i] = position & 255;
+          position /= 256;
+        }
+        writeUInt32BE(out, len, p += 8);
+        bufferCopy(buf, out, off, off + len, p += 4);
+        this._requests[reqid] = {
+          cb: /* @__PURE__ */ __name((err) => {
+            if (err) {
+              if (typeof cb === "function")
+                cb(err);
+            } else if (overflow) {
+              this.write(
+                handle,
+                buf,
+                off + len,
+                overflow,
+                origPosition + len,
+                cb
+              );
+            } else if (typeof cb === "function") {
+              cb(void 0, off + len);
+            }
+          }, "cb")
+        };
+        const isSent = sendOrBuffer(this, out);
+        if (this._debug) {
+          const how = isSent ? "Sent" : "Buffered";
+          this._debug(`SFTP: Outbound: ${how} WRITE (id:${reqid})`);
+        }
+      }
+      writeData(handle, buf, off, len, position, cb) {
+        this.write(handle, buf, off, len, position, cb);
+      }
+      fastGet(remotePath, localPath, opts, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        fastXfer(this, fs, remotePath, localPath, opts, cb);
+      }
+      fastPut(localPath, remotePath, opts, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        fastXfer(fs, this, localPath, remotePath, opts, cb);
+      }
+      readFile(path, options, callback_) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        let callback;
+        if (typeof callback_ === "function") {
+          callback = callback_;
+        } else if (typeof options === "function") {
+          callback = options;
+          options = void 0;
+        }
+        if (typeof options === "string")
+          options = { encoding: options, flag: "r" };
+        else if (!options)
+          options = { encoding: null, flag: "r" };
+        else if (typeof options !== "object")
+          throw new TypeError("Bad arguments");
+        const encoding = options.encoding;
+        if (encoding && !Buffer.isEncoding(encoding))
+          throw new Error(`Unknown encoding: ${encoding}`);
+        let size;
+        let buffer;
+        let buffers;
+        let pos = 0;
+        let handle;
+        let bytesRead = 0;
+        const flag = options.flag || "r";
+        const read = /* @__PURE__ */ __name(() => {
+          if (size === 0) {
+            buffer = Buffer.allocUnsafe(8192);
+            this.read(handle, buffer, 0, 8192, bytesRead, afterRead);
+          } else {
+            this.read(handle, buffer, pos, size - pos, bytesRead, afterRead);
+          }
+        }, "read");
+        const afterRead = /* @__PURE__ */ __name((er, nbytes) => {
+          let eof;
+          if (er) {
+            eof = er.code === STATUS_CODE.EOF;
+            if (!eof) {
+              return this.close(handle, () => {
+                return callback && callback(er);
+              });
+            }
+          } else {
+            eof = false;
+          }
+          if (eof || size === 0 && nbytes === 0)
+            return close();
+          bytesRead += nbytes;
+          pos += nbytes;
+          if (size !== 0) {
+            if (pos === size)
+              close();
+            else
+              read();
+          } else {
+            buffers.push(bufferSlice(buffer, 0, nbytes));
+            read();
+          }
+        }, "afterRead");
+        afterRead._wantEOFError = true;
+        const close = /* @__PURE__ */ __name(() => {
+          this.close(handle, (er) => {
+            if (size === 0) {
+              buffer = Buffer.concat(buffers, pos);
+            } else if (pos < size) {
+              buffer = bufferSlice(buffer, 0, pos);
+            }
+            if (encoding)
+              buffer = buffer.toString(encoding);
+            return callback && callback(er, buffer);
+          });
+        }, "close");
+        this.open(path, flag, 438, (er, handle_) => {
+          if (er)
+            return callback && callback(er);
+          handle = handle_;
+          const tryStat = /* @__PURE__ */ __name((er2, st) => {
+            if (er2) {
+              this.stat(path, (er_, st_) => {
+                if (er_) {
+                  return this.close(handle, () => {
+                    callback && callback(er2);
+                  });
+                }
+                tryStat(null, st_);
+              });
+              return;
+            }
+            size = st.size || 0;
+            if (size === 0) {
+              buffers = [];
+              return read();
+            }
+            buffer = Buffer.allocUnsafe(size);
+            read();
+          }, "tryStat");
+          this.fstat(handle, tryStat);
+        });
+      }
+      writeFile(path, data, options, callback_) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        let callback;
+        if (typeof callback_ === "function") {
+          callback = callback_;
+        } else if (typeof options === "function") {
+          callback = options;
+          options = void 0;
+        }
+        if (typeof options === "string")
+          options = { encoding: options, mode: 438, flag: "w" };
+        else if (!options)
+          options = { encoding: "utf8", mode: 438, flag: "w" };
+        else if (typeof options !== "object")
+          throw new TypeError("Bad arguments");
+        if (options.encoding && !Buffer.isEncoding(options.encoding))
+          throw new Error(`Unknown encoding: ${options.encoding}`);
+        const flag = options.flag || "w";
+        this.open(path, flag, options.mode, (openErr, handle) => {
+          if (openErr) {
+            callback && callback(openErr);
+          } else {
+            const buffer = Buffer.isBuffer(data) ? data : Buffer.from("" + data, options.encoding || "utf8");
+            const position = /a/.test(flag) ? null : 0;
+            if (position === null) {
+              const tryStat = /* @__PURE__ */ __name((er, st) => {
+                if (er) {
+                  this.stat(path, (er_, st_) => {
+                    if (er_) {
+                      return this.close(handle, () => {
+                        callback && callback(er);
+                      });
+                    }
+                    tryStat(null, st_);
+                  });
+                  return;
+                }
+                writeAll(this, handle, buffer, 0, buffer.length, st.size, callback);
+              }, "tryStat");
+              this.fstat(handle, tryStat);
+              return;
+            }
+            writeAll(this, handle, buffer, 0, buffer.length, position, callback);
+          }
+        });
+      }
+      appendFile(path, data, options, callback_) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        let callback;
+        if (typeof callback_ === "function") {
+          callback = callback_;
+        } else if (typeof options === "function") {
+          callback = options;
+          options = void 0;
+        }
+        if (typeof options === "string")
+          options = { encoding: options, mode: 438, flag: "a" };
+        else if (!options)
+          options = { encoding: "utf8", mode: 438, flag: "a" };
+        else if (typeof options !== "object")
+          throw new TypeError("Bad arguments");
+        if (!options.flag)
+          options = Object.assign({ flag: "a" }, options);
+        this.writeFile(path, data, options, callback);
+      }
+      exists(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        this.stat(path, (err) => {
+          cb && cb(err ? false : true);
+        });
+      }
+      unlink(filename, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const fnameLen = Buffer.byteLength(filename);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + fnameLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.REMOVE;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, fnameLen, p);
+        buf.utf8Write(filename, p += 4, fnameLen);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} REMOVE`
+        );
+      }
+      rename(oldPath, newPath, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const oldLen = Buffer.byteLength(oldPath);
+        const newLen = Buffer.byteLength(newPath);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + oldLen + 4 + newLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.RENAME;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, oldLen, p);
+        buf.utf8Write(oldPath, p += 4, oldLen);
+        writeUInt32BE(buf, newLen, p += oldLen);
+        buf.utf8Write(newPath, p += 4, newLen);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} RENAME`
+        );
+      }
+      mkdir(path, attrs, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        let flags = 0;
+        let attrsLen = 0;
+        if (typeof attrs === "function") {
+          cb = attrs;
+          attrs = void 0;
+        }
+        if (typeof attrs === "object" && attrs !== null) {
+          attrs = attrsToBytes(attrs);
+          flags = attrs.flags;
+          attrsLen = attrs.nb;
+        }
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen + 4 + attrsLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.MKDIR;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        writeUInt32BE(buf, flags, p += pathLen);
+        if (attrsLen) {
+          p += 4;
+          if (attrsLen === ATTRS_BUF.length)
+            buf.set(ATTRS_BUF, p);
+          else
+            bufferCopy(ATTRS_BUF, buf, 0, attrsLen, p);
+          p += attrsLen;
+        }
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} MKDIR`
+        );
+      }
+      rmdir(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.RMDIR;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} RMDIR`
+        );
+      }
+      readdir(where, opts, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (typeof opts === "function") {
+          cb = opts;
+          opts = {};
+        }
+        if (typeof opts !== "object" || opts === null)
+          opts = {};
+        const doFilter = opts && opts.full ? false : true;
+        if (!Buffer.isBuffer(where) && typeof where !== "string")
+          throw new Error("missing directory handle or path");
+        if (typeof where === "string") {
+          const entries = [];
+          let e = 0;
+          const reread = /* @__PURE__ */ __name((err, handle) => {
+            if (err)
+              return cb(err);
+            this.readdir(handle, opts, (err2, list) => {
+              const eof = err2 && err2.code === STATUS_CODE.EOF;
+              if (err2 && !eof)
+                return this.close(handle, () => cb(err2));
+              if (eof) {
+                return this.close(handle, (err3) => {
+                  if (err3)
+                    return cb(err3);
+                  cb(void 0, entries);
+                });
+              }
+              for (let i = 0; i < list.length; ++i, ++e)
+                entries[e] = list[i];
+              reread(void 0, handle);
+            });
+          }, "reread");
+          return this.opendir(where, reread);
+        }
+        const handleLen = where.length;
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + handleLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.READDIR;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, handleLen, p);
+        buf.set(where, p += 4);
+        this._requests[reqid] = {
+          cb: doFilter ? (err, list) => {
+            if (typeof cb !== "function")
+              return;
+            if (err)
+              return cb(err);
+            for (let i = list.length - 1; i >= 0; --i) {
+              if (list[i].filename === "." || list[i].filename === "..")
+                list.splice(i, 1);
+            }
+            cb(void 0, list);
+          } : cb
+        };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} READDIR`
+        );
+      }
+      fstat(handle, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (!Buffer.isBuffer(handle))
+          throw new Error("handle is not a Buffer");
+        const handleLen = handle.length;
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + handleLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.FSTAT;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, handleLen, p);
+        buf.set(handle, p += 4);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} FSTAT`
+        );
+      }
+      stat(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.STAT;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} STAT`
+        );
+      }
+      lstat(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.LSTAT;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} LSTAT`
+        );
+      }
+      opendir(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.OPENDIR;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} OPENDIR`
+        );
+      }
+      setstat(path, attrs, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        let flags = 0;
+        let attrsLen = 0;
+        if (typeof attrs === "object" && attrs !== null) {
+          attrs = attrsToBytes(attrs);
+          flags = attrs.flags;
+          attrsLen = attrs.nb;
+        } else if (typeof attrs === "function") {
+          cb = attrs;
+        }
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen + 4 + attrsLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.SETSTAT;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        writeUInt32BE(buf, flags, p += pathLen);
+        if (attrsLen) {
+          p += 4;
+          if (attrsLen === ATTRS_BUF.length)
+            buf.set(ATTRS_BUF, p);
+          else
+            bufferCopy(ATTRS_BUF, buf, 0, attrsLen, p);
+          p += attrsLen;
+        }
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} SETSTAT`
+        );
+      }
+      fsetstat(handle, attrs, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (!Buffer.isBuffer(handle))
+          throw new Error("handle is not a Buffer");
+        let flags = 0;
+        let attrsLen = 0;
+        if (typeof attrs === "object" && attrs !== null) {
+          attrs = attrsToBytes(attrs);
+          flags = attrs.flags;
+          attrsLen = attrs.nb;
+        } else if (typeof attrs === "function") {
+          cb = attrs;
+        }
+        const handleLen = handle.length;
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + handleLen + 4 + attrsLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.FSETSTAT;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, handleLen, p);
+        buf.set(handle, p += 4);
+        writeUInt32BE(buf, flags, p += handleLen);
+        if (attrsLen) {
+          p += 4;
+          if (attrsLen === ATTRS_BUF.length)
+            buf.set(ATTRS_BUF, p);
+          else
+            bufferCopy(ATTRS_BUF, buf, 0, attrsLen, p);
+          p += attrsLen;
+        }
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} FSETSTAT`
+        );
+      }
+      futimes(handle, atime, mtime, cb) {
+        return this.fsetstat(handle, {
+          atime: toUnixTimestamp(atime),
+          mtime: toUnixTimestamp(mtime)
+        }, cb);
+      }
+      utimes(path, atime, mtime, cb) {
+        return this.setstat(path, {
+          atime: toUnixTimestamp(atime),
+          mtime: toUnixTimestamp(mtime)
+        }, cb);
+      }
+      fchown(handle, uid, gid, cb) {
+        return this.fsetstat(handle, {
+          uid,
+          gid
+        }, cb);
+      }
+      chown(path, uid, gid, cb) {
+        return this.setstat(path, {
+          uid,
+          gid
+        }, cb);
+      }
+      fchmod(handle, mode, cb) {
+        return this.fsetstat(handle, {
+          mode
+        }, cb);
+      }
+      chmod(path, mode, cb) {
+        return this.setstat(path, {
+          mode
+        }, cb);
+      }
+      readlink(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.READLINK;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        this._requests[reqid] = {
+          cb: /* @__PURE__ */ __name((err, names) => {
+            if (typeof cb !== "function")
+              return;
+            if (err)
+              return cb(err);
+            if (!names || !names.length)
+              return cb(new Error("Response missing link info"));
+            cb(void 0, names[0].filename);
+          }, "cb")
+        };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} READLINK`
+        );
+      }
+      symlink(targetPath, linkPath, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const linkLen = Buffer.byteLength(linkPath);
+        const targetLen = Buffer.byteLength(targetPath);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + linkLen + 4 + targetLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.SYMLINK;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        if (this._isOpenSSH) {
+          writeUInt32BE(buf, targetLen, p);
+          buf.utf8Write(targetPath, p += 4, targetLen);
+          writeUInt32BE(buf, linkLen, p += targetLen);
+          buf.utf8Write(linkPath, p += 4, linkLen);
+        } else {
+          writeUInt32BE(buf, linkLen, p);
+          buf.utf8Write(linkPath, p += 4, linkLen);
+          writeUInt32BE(buf, targetLen, p += linkLen);
+          buf.utf8Write(targetPath, p += 4, targetLen);
+        }
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} SYMLINK`
+        );
+      }
+      realpath(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + pathLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.REALPATH;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, pathLen, p);
+        buf.utf8Write(path, p += 4, pathLen);
+        this._requests[reqid] = {
+          cb: /* @__PURE__ */ __name((err, names) => {
+            if (typeof cb !== "function")
+              return;
+            if (err)
+              return cb(err);
+            if (!names || !names.length)
+              return cb(new Error("Response missing path info"));
+            cb(void 0, names[0].filename);
+          }, "cb")
+        };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} REALPATH`
+        );
+      }
+      // extended requests
+      ext_openssh_rename(oldPath, newPath, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["posix-rename@openssh.com"];
+        if (!ext || ext !== "1")
+          throw new Error("Server does not support this extended request");
+        const oldLen = Buffer.byteLength(oldPath);
+        const newLen = Buffer.byteLength(newPath);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 24 + 4 + oldLen + 4 + newLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.EXTENDED;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, 24, p);
+        buf.utf8Write("posix-rename@openssh.com", p += 4, 24);
+        writeUInt32BE(buf, oldLen, p += 24);
+        buf.utf8Write(oldPath, p += 4, oldLen);
+        writeUInt32BE(buf, newLen, p += oldLen);
+        buf.utf8Write(newPath, p += 4, newLen);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const which = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${which} posix-rename@openssh.com`);
+        }
+      }
+      ext_openssh_statvfs(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["statvfs@openssh.com"];
+        if (!ext || ext !== "2")
+          throw new Error("Server does not support this extended request");
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 19 + 4 + pathLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.EXTENDED;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, 19, p);
+        buf.utf8Write("statvfs@openssh.com", p += 4, 19);
+        writeUInt32BE(buf, pathLen, p += 19);
+        buf.utf8Write(path, p += 4, pathLen);
+        this._requests[reqid] = { extended: "statvfs@openssh.com", cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const which = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${which} statvfs@openssh.com`);
+        }
+      }
+      ext_openssh_fstatvfs(handle, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["fstatvfs@openssh.com"];
+        if (!ext || ext !== "2")
+          throw new Error("Server does not support this extended request");
+        if (!Buffer.isBuffer(handle))
+          throw new Error("handle is not a Buffer");
+        const handleLen = handle.length;
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 20 + 4 + handleLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.EXTENDED;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, 20, p);
+        buf.utf8Write("fstatvfs@openssh.com", p += 4, 20);
+        writeUInt32BE(buf, handleLen, p += 20);
+        buf.set(handle, p += 4);
+        this._requests[reqid] = { extended: "fstatvfs@openssh.com", cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const which = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${which} fstatvfs@openssh.com`);
+        }
+      }
+      ext_openssh_hardlink(oldPath, newPath, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["hardlink@openssh.com"];
+        if (ext !== "1")
+          throw new Error("Server does not support this extended request");
+        const oldLen = Buffer.byteLength(oldPath);
+        const newLen = Buffer.byteLength(newPath);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 20 + 4 + oldLen + 4 + newLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.EXTENDED;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, 20, p);
+        buf.utf8Write("hardlink@openssh.com", p += 4, 20);
+        writeUInt32BE(buf, oldLen, p += 20);
+        buf.utf8Write(oldPath, p += 4, oldLen);
+        writeUInt32BE(buf, newLen, p += oldLen);
+        buf.utf8Write(newPath, p += 4, newLen);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const which = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${which} hardlink@openssh.com`);
+        }
+      }
+      ext_openssh_fsync(handle, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["fsync@openssh.com"];
+        if (ext !== "1")
+          throw new Error("Server does not support this extended request");
+        if (!Buffer.isBuffer(handle))
+          throw new Error("handle is not a Buffer");
+        const handleLen = handle.length;
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 17 + 4 + handleLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.EXTENDED;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, 17, p);
+        buf.utf8Write("fsync@openssh.com", p += 4, 17);
+        writeUInt32BE(buf, handleLen, p += 17);
+        buf.set(handle, p += 4);
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} fsync@openssh.com`
+        );
+      }
+      ext_openssh_lsetstat(path, attrs, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["lsetstat@openssh.com"];
+        if (ext !== "1")
+          throw new Error("Server does not support this extended request");
+        let flags = 0;
+        let attrsLen = 0;
+        if (typeof attrs === "object" && attrs !== null) {
+          attrs = attrsToBytes(attrs);
+          flags = attrs.flags;
+          attrsLen = attrs.nb;
+        } else if (typeof attrs === "function") {
+          cb = attrs;
+        }
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 20 + 4 + pathLen + 4 + attrsLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.EXTENDED;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, 20, p);
+        buf.utf8Write("lsetstat@openssh.com", p += 4, 20);
+        writeUInt32BE(buf, pathLen, p += 20);
+        buf.utf8Write(path, p += 4, pathLen);
+        writeUInt32BE(buf, flags, p += pathLen);
+        if (attrsLen) {
+          p += 4;
+          if (attrsLen === ATTRS_BUF.length)
+            buf.set(ATTRS_BUF, p);
+          else
+            bufferCopy(ATTRS_BUF, buf, 0, attrsLen, p);
+          p += attrsLen;
+        }
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const status = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${status} lsetstat@openssh.com`);
+        }
+      }
+      ext_openssh_expandPath(path, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["expand-path@openssh.com"];
+        if (ext !== "1")
+          throw new Error("Server does not support this extended request");
+        const pathLen = Buffer.byteLength(path);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 23 + 4 + pathLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = REQUEST.EXTENDED;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, 23, p);
+        buf.utf8Write("expand-path@openssh.com", p += 4, 23);
+        writeUInt32BE(buf, pathLen, p += 20);
+        buf.utf8Write(path, p += 4, pathLen);
+        this._requests[reqid] = {
+          cb: /* @__PURE__ */ __name((err, names) => {
+            if (typeof cb !== "function")
+              return;
+            if (err)
+              return cb(err);
+            if (!names || !names.length)
+              return cb(new Error("Response missing expanded path"));
+            cb(void 0, names[0].filename);
+          }, "cb")
+        };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const status = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${status} expand-path@openssh.com`);
+        }
+      }
+      ext_copy_data(srcHandle, srcOffset, len, dstHandle, dstOffset, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["copy-data"];
+        if (ext !== "1")
+          throw new Error("Server does not support this extended request");
+        if (!Buffer.isBuffer(srcHandle))
+          throw new Error("Source handle is not a Buffer");
+        if (!Buffer.isBuffer(dstHandle))
+          throw new Error("Destination handle is not a Buffer");
+        let p = 0;
+        const buf = Buffer.allocUnsafe(
+          4 + 1 + 4 + 4 + 9 + 4 + srcHandle.length + 8 + 8 + 4 + dstHandle.length + 8
+        );
+        writeUInt32BE(buf, buf.length - 4, p);
+        p += 4;
+        buf[p] = REQUEST.EXTENDED;
+        ++p;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, p);
+        p += 4;
+        writeUInt32BE(buf, 9, p);
+        p += 4;
+        buf.utf8Write("copy-data", p, 9);
+        p += 9;
+        writeUInt32BE(buf, srcHandle.length, p);
+        p += 4;
+        buf.set(srcHandle, p);
+        p += srcHandle.length;
+        for (let i = 7; i >= 0; --i) {
+          buf[p + i] = srcOffset & 255;
+          srcOffset /= 256;
+        }
+        p += 8;
+        for (let i = 7; i >= 0; --i) {
+          buf[p + i] = len & 255;
+          len /= 256;
+        }
+        p += 8;
+        writeUInt32BE(buf, dstHandle.length, p);
+        p += 4;
+        buf.set(dstHandle, p);
+        p += dstHandle.length;
+        for (let i = 7; i >= 0; --i) {
+          buf[p + i] = dstOffset & 255;
+          dstOffset /= 256;
+        }
+        this._requests[reqid] = { cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const status = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${status} copy-data`);
+        }
+      }
+      ext_home_dir(username, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["home-directory"];
+        if (ext !== "1")
+          throw new Error("Server does not support this extended request");
+        if (typeof username !== "string")
+          throw new TypeError("username is not a string");
+        let p = 0;
+        const usernameLen = Buffer.byteLength(username);
+        const buf = Buffer.allocUnsafe(
+          4 + 1 + 4 + 4 + 14 + 4 + usernameLen
+        );
+        writeUInt32BE(buf, buf.length - 4, p);
+        p += 4;
+        buf[p] = REQUEST.EXTENDED;
+        ++p;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, p);
+        p += 4;
+        writeUInt32BE(buf, 14, p);
+        p += 4;
+        buf.utf8Write("home-directory", p, 14);
+        p += 14;
+        writeUInt32BE(buf, usernameLen, p);
+        p += 4;
+        buf.utf8Write(username, p, usernameLen);
+        p += usernameLen;
+        this._requests[reqid] = {
+          cb: /* @__PURE__ */ __name((err, names) => {
+            if (typeof cb !== "function")
+              return;
+            if (err)
+              return cb(err);
+            if (!names || !names.length)
+              return cb(new Error("Response missing home directory"));
+            cb(void 0, names[0].filename);
+          }, "cb")
+        };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const status = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${status} home-directory`);
+        }
+      }
+      ext_users_groups(uids, gids, cb) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        const ext = this._extensions["users-groups-by-id@openssh.com"];
+        if (ext !== "1")
+          throw new Error("Server does not support this extended request");
+        if (!Array.isArray(uids))
+          throw new TypeError("uids is not an array");
+        for (const val of uids) {
+          if (!Number.isInteger(val) || val < 0 || val > 2 ** 32 - 1)
+            throw new Error("uid values must all be 32-bit unsigned integers");
+        }
+        if (!Array.isArray(gids))
+          throw new TypeError("gids is not an array");
+        for (const val of gids) {
+          if (!Number.isInteger(val) || val < 0 || val > 2 ** 32 - 1)
+            throw new Error("gid values must all be 32-bit unsigned integers");
+        }
+        let p = 0;
+        const buf = Buffer.allocUnsafe(
+          4 + 1 + 4 + 4 + 30 + 4 + 4 * uids.length + 4 + 4 * gids.length
+        );
+        writeUInt32BE(buf, buf.length - 4, p);
+        p += 4;
+        buf[p] = REQUEST.EXTENDED;
+        ++p;
+        const reqid = this._writeReqid = this._writeReqid + 1 & MAX_REQID;
+        writeUInt32BE(buf, reqid, p);
+        p += 4;
+        writeUInt32BE(buf, 30, p);
+        p += 4;
+        buf.utf8Write("users-groups-by-id@openssh.com", p, 30);
+        p += 30;
+        writeUInt32BE(buf, 4 * uids.length, p);
+        p += 4;
+        for (const val of uids) {
+          writeUInt32BE(buf, val, p);
+          p += 4;
+        }
+        writeUInt32BE(buf, 4 * gids.length, p);
+        p += 4;
+        for (const val of gids) {
+          writeUInt32BE(buf, val, p);
+          p += 4;
+        }
+        this._requests[reqid] = { extended: "users-groups-by-id@openssh.com", cb };
+        const isBuffered = sendOrBuffer(this, buf);
+        if (this._debug) {
+          const status = isBuffered ? "Buffered" : "Sending";
+          this._debug(`SFTP: Outbound: ${status} users-groups-by-id@openssh.com`);
+        }
+      }
+      // ===========================================================================
+      // Server-specific ===========================================================
+      // ===========================================================================
+      handle(reqid, handle) {
+        if (!this.server)
+          throw new Error("Server-only method called in client mode");
+        if (!Buffer.isBuffer(handle))
+          throw new Error("handle is not a Buffer");
+        const handleLen = handle.length;
+        if (handleLen > 256)
+          throw new Error("handle too large (> 256 bytes)");
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + handleLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = RESPONSE.HANDLE;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, handleLen, p);
+        if (handleLen)
+          buf.set(handle, p += 4);
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} HANDLE`
+        );
+      }
+      status(reqid, code, message) {
+        if (!this.server)
+          throw new Error("Server-only method called in client mode");
+        if (!VALID_STATUS_CODES.has(code))
+          throw new Error(`Bad status code: ${code}`);
+        message || (message = "");
+        const msgLen = Buffer.byteLength(message);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 4 + msgLen + 4);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = RESPONSE.STATUS;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, code, p);
+        writeUInt32BE(buf, msgLen, p += 4);
+        p += 4;
+        if (msgLen) {
+          buf.utf8Write(message, p, msgLen);
+          p += msgLen;
+        }
+        writeUInt32BE(buf, 0, p);
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} STATUS`
+        );
+      }
+      data(reqid, data, encoding) {
+        if (!this.server)
+          throw new Error("Server-only method called in client mode");
+        const isBuffer = Buffer.isBuffer(data);
+        if (!isBuffer && typeof data !== "string")
+          throw new Error("data is not a Buffer or string");
+        let isUTF8;
+        if (!isBuffer && !encoding) {
+          encoding = void 0;
+          isUTF8 = true;
+        }
+        const dataLen = isBuffer ? data.length : Buffer.byteLength(data, encoding);
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + dataLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = RESPONSE.DATA;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, dataLen, p);
+        if (dataLen) {
+          if (isBuffer)
+            buf.set(data, p += 4);
+          else if (isUTF8)
+            buf.utf8Write(data, p += 4, dataLen);
+          else
+            buf.write(data, p += 4, dataLen, encoding);
+        }
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} DATA`
+        );
+      }
+      name(reqid, names) {
+        if (!this.server)
+          throw new Error("Server-only method called in client mode");
+        if (!Array.isArray(names)) {
+          if (typeof names !== "object" || names === null)
+            throw new Error("names is not an object or array");
+          names = [names];
+        }
+        const count = names.length;
+        let namesLen = 0;
+        let nameAttrs;
+        const attrs = [];
+        for (let i = 0; i < count; ++i) {
+          const name = names[i];
+          const filename = !name || !name.filename || typeof name.filename !== "string" ? "" : name.filename;
+          namesLen += 4 + Buffer.byteLength(filename);
+          const longname = !name || !name.longname || typeof name.longname !== "string" ? "" : name.longname;
+          namesLen += 4 + Buffer.byteLength(longname);
+          if (typeof name.attrs === "object" && name.attrs !== null) {
+            nameAttrs = attrsToBytes(name.attrs);
+            namesLen += 4 + nameAttrs.nb;
+            if (nameAttrs.nb) {
+              let bytes;
+              if (nameAttrs.nb === ATTRS_BUF.length) {
+                bytes = new Uint8Array(ATTRS_BUF);
+              } else {
+                bytes = new Uint8Array(nameAttrs.nb);
+                bufferCopy(ATTRS_BUF, bytes, 0, nameAttrs.nb, 0);
+              }
+              nameAttrs.bytes = bytes;
+            }
+            attrs.push(nameAttrs);
+          } else {
+            namesLen += 4;
+            attrs.push(null);
+          }
+        }
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + namesLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = RESPONSE.NAME;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, count, p);
+        p += 4;
+        for (let i = 0; i < count; ++i) {
+          const name = names[i];
+          {
+            const filename = !name || !name.filename || typeof name.filename !== "string" ? "" : name.filename;
+            const len = Buffer.byteLength(filename);
+            writeUInt32BE(buf, len, p);
+            p += 4;
+            if (len) {
+              buf.utf8Write(filename, p, len);
+              p += len;
+            }
+          }
+          {
+            const longname = !name || !name.longname || typeof name.longname !== "string" ? "" : name.longname;
+            const len = Buffer.byteLength(longname);
+            writeUInt32BE(buf, len, p);
+            p += 4;
+            if (len) {
+              buf.utf8Write(longname, p, len);
+              p += len;
+            }
+          }
+          const attr = attrs[i];
+          if (attr) {
+            writeUInt32BE(buf, attr.flags, p);
+            p += 4;
+            if (attr.flags && attr.bytes) {
+              buf.set(attr.bytes, p);
+              p += attr.nb;
+            }
+          } else {
+            writeUInt32BE(buf, 0, p);
+            p += 4;
+          }
+        }
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} NAME`
+        );
+      }
+      attrs(reqid, attrs) {
+        if (!this.server)
+          throw new Error("Server-only method called in client mode");
+        if (typeof attrs !== "object" || attrs === null)
+          throw new Error("attrs is not an object");
+        attrs = attrsToBytes(attrs);
+        const flags = attrs.flags;
+        const attrsLen = attrs.nb;
+        let p = 9;
+        const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + attrsLen);
+        writeUInt32BE(buf, buf.length - 4, 0);
+        buf[4] = RESPONSE.ATTRS;
+        writeUInt32BE(buf, reqid, 5);
+        writeUInt32BE(buf, flags, p);
+        if (attrsLen) {
+          p += 4;
+          if (attrsLen === ATTRS_BUF.length)
+            buf.set(ATTRS_BUF, p);
+          else
+            bufferCopy(ATTRS_BUF, buf, 0, attrsLen, p);
+          p += attrsLen;
+        }
+        const isBuffered = sendOrBuffer(this, buf);
+        this._debug && this._debug(
+          `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} ATTRS`
+        );
+      }
+    };
+    function tryCreateBuffer(size) {
+      try {
+        return Buffer.allocUnsafe(size);
+      } catch (ex) {
+        return ex;
+      }
+    }
+    __name(tryCreateBuffer, "tryCreateBuffer");
+    function read_(self2, handle, buf, off, len, position, cb, req_) {
+      const maxDataLen = self2._maxReadLen;
+      const overflow = Math.max(len - maxDataLen, 0);
+      if (overflow)
+        len = maxDataLen;
+      const handleLen = handle.length;
+      let p = 9;
+      let pos = position;
+      const out = Buffer.allocUnsafe(4 + 1 + 4 + 4 + handleLen + 8 + 4);
+      writeUInt32BE(out, out.length - 4, 0);
+      out[4] = REQUEST.READ;
+      const reqid = self2._writeReqid = self2._writeReqid + 1 & MAX_REQID;
+      writeUInt32BE(out, reqid, 5);
+      writeUInt32BE(out, handleLen, p);
+      out.set(handle, p += 4);
+      p += handleLen;
+      for (let i = 7; i >= 0; --i) {
+        out[p + i] = pos & 255;
+        pos /= 256;
+      }
+      writeUInt32BE(out, len, p += 8);
+      if (typeof cb !== "function")
+        cb = noop;
+      const req = req_ || {
+        nb: 0,
+        position,
+        off,
+        origOff: off,
+        len: void 0,
+        overflow: void 0,
+        cb: /* @__PURE__ */ __name((err, data, nb) => {
+          const len2 = req.len;
+          const overflow2 = req.overflow;
+          if (err) {
+            if (cb._wantEOFError || err.code !== STATUS_CODE.EOF)
+              return cb(err);
+          } else if (nb > len2) {
+            return cb(new Error("Received more data than requested"));
+          } else if (nb === len2 && overflow2) {
+            req.nb += nb;
+            req.position += nb;
+            req.off += nb;
+            read_(self2, handle, buf, req.off, overflow2, req.position, cb, req);
+            return;
+          }
+          nb = nb || 0;
+          if (req.origOff === 0 && buf.length === req.nb)
+            data = buf;
+          else
+            data = bufferSlice(buf, req.origOff, req.origOff + req.nb + nb);
+          cb(void 0, req.nb + nb, data, req.position);
+        }, "cb"),
+        buffer: void 0
+      };
+      req.len = len;
+      req.overflow = overflow;
+      req.buffer = bufferSlice(buf, off, off + len);
+      self2._requests[reqid] = req;
+      const isBuffered = sendOrBuffer(self2, out);
+      self2._debug && self2._debug(
+        `SFTP: Outbound: ${isBuffered ? "Buffered" : "Sending"} READ`
+      );
+    }
+    __name(read_, "read_");
+    function fastXfer(src, dst, srcPath, dstPath, opts, cb) {
+      let concurrency = 64;
+      let chunkSize = 32768;
+      let onstep;
+      let mode;
+      let fileSize;
+      if (typeof opts === "function") {
+        cb = opts;
+      } else if (typeof opts === "object" && opts !== null) {
+        if (typeof opts.concurrency === "number" && opts.concurrency > 0 && !isNaN(opts.concurrency)) {
+          concurrency = opts.concurrency;
+        }
+        if (typeof opts.chunkSize === "number" && opts.chunkSize > 0 && !isNaN(opts.chunkSize)) {
+          chunkSize = opts.chunkSize;
+        }
+        if (typeof opts.fileSize === "number" && opts.fileSize > 0 && !isNaN(opts.fileSize)) {
+          fileSize = opts.fileSize;
+        }
+        if (typeof opts.step === "function")
+          onstep = opts.step;
+        if (typeof opts.mode === "string" || typeof opts.mode === "number")
+          mode = modeNum(opts.mode);
+      }
+      let fsize;
+      let pdst = 0;
+      let total = 0;
+      let hadError = false;
+      let srcHandle;
+      let dstHandle;
+      let readbuf;
+      let bufsize = chunkSize * concurrency;
+      function onerror(err) {
+        if (hadError)
+          return;
+        hadError = true;
+        let left = 0;
+        let cbfinal;
+        if (srcHandle || dstHandle) {
+          cbfinal = /* @__PURE__ */ __name(() => {
+            if (--left === 0)
+              cb(err);
+          }, "cbfinal");
+          if (srcHandle && (src === fs || src.outgoing.state === "open"))
+            ++left;
+          if (dstHandle && (dst === fs || dst.outgoing.state === "open"))
+            ++left;
+          if (srcHandle && (src === fs || src.outgoing.state === "open"))
+            src.close(srcHandle, cbfinal);
+          if (dstHandle && (dst === fs || dst.outgoing.state === "open"))
+            dst.close(dstHandle, cbfinal);
+        } else {
+          cb(err);
+        }
+      }
+      __name(onerror, "onerror");
+      src.open(srcPath, "r", (err, sourceHandle) => {
+        if (err)
+          return onerror(err);
+        srcHandle = sourceHandle;
+        if (fileSize === void 0)
+          src.fstat(srcHandle, tryStat);
+        else
+          tryStat(null, { size: fileSize });
+        function tryStat(err2, attrs) {
+          if (err2) {
+            if (src !== fs) {
+              src.stat(srcPath, (err_, attrs_) => {
+                if (err_)
+                  return onerror(err2);
+                tryStat(null, attrs_);
+              });
+              return;
+            }
+            return onerror(err2);
+          }
+          fsize = attrs.size;
+          dst.open(dstPath, "w", (err3, destHandle) => {
+            if (err3)
+              return onerror(err3);
+            dstHandle = destHandle;
+            if (fsize <= 0)
+              return onerror();
+            while (bufsize > fsize) {
+              if (concurrency === 1) {
+                bufsize = fsize;
+                break;
+              }
+              bufsize -= chunkSize;
+              --concurrency;
+            }
+            readbuf = tryCreateBuffer(bufsize);
+            if (readbuf instanceof Error)
+              return onerror(readbuf);
+            if (mode !== void 0) {
+              dst.fchmod(dstHandle, mode, /* @__PURE__ */ __name(function tryAgain(err4) {
+                if (err4) {
+                  dst.chmod(dstPath, mode, (err_) => tryAgain());
+                  return;
+                }
+                startReads();
+              }, "tryAgain"));
+            } else {
+              startReads();
+            }
+            function onread(err4, nb, data, dstpos, datapos, origChunkLen) {
+              if (err4)
+                return onerror(err4);
+              datapos = datapos || 0;
+              dst.write(dstHandle, readbuf, datapos, nb, dstpos, writeCb);
+              function writeCb(err5) {
+                if (err5)
+                  return onerror(err5);
+                total += nb;
+                onstep && onstep(total, nb, fsize);
+                if (nb < origChunkLen)
+                  return singleRead(datapos, dstpos + nb, origChunkLen - nb);
+                if (total === fsize) {
+                  dst.close(dstHandle, (err6) => {
+                    dstHandle = void 0;
+                    if (err6)
+                      return onerror(err6);
+                    src.close(srcHandle, (err7) => {
+                      srcHandle = void 0;
+                      if (err7)
+                        return onerror(err7);
+                      cb();
+                    });
+                  });
+                  return;
+                }
+                if (pdst >= fsize)
+                  return;
+                const chunk = pdst + chunkSize > fsize ? fsize - pdst : chunkSize;
+                singleRead(datapos, pdst, chunk);
+                pdst += chunk;
+              }
+              __name(writeCb, "writeCb");
+            }
+            __name(onread, "onread");
+            function makeCb(psrc, pdst2, chunk) {
+              return (err4, nb, data) => {
+                onread(err4, nb, data, pdst2, psrc, chunk);
+              };
+            }
+            __name(makeCb, "makeCb");
+            function singleRead(psrc, pdst2, chunk) {
+              src.read(
+                srcHandle,
+                readbuf,
+                psrc,
+                chunk,
+                pdst2,
+                makeCb(psrc, pdst2, chunk)
+              );
+            }
+            __name(singleRead, "singleRead");
+            function startReads() {
+              let reads = 0;
+              let psrc = 0;
+              while (pdst < fsize && reads < concurrency) {
+                const chunk = pdst + chunkSize > fsize ? fsize - pdst : chunkSize;
+                singleRead(psrc, pdst, chunk);
+                psrc += chunk;
+                pdst += chunk;
+                ++reads;
+              }
+            }
+            __name(startReads, "startReads");
+          });
+        }
+        __name(tryStat, "tryStat");
+      });
+    }
+    __name(fastXfer, "fastXfer");
+    function writeAll(sftp, handle, buffer, offset, length, position, callback_) {
+      const callback = typeof callback_ === "function" ? callback_ : void 0;
+      sftp.write(
+        handle,
+        buffer,
+        offset,
+        length,
+        position,
+        (writeErr, written) => {
+          if (writeErr) {
+            return sftp.close(handle, () => {
+              callback && callback(writeErr);
+            });
+          }
+          if (written === length) {
+            sftp.close(handle, callback);
+          } else {
+            offset += written;
+            length -= written;
+            position += written;
+            writeAll(sftp, handle, buffer, offset, length, position, callback);
+          }
+        }
+      );
+    }
+    __name(writeAll, "writeAll");
+    var Stats = class {
+      static {
+        __name(this, "Stats");
+      }
+      constructor(initial) {
+        this.mode = initial && initial.mode;
+        this.uid = initial && initial.uid;
+        this.gid = initial && initial.gid;
+        this.size = initial && initial.size;
+        this.atime = initial && initial.atime;
+        this.mtime = initial && initial.mtime;
+        this.extended = initial && initial.extended;
+      }
+      isDirectory() {
+        return (this.mode & constants.S_IFMT) === constants.S_IFDIR;
+      }
+      isFile() {
+        return (this.mode & constants.S_IFMT) === constants.S_IFREG;
+      }
+      isBlockDevice() {
+        return (this.mode & constants.S_IFMT) === constants.S_IFBLK;
+      }
+      isCharacterDevice() {
+        return (this.mode & constants.S_IFMT) === constants.S_IFCHR;
+      }
+      isSymbolicLink() {
+        return (this.mode & constants.S_IFMT) === constants.S_IFLNK;
+      }
+      isFIFO() {
+        return (this.mode & constants.S_IFMT) === constants.S_IFIFO;
+      }
+      isSocket() {
+        return (this.mode & constants.S_IFMT) === constants.S_IFSOCK;
+      }
+    };
+    function attrsToBytes(attrs) {
+      let flags = 0;
+      let nb = 0;
+      if (typeof attrs === "object" && attrs !== null) {
+        if (typeof attrs.size === "number") {
+          flags |= ATTR.SIZE;
+          const val = attrs.size;
+          ATTRS_BUF[nb++] = val / 72057594037927940;
+          ATTRS_BUF[nb++] = val / 281474976710656;
+          ATTRS_BUF[nb++] = val / 1099511627776;
+          ATTRS_BUF[nb++] = val / 4294967296;
+          ATTRS_BUF[nb++] = val / 16777216;
+          ATTRS_BUF[nb++] = val / 65536;
+          ATTRS_BUF[nb++] = val / 256;
+          ATTRS_BUF[nb++] = val;
+        }
+        if (typeof attrs.uid === "number" && typeof attrs.gid === "number") {
+          flags |= ATTR.UIDGID;
+          const uid = attrs.uid;
+          const gid = attrs.gid;
+          ATTRS_BUF[nb++] = uid >>> 24;
+          ATTRS_BUF[nb++] = uid >>> 16;
+          ATTRS_BUF[nb++] = uid >>> 8;
+          ATTRS_BUF[nb++] = uid;
+          ATTRS_BUF[nb++] = gid >>> 24;
+          ATTRS_BUF[nb++] = gid >>> 16;
+          ATTRS_BUF[nb++] = gid >>> 8;
+          ATTRS_BUF[nb++] = gid;
+        }
+        if (typeof attrs.mode === "number" || typeof attrs.mode === "string") {
+          const mode = modeNum(attrs.mode);
+          flags |= ATTR.PERMISSIONS;
+          ATTRS_BUF[nb++] = mode >>> 24;
+          ATTRS_BUF[nb++] = mode >>> 16;
+          ATTRS_BUF[nb++] = mode >>> 8;
+          ATTRS_BUF[nb++] = mode;
+        }
+        if ((typeof attrs.atime === "number" || isDate(attrs.atime)) && (typeof attrs.mtime === "number" || isDate(attrs.mtime))) {
+          const atime = toUnixTimestamp(attrs.atime);
+          const mtime = toUnixTimestamp(attrs.mtime);
+          flags |= ATTR.ACMODTIME;
+          ATTRS_BUF[nb++] = atime >>> 24;
+          ATTRS_BUF[nb++] = atime >>> 16;
+          ATTRS_BUF[nb++] = atime >>> 8;
+          ATTRS_BUF[nb++] = atime;
+          ATTRS_BUF[nb++] = mtime >>> 24;
+          ATTRS_BUF[nb++] = mtime >>> 16;
+          ATTRS_BUF[nb++] = mtime >>> 8;
+          ATTRS_BUF[nb++] = mtime;
+        }
+      }
+      return { flags, nb };
+    }
+    __name(attrsToBytes, "attrsToBytes");
+    function toUnixTimestamp(time) {
+      if (typeof time === "number" && time === time)
+        return time;
+      if (isDate(time))
+        return parseInt(time.getTime() / 1e3, 10);
+      throw new Error(`Cannot parse time: ${time}`);
+    }
+    __name(toUnixTimestamp, "toUnixTimestamp");
+    function modeNum(mode) {
+      if (typeof mode === "number" && mode === mode)
+        return mode;
+      if (typeof mode === "string")
+        return modeNum(parseInt(mode, 8));
+      throw new Error(`Cannot parse mode: ${mode}`);
+    }
+    __name(modeNum, "modeNum");
+    var stringFlagMap = {
+      "r": OPEN_MODE.READ,
+      "r+": OPEN_MODE.READ | OPEN_MODE.WRITE,
+      "w": OPEN_MODE.TRUNC | OPEN_MODE.CREAT | OPEN_MODE.WRITE,
+      "wx": OPEN_MODE.TRUNC | OPEN_MODE.CREAT | OPEN_MODE.WRITE | OPEN_MODE.EXCL,
+      "xw": OPEN_MODE.TRUNC | OPEN_MODE.CREAT | OPEN_MODE.WRITE | OPEN_MODE.EXCL,
+      "w+": OPEN_MODE.TRUNC | OPEN_MODE.CREAT | OPEN_MODE.READ | OPEN_MODE.WRITE,
+      "wx+": OPEN_MODE.TRUNC | OPEN_MODE.CREAT | OPEN_MODE.READ | OPEN_MODE.WRITE | OPEN_MODE.EXCL,
+      "xw+": OPEN_MODE.TRUNC | OPEN_MODE.CREAT | OPEN_MODE.READ | OPEN_MODE.WRITE | OPEN_MODE.EXCL,
+      "a": OPEN_MODE.APPEND | OPEN_MODE.CREAT | OPEN_MODE.WRITE,
+      "ax": OPEN_MODE.APPEND | OPEN_MODE.CREAT | OPEN_MODE.WRITE | OPEN_MODE.EXCL,
+      "xa": OPEN_MODE.APPEND | OPEN_MODE.CREAT | OPEN_MODE.WRITE | OPEN_MODE.EXCL,
+      "a+": OPEN_MODE.APPEND | OPEN_MODE.CREAT | OPEN_MODE.READ | OPEN_MODE.WRITE,
+      "ax+": OPEN_MODE.APPEND | OPEN_MODE.CREAT | OPEN_MODE.READ | OPEN_MODE.WRITE | OPEN_MODE.EXCL,
+      "xa+": OPEN_MODE.APPEND | OPEN_MODE.CREAT | OPEN_MODE.READ | OPEN_MODE.WRITE | OPEN_MODE.EXCL
+    };
+    function stringToFlags(str) {
+      const flags = stringFlagMap[str];
+      return flags !== void 0 ? flags : null;
+    }
+    __name(stringToFlags, "stringToFlags");
+    var flagsToString = (() => {
+      const stringFlagMapKeys = Object.keys(stringFlagMap);
+      return (flags) => {
+        for (let i = 0; i < stringFlagMapKeys.length; ++i) {
+          const key = stringFlagMapKeys[i];
+          if (stringFlagMap[key] === flags)
+            return key;
+        }
+        return null;
+      };
+    })();
+    function readAttrs(biOpt) {
+      const flags = bufferParser.readUInt32BE();
+      if (flags === void 0)
+        return;
+      const attrs = new Stats();
+      if (flags & ATTR.SIZE) {
+        const size = bufferParser.readUInt64BE(biOpt);
+        if (size === void 0)
+          return;
+        attrs.size = size;
+      }
+      if (flags & ATTR.UIDGID) {
+        const uid = bufferParser.readUInt32BE();
+        const gid = bufferParser.readUInt32BE();
+        if (gid === void 0)
+          return;
+        attrs.uid = uid;
+        attrs.gid = gid;
+      }
+      if (flags & ATTR.PERMISSIONS) {
+        const mode = bufferParser.readUInt32BE();
+        if (mode === void 0)
+          return;
+        attrs.mode = mode;
+      }
+      if (flags & ATTR.ACMODTIME) {
+        const atime = bufferParser.readUInt32BE();
+        const mtime = bufferParser.readUInt32BE();
+        if (mtime === void 0)
+          return;
+        attrs.atime = atime;
+        attrs.mtime = mtime;
+      }
+      if (flags & ATTR.EXTENDED) {
+        const count = bufferParser.readUInt32BE();
+        if (count === void 0)
+          return;
+        const extended = {};
+        for (let i = 0; i < count; ++i) {
+          const type = bufferParser.readString(true);
+          const data = bufferParser.readString();
+          if (data === void 0)
+            return;
+          extended[type] = data;
+        }
+        attrs.extended = extended;
+      }
+      return attrs;
+    }
+    __name(readAttrs, "readAttrs");
+    function sendOrBuffer(sftp, payload) {
+      const ret = tryWritePayload(sftp, payload);
+      if (ret !== void 0) {
+        sftp._buffer.push(ret);
+        return false;
+      }
+      return true;
+    }
+    __name(sendOrBuffer, "sendOrBuffer");
+    function tryWritePayload(sftp, payload) {
+      const outgoing = sftp.outgoing;
+      if (outgoing.state !== "open")
+        return;
+      if (outgoing.window === 0) {
+        sftp._waitWindow = true;
+        sftp._chunkcb = drainBuffer;
+        return payload;
+      }
+      let ret;
+      const len = payload.length;
+      let p = 0;
+      while (len - p > 0 && outgoing.window > 0) {
+        const actualLen = Math.min(len - p, outgoing.window, outgoing.packetSize);
+        outgoing.window -= actualLen;
+        if (outgoing.window === 0) {
+          sftp._waitWindow = true;
+          sftp._chunkcb = drainBuffer;
+        }
+        if (p === 0 && actualLen === len) {
+          sftp._protocol.channelData(sftp.outgoing.id, payload);
+        } else {
+          sftp._protocol.channelData(
+            sftp.outgoing.id,
+            bufferSlice(payload, p, p + actualLen)
+          );
+        }
+        p += actualLen;
+      }
+      if (len - p > 0) {
+        if (p > 0)
+          ret = bufferSlice(payload, p, len);
+        else
+          ret = payload;
+      }
+      return ret;
+    }
+    __name(tryWritePayload, "tryWritePayload");
+    function drainBuffer() {
+      this._chunkcb = void 0;
+      const buffer = this._buffer;
+      let i = 0;
+      while (i < buffer.length) {
+        const payload = buffer[i];
+        const ret = tryWritePayload(this, payload);
+        if (ret !== void 0) {
+          if (ret !== payload)
+            buffer[i] = ret;
+          if (i > 0)
+            this._buffer = buffer.slice(i);
+          return;
+        }
+        ++i;
+      }
+      if (i > 0)
+        this._buffer = [];
+    }
+    __name(drainBuffer, "drainBuffer");
+    function doFatalSFTPError(sftp, msg, noDebug) {
+      const err = new Error(msg);
+      err.level = "sftp-protocol";
+      if (!noDebug && sftp._debug)
+        sftp._debug(`SFTP: Inbound: ${msg}`);
+      sftp.emit("error", err);
+      sftp.destroy();
+      cleanupRequests(sftp);
+      return false;
+    }
+    __name(doFatalSFTPError, "doFatalSFTPError");
+    function cleanupRequests(sftp) {
+      const keys = Object.keys(sftp._requests);
+      if (keys.length === 0)
+        return;
+      const reqs = sftp._requests;
+      sftp._requests = {};
+      const err = new Error("No response from server");
+      for (let i = 0; i < keys.length; ++i) {
+        const req = reqs[keys[i]];
+        if (typeof req.cb === "function")
+          req.cb(err);
+      }
+    }
+    __name(cleanupRequests, "cleanupRequests");
+    function requestLimits(sftp, cb) {
+      let p = 9;
+      const buf = Buffer.allocUnsafe(4 + 1 + 4 + 4 + 18);
+      writeUInt32BE(buf, buf.length - 4, 0);
+      buf[4] = REQUEST.EXTENDED;
+      const reqid = sftp._writeReqid = sftp._writeReqid + 1 & MAX_REQID;
+      writeUInt32BE(buf, reqid, 5);
+      writeUInt32BE(buf, 18, p);
+      buf.utf8Write("limits@openssh.com", p += 4, 18);
+      sftp._requests[reqid] = { extended: "limits@openssh.com", cb };
+      const isBuffered = sendOrBuffer(sftp, buf);
+      if (sftp._debug) {
+        const which = isBuffered ? "Buffered" : "Sending";
+        sftp._debug(`SFTP: Outbound: ${which} limits@openssh.com`);
+      }
+    }
+    __name(requestLimits, "requestLimits");
+    var CLIENT_HANDLERS = {
+      [RESPONSE.VERSION]: (sftp, payload) => {
+        if (sftp._version !== -1)
+          return doFatalSFTPError(sftp, "Duplicate VERSION packet");
+        const extensions = {};
+        bufferParser.init(payload, 1);
+        let version = bufferParser.readUInt32BE();
+        while (bufferParser.avail()) {
+          const extName = bufferParser.readString(true);
+          const extData = bufferParser.readString(true);
+          if (extData === void 0) {
+            version = void 0;
+            break;
+          }
+          extensions[extName] = extData;
+        }
+        bufferParser.clear();
+        if (version === void 0)
+          return doFatalSFTPError(sftp, "Malformed VERSION packet");
+        if (sftp._debug) {
+          const names = Object.keys(extensions);
+          if (names.length) {
+            sftp._debug(
+              `SFTP: Inbound: Received VERSION (v${version}, exts:${names})`
+            );
+          } else {
+            sftp._debug(`SFTP: Inbound: Received VERSION (v${version})`);
+          }
+        }
+        sftp._version = version;
+        sftp._extensions = extensions;
+        if (extensions["limits@openssh.com"] === "1") {
+          return requestLimits(sftp, (err, limits2) => {
+            if (!err) {
+              if (limits2.maxPktLen > 0)
+                sftp._maxOutPktLen = limits2.maxPktLen;
+              if (limits2.maxReadLen > 0)
+                sftp._maxReadLen = limits2.maxReadLen;
+              if (limits2.maxWriteLen > 0)
+                sftp._maxWriteLen = limits2.maxWriteLen;
+              sftp.maxOpenHandles = limits2.maxOpenHandles > 0 ? limits2.maxOpenHandles : Infinity;
+            }
+            sftp.emit("ready");
+          });
+        }
+        sftp.emit("ready");
+      },
+      [RESPONSE.STATUS]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const errorCode = bufferParser.readUInt32BE();
+        const errorMsg = bufferParser.readString(true);
+        bufferParser.clear();
+        if (sftp._debug) {
+          const jsonMsg = JSON.stringify(errorMsg);
+          sftp._debug(
+            `SFTP: Inbound: Received STATUS (id:${reqID}, ${errorCode}, ${jsonMsg})`
+          );
+        }
+        const req = sftp._requests[reqID];
+        delete sftp._requests[reqID];
+        if (req && typeof req.cb === "function") {
+          if (errorCode === STATUS_CODE.OK) {
+            req.cb();
+            return;
+          }
+          const err = new Error(errorMsg || STATUS_CODE_STR[errorCode] || "Unknown status");
+          err.code = errorCode;
+          req.cb(err);
+        }
+      },
+      [RESPONSE.HANDLE]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const handle = bufferParser.readString();
+        bufferParser.clear();
+        if (handle === void 0) {
+          if (reqID !== void 0)
+            delete sftp._requests[reqID];
+          return doFatalSFTPError(sftp, "Malformed HANDLE packet");
+        }
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received HANDLE (id:${reqID})`);
+        const req = sftp._requests[reqID];
+        delete sftp._requests[reqID];
+        if (req && typeof req.cb === "function")
+          req.cb(void 0, handle);
+      },
+      [RESPONSE.DATA]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        let req;
+        if (reqID !== void 0) {
+          req = sftp._requests[reqID];
+          delete sftp._requests[reqID];
+        }
+        if (req && typeof req.cb === "function") {
+          if (req.buffer) {
+            const nb = bufferParser.readString(req.buffer);
+            bufferParser.clear();
+            if (nb !== void 0) {
+              sftp._debug && sftp._debug(
+                `SFTP: Inbound: Received DATA (id:${reqID}, ${nb})`
+              );
+              req.cb(void 0, req.buffer, nb);
+              return;
+            }
+          } else {
+            const data = bufferParser.readString();
+            bufferParser.clear();
+            if (data !== void 0) {
+              sftp._debug && sftp._debug(
+                `SFTP: Inbound: Received DATA (id:${reqID}, ${data.length})`
+              );
+              req.cb(void 0, data);
+              return;
+            }
+          }
+        } else {
+          const nb = bufferParser.skipString();
+          bufferParser.clear();
+          if (nb !== void 0) {
+            sftp._debug && sftp._debug(
+              `SFTP: Inbound: Received DATA (id:${reqID}, ${nb})`
+            );
+            return;
+          }
+        }
+        return doFatalSFTPError(sftp, "Malformed DATA packet");
+      },
+      [RESPONSE.NAME]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        let req;
+        if (reqID !== void 0) {
+          req = sftp._requests[reqID];
+          delete sftp._requests[reqID];
+        }
+        const count = bufferParser.readUInt32BE();
+        if (count !== void 0) {
+          let names = [];
+          for (let i = 0; i < count; ++i) {
+            const filename = bufferParser.readString(true);
+            const longname = bufferParser.readString(true);
+            const attrs = readAttrs(sftp._biOpt);
+            if (attrs === void 0) {
+              names = void 0;
+              break;
+            }
+            names.push({ filename, longname, attrs });
+          }
+          if (names !== void 0) {
+            sftp._debug && sftp._debug(
+              `SFTP: Inbound: Received NAME (id:${reqID}, ${names.length})`
+            );
+            bufferParser.clear();
+            if (req && typeof req.cb === "function")
+              req.cb(void 0, names);
+            return;
+          }
+        }
+        bufferParser.clear();
+        return doFatalSFTPError(sftp, "Malformed NAME packet");
+      },
+      [RESPONSE.ATTRS]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        let req;
+        if (reqID !== void 0) {
+          req = sftp._requests[reqID];
+          delete sftp._requests[reqID];
+        }
+        const attrs = readAttrs(sftp._biOpt);
+        bufferParser.clear();
+        if (attrs !== void 0) {
+          sftp._debug && sftp._debug(`SFTP: Inbound: Received ATTRS (id:${reqID})`);
+          if (req && typeof req.cb === "function")
+            req.cb(void 0, attrs);
+          return;
+        }
+        return doFatalSFTPError(sftp, "Malformed ATTRS packet");
+      },
+      [RESPONSE.EXTENDED]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        if (reqID !== void 0) {
+          const req = sftp._requests[reqID];
+          if (req) {
+            delete sftp._requests[reqID];
+            switch (req.extended) {
+              case "statvfs@openssh.com":
+              case "fstatvfs@openssh.com": {
+                const biOpt = sftp._biOpt;
+                const stats = {
+                  f_bsize: bufferParser.readUInt64BE(biOpt),
+                  f_frsize: bufferParser.readUInt64BE(biOpt),
+                  f_blocks: bufferParser.readUInt64BE(biOpt),
+                  f_bfree: bufferParser.readUInt64BE(biOpt),
+                  f_bavail: bufferParser.readUInt64BE(biOpt),
+                  f_files: bufferParser.readUInt64BE(biOpt),
+                  f_ffree: bufferParser.readUInt64BE(biOpt),
+                  f_favail: bufferParser.readUInt64BE(biOpt),
+                  f_sid: bufferParser.readUInt64BE(biOpt),
+                  f_flag: bufferParser.readUInt64BE(biOpt),
+                  f_namemax: bufferParser.readUInt64BE(biOpt)
+                };
+                if (stats.f_namemax === void 0)
+                  break;
+                if (sftp._debug) {
+                  sftp._debug(
+                    `SFTP: Inbound: Received EXTENDED_REPLY (id:${reqID}, ${req.extended})`
+                  );
+                }
+                bufferParser.clear();
+                if (typeof req.cb === "function")
+                  req.cb(void 0, stats);
+                return;
+              }
+              case "limits@openssh.com": {
+                const limits2 = {
+                  maxPktLen: bufferParser.readUInt64BE(),
+                  maxReadLen: bufferParser.readUInt64BE(),
+                  maxWriteLen: bufferParser.readUInt64BE(),
+                  maxOpenHandles: bufferParser.readUInt64BE()
+                };
+                if (limits2.maxOpenHandles === void 0)
+                  break;
+                if (sftp._debug) {
+                  sftp._debug(
+                    `SFTP: Inbound: Received EXTENDED_REPLY (id:${reqID}, ${req.extended})`
+                  );
+                }
+                bufferParser.clear();
+                if (typeof req.cb === "function")
+                  req.cb(void 0, limits2);
+                return;
+              }
+              case "users-groups-by-id@openssh.com": {
+                const usernameCount = bufferParser.readUInt32BE();
+                if (usernameCount === void 0)
+                  break;
+                const usernames = new Array(usernameCount);
+                for (let i = 0; i < usernames.length; ++i)
+                  usernames[i] = bufferParser.readString(true);
+                const groupnameCount = bufferParser.readUInt32BE();
+                if (groupnameCount === void 0)
+                  break;
+                const groupnames = new Array(groupnameCount);
+                for (let i = 0; i < groupnames.length; ++i)
+                  groupnames[i] = bufferParser.readString(true);
+                if (groupnames.length > 0 && groupnames[groupnames.length - 1] === void 0) {
+                  break;
+                }
+                if (sftp._debug) {
+                  sftp._debug(
+                    `SFTP: Inbound: Received EXTENDED_REPLY (id:${reqID}, ${req.extended})`
+                  );
+                }
+                bufferParser.clear();
+                if (typeof req.cb === "function")
+                  req.cb(void 0, usernames, groupnames);
+                return;
+              }
+              default:
+                sftp._debug && sftp._debug(
+                  `SFTP: Inbound: Received EXTENDED_REPLY (id:${reqID}, ???)`
+                );
+                bufferParser.clear();
+                if (typeof req.cb === "function")
+                  req.cb();
+                return;
+            }
+          } else {
+            sftp._debug && sftp._debug(
+              `SFTP: Inbound: Received EXTENDED_REPLY (id:${reqID}, ???)`
+            );
+            bufferParser.clear();
+            return;
+          }
+        }
+        bufferParser.clear();
+        return doFatalSFTPError(sftp, "Malformed EXTENDED_REPLY packet");
+      }
+    };
+    var SERVER_HANDLERS = {
+      [REQUEST.INIT]: (sftp, payload) => {
+        if (sftp._version !== -1)
+          return doFatalSFTPError(sftp, "Duplicate INIT packet");
+        const extensions = {};
+        bufferParser.init(payload, 1);
+        let version = bufferParser.readUInt32BE();
+        while (bufferParser.avail()) {
+          const extName = bufferParser.readString(true);
+          const extData = bufferParser.readString(true);
+          if (extData === void 0) {
+            version = void 0;
+            break;
+          }
+          extensions[extName] = extData;
+        }
+        bufferParser.clear();
+        if (version === void 0)
+          return doFatalSFTPError(sftp, "Malformed INIT packet");
+        if (sftp._debug) {
+          const names = Object.keys(extensions);
+          if (names.length) {
+            sftp._debug(
+              `SFTP: Inbound: Received INIT (v${version}, exts:${names})`
+            );
+          } else {
+            sftp._debug(`SFTP: Inbound: Received INIT (v${version})`);
+          }
+        }
+        sendOrBuffer(sftp, SERVER_VERSION_BUFFER);
+        sftp._version = version;
+        sftp._extensions = extensions;
+        sftp.emit("ready");
+      },
+      [REQUEST.OPEN]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const filename = bufferParser.readString(true);
+        const pflags = bufferParser.readUInt32BE();
+        const attrs = readAttrs(sftp._biOpt);
+        bufferParser.clear();
+        if (attrs === void 0)
+          return doFatalSFTPError(sftp, "Malformed OPEN packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received OPEN (id:${reqID})`);
+        if (!sftp.emit("OPEN", reqID, filename, pflags, attrs)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.CLOSE]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const handle = bufferParser.readString();
+        bufferParser.clear();
+        if (handle === void 0 || handle.length > 256)
+          return doFatalSFTPError(sftp, "Malformed CLOSE packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received CLOSE (id:${reqID})`);
+        if (!sftp.emit("CLOSE", reqID, handle)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.READ]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const handle = bufferParser.readString();
+        const offset = bufferParser.readUInt64BE(sftp._biOpt);
+        const len = bufferParser.readUInt32BE();
+        bufferParser.clear();
+        if (len === void 0 || handle.length > 256)
+          return doFatalSFTPError(sftp, "Malformed READ packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received READ (id:${reqID})`);
+        if (!sftp.emit("READ", reqID, handle, offset, len)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.WRITE]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const handle = bufferParser.readString();
+        const offset = bufferParser.readUInt64BE(sftp._biOpt);
+        const data = bufferParser.readString();
+        bufferParser.clear();
+        if (data === void 0 || handle.length > 256)
+          return doFatalSFTPError(sftp, "Malformed WRITE packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received WRITE (id:${reqID})`);
+        if (!sftp.emit("WRITE", reqID, handle, offset, data)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.LSTAT]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        bufferParser.clear();
+        if (path === void 0)
+          return doFatalSFTPError(sftp, "Malformed LSTAT packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received LSTAT (id:${reqID})`);
+        if (!sftp.emit("LSTAT", reqID, path)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.FSTAT]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const handle = bufferParser.readString();
+        bufferParser.clear();
+        if (handle === void 0 || handle.length > 256)
+          return doFatalSFTPError(sftp, "Malformed FSTAT packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received FSTAT (id:${reqID})`);
+        if (!sftp.emit("FSTAT", reqID, handle)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.SETSTAT]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        const attrs = readAttrs(sftp._biOpt);
+        bufferParser.clear();
+        if (attrs === void 0)
+          return doFatalSFTPError(sftp, "Malformed SETSTAT packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received SETSTAT (id:${reqID})`);
+        if (!sftp.emit("SETSTAT", reqID, path, attrs)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.FSETSTAT]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const handle = bufferParser.readString();
+        const attrs = readAttrs(sftp._biOpt);
+        bufferParser.clear();
+        if (attrs === void 0 || handle.length > 256)
+          return doFatalSFTPError(sftp, "Malformed FSETSTAT packet");
+        sftp._debug && sftp._debug(
+          `SFTP: Inbound: Received FSETSTAT (id:${reqID})`
+        );
+        if (!sftp.emit("FSETSTAT", reqID, handle, attrs)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.OPENDIR]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        bufferParser.clear();
+        if (path === void 0)
+          return doFatalSFTPError(sftp, "Malformed OPENDIR packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received OPENDIR (id:${reqID})`);
+        if (!sftp.emit("OPENDIR", reqID, path)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.READDIR]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const handle = bufferParser.readString();
+        bufferParser.clear();
+        if (handle === void 0 || handle.length > 256)
+          return doFatalSFTPError(sftp, "Malformed READDIR packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received READDIR (id:${reqID})`);
+        if (!sftp.emit("READDIR", reqID, handle)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.REMOVE]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        bufferParser.clear();
+        if (path === void 0)
+          return doFatalSFTPError(sftp, "Malformed REMOVE packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received REMOVE (id:${reqID})`);
+        if (!sftp.emit("REMOVE", reqID, path)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.MKDIR]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        const attrs = readAttrs(sftp._biOpt);
+        bufferParser.clear();
+        if (attrs === void 0)
+          return doFatalSFTPError(sftp, "Malformed MKDIR packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received MKDIR (id:${reqID})`);
+        if (!sftp.emit("MKDIR", reqID, path, attrs)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.RMDIR]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        bufferParser.clear();
+        if (path === void 0)
+          return doFatalSFTPError(sftp, "Malformed RMDIR packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received RMDIR (id:${reqID})`);
+        if (!sftp.emit("RMDIR", reqID, path)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.REALPATH]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        bufferParser.clear();
+        if (path === void 0)
+          return doFatalSFTPError(sftp, "Malformed REALPATH packet");
+        sftp._debug && sftp._debug(
+          `SFTP: Inbound: Received REALPATH (id:${reqID})`
+        );
+        if (!sftp.emit("REALPATH", reqID, path)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.STAT]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        bufferParser.clear();
+        if (path === void 0)
+          return doFatalSFTPError(sftp, "Malformed STAT packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received STAT (id:${reqID})`);
+        if (!sftp.emit("STAT", reqID, path)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.RENAME]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const oldPath = bufferParser.readString(true);
+        const newPath = bufferParser.readString(true);
+        bufferParser.clear();
+        if (newPath === void 0)
+          return doFatalSFTPError(sftp, "Malformed RENAME packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received RENAME (id:${reqID})`);
+        if (!sftp.emit("RENAME", reqID, oldPath, newPath)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.READLINK]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const path = bufferParser.readString(true);
+        bufferParser.clear();
+        if (path === void 0)
+          return doFatalSFTPError(sftp, "Malformed READLINK packet");
+        sftp._debug && sftp._debug(
+          `SFTP: Inbound: Received READLINK (id:${reqID})`
+        );
+        if (!sftp.emit("READLINK", reqID, path)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.SYMLINK]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const linkPath = bufferParser.readString(true);
+        const targetPath = bufferParser.readString(true);
+        bufferParser.clear();
+        if (targetPath === void 0)
+          return doFatalSFTPError(sftp, "Malformed SYMLINK packet");
+        sftp._debug && sftp._debug(`SFTP: Inbound: Received SYMLINK (id:${reqID})`);
+        let handled;
+        if (sftp._isOpenSSH) {
+          handled = sftp.emit("SYMLINK", reqID, targetPath, linkPath);
+        } else {
+          handled = sftp.emit("SYMLINK", reqID, linkPath, targetPath);
+        }
+        if (!handled) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      },
+      [REQUEST.EXTENDED]: (sftp, payload) => {
+        bufferParser.init(payload, 1);
+        const reqID = bufferParser.readUInt32BE();
+        const extName = bufferParser.readString(true);
+        if (extName === void 0) {
+          bufferParser.clear();
+          return doFatalSFTPError(sftp, "Malformed EXTENDED packet");
+        }
+        let extData;
+        if (bufferParser.avail())
+          extData = bufferParser.readRaw();
+        bufferParser.clear();
+        sftp._debug && sftp._debug(
+          `SFTP: Inbound: Received EXTENDED (id:${reqID})`
+        );
+        if (!sftp.emit("EXTENDED", reqID, extName, extData)) {
+          sftp.status(reqID, STATUS_CODE.OP_UNSUPPORTED);
+        }
+      }
+    };
+    var {
+      ERR_INVALID_ARG_TYPE,
+      ERR_OUT_OF_RANGE,
+      validateNumber
+    } = require_node_fs_compat();
+    var kMinPoolSpace = 128;
+    var pool;
+    var poolFragments = [];
+    function allocNewPool(poolSize) {
+      if (poolFragments.length > 0)
+        pool = poolFragments.pop();
+      else
+        pool = Buffer.allocUnsafe(poolSize);
+      pool.used = 0;
+    }
+    __name(allocNewPool, "allocNewPool");
+    function checkPosition(pos, name) {
+      if (!Number.isSafeInteger(pos)) {
+        validateNumber(pos, name);
+        if (!Number.isInteger(pos))
+          throw new ERR_OUT_OF_RANGE(name, "an integer", pos);
+        throw new ERR_OUT_OF_RANGE(name, ">= 0 and <= 2 ** 53 - 1", pos);
+      }
+      if (pos < 0)
+        throw new ERR_OUT_OF_RANGE(name, ">= 0 and <= 2 ** 53 - 1", pos);
+    }
+    __name(checkPosition, "checkPosition");
+    function roundUpToMultipleOf8(n) {
+      return n + 7 & ~7;
+    }
+    __name(roundUpToMultipleOf8, "roundUpToMultipleOf8");
+    function ReadStream(sftp, path, options) {
+      if (options === void 0)
+        options = {};
+      else if (typeof options === "string")
+        options = { encoding: options };
+      else if (options === null || typeof options !== "object")
+        throw new TypeError('"options" argument must be a string or an object');
+      else
+        options = Object.create(options);
+      if (options.highWaterMark === void 0)
+        options.highWaterMark = 64 * 1024;
+      options.emitClose = false;
+      options.autoDestroy = false;
+      ReadableStream.call(this, options);
+      this.path = path;
+      this.flags = options.flags === void 0 ? "r" : options.flags;
+      this.mode = options.mode === void 0 ? 438 : options.mode;
+      this.start = options.start;
+      this.end = options.end;
+      this.autoClose = options.autoClose === void 0 ? true : options.autoClose;
+      this.pos = 0;
+      this.bytesRead = 0;
+      this.isClosed = false;
+      this.handle = options.handle === void 0 ? null : options.handle;
+      this.sftp = sftp;
+      this._opening = false;
+      if (this.start !== void 0) {
+        checkPosition(this.start, "start");
+        this.pos = this.start;
+      }
+      if (this.end === void 0) {
+        this.end = Infinity;
+      } else if (this.end !== Infinity) {
+        checkPosition(this.end, "end");
+        if (this.start !== void 0 && this.start > this.end) {
+          throw new ERR_OUT_OF_RANGE(
+            "start",
+            `<= "end" (here: ${this.end})`,
+            this.start
+          );
+        }
+      }
+      this.on("end", function() {
+        if (this.autoClose)
+          this.destroy();
+      });
+      if (!Buffer.isBuffer(this.handle))
+        this.open();
+    }
+    __name(ReadStream, "ReadStream");
+    inherits(ReadStream, ReadableStream);
+    ReadStream.prototype.open = function() {
+      if (this._opening)
+        return;
+      this._opening = true;
+      this.sftp.open(this.path, this.flags, this.mode, (er, handle) => {
+        this._opening = false;
+        if (er) {
+          this.emit("error", er);
+          if (this.autoClose)
+            this.destroy();
+          return;
+        }
+        this.handle = handle;
+        this.emit("open", handle);
+        this.emit("ready");
+        this.read();
+      });
+    };
+    ReadStream.prototype._read = function(n) {
+      if (!Buffer.isBuffer(this.handle))
+        return this.once("open", () => this._read(n));
+      if (this.destroyed)
+        return;
+      if (!pool || pool.length - pool.used < kMinPoolSpace) {
+        allocNewPool(this.readableHighWaterMark || this._readableState.highWaterMark);
+      }
+      const thisPool = pool;
+      let toRead = Math.min(pool.length - pool.used, n);
+      const start = pool.used;
+      if (this.end !== void 0)
+        toRead = Math.min(this.end - this.pos + 1, toRead);
+      if (toRead <= 0)
+        return this.push(null);
+      this.sftp.read(
+        this.handle,
+        pool,
+        pool.used,
+        toRead,
+        this.pos,
+        (er, bytesRead) => {
+          if (er) {
+            this.emit("error", er);
+            if (this.autoClose)
+              this.destroy();
+            return;
+          }
+          let b = null;
+          if (start + toRead === thisPool.used && thisPool === pool) {
+            thisPool.used = roundUpToMultipleOf8(thisPool.used + bytesRead - toRead);
+          } else {
+            const alignedEnd = start + toRead & ~7;
+            const alignedStart = roundUpToMultipleOf8(start + bytesRead);
+            if (alignedEnd - alignedStart >= kMinPoolSpace)
+              poolFragments.push(thisPool.slice(alignedStart, alignedEnd));
+          }
+          if (bytesRead > 0) {
+            this.bytesRead += bytesRead;
+            b = thisPool.slice(start, start + bytesRead);
+          }
+          this.pos += bytesRead;
+          this.push(b);
+        }
+      );
+      pool.used = roundUpToMultipleOf8(pool.used + toRead);
+    };
+    ReadStream.prototype._destroy = function(err, cb) {
+      if (this._opening && !Buffer.isBuffer(this.handle)) {
+        this.once("open", closeStream.bind(null, this, cb, err));
+        return;
+      }
+      closeStream(this, cb, err);
+      this.handle = null;
+      this._opening = false;
+    };
+    function closeStream(stream, cb, err) {
+      if (!stream.handle)
+        return onclose();
+      stream.sftp.close(stream.handle, onclose);
+      function onclose(er) {
+        er = er || err;
+        cb(er);
+        stream.isClosed = true;
+        if (!er)
+          stream.emit("close");
+      }
+      __name(onclose, "onclose");
+    }
+    __name(closeStream, "closeStream");
+    ReadStream.prototype.close = function(cb) {
+      this.destroy(null, cb);
+    };
+    Object.defineProperty(ReadStream.prototype, "pending", {
+      get() {
+        return this.handle === null;
+      },
+      configurable: true
+    });
+    function WriteStream(sftp, path, options) {
+      if (options === void 0)
+        options = {};
+      else if (typeof options === "string")
+        options = { encoding: options };
+      else if (options === null || typeof options !== "object")
+        throw new TypeError('"options" argument must be a string or an object');
+      else
+        options = Object.create(options);
+      options.emitClose = false;
+      options.autoDestroy = false;
+      WritableStream.call(this, options);
+      this.path = path;
+      this.flags = options.flags === void 0 ? "w" : options.flags;
+      this.mode = options.mode === void 0 ? 438 : options.mode;
+      this.start = options.start;
+      this.autoClose = options.autoClose === void 0 ? true : options.autoClose;
+      this.pos = 0;
+      this.bytesWritten = 0;
+      this.isClosed = false;
+      this.handle = options.handle === void 0 ? null : options.handle;
+      this.sftp = sftp;
+      this._opening = false;
+      if (this.start !== void 0) {
+        checkPosition(this.start, "start");
+        this.pos = this.start;
+      }
+      if (options.encoding)
+        this.setDefaultEncoding(options.encoding);
+      this.on("finish", function() {
+        if (this._writableState.finalCalled)
+          return;
+        if (this.autoClose)
+          this.destroy();
+      });
+      if (!Buffer.isBuffer(this.handle))
+        this.open();
+    }
+    __name(WriteStream, "WriteStream");
+    inherits(WriteStream, WritableStream);
+    WriteStream.prototype._final = function(cb) {
+      if (this.autoClose)
+        this.destroy();
+      cb();
+    };
+    WriteStream.prototype.open = function() {
+      if (this._opening)
+        return;
+      this._opening = true;
+      this.sftp.open(this.path, this.flags, this.mode, (er, handle) => {
+        this._opening = false;
+        if (er) {
+          this.emit("error", er);
+          if (this.autoClose)
+            this.destroy();
+          return;
+        }
+        this.handle = handle;
+        const tryAgain = /* @__PURE__ */ __name((err) => {
+          if (err) {
+            this.sftp.chmod(this.path, this.mode, (err_) => tryAgain());
+            return;
+          }
+          if (this.flags[0] === "a") {
+            const tryStat = /* @__PURE__ */ __name((err2, st) => {
+              if (err2) {
+                this.sftp.stat(this.path, (err_, st_) => {
+                  if (err_) {
+                    this.destroy();
+                    this.emit("error", err2);
+                    return;
+                  }
+                  tryStat(null, st_);
+                });
+                return;
+              }
+              this.pos = st.size;
+              this.emit("open", handle);
+              this.emit("ready");
+            }, "tryStat");
+            this.sftp.fstat(handle, tryStat);
+            return;
+          }
+          this.emit("open", handle);
+          this.emit("ready");
+        }, "tryAgain");
+        this.sftp.fchmod(handle, this.mode, tryAgain);
+      });
+    };
+    WriteStream.prototype._write = function(data, encoding, cb) {
+      if (!Buffer.isBuffer(data)) {
+        const err = new ERR_INVALID_ARG_TYPE("data", "Buffer", data);
+        return this.emit("error", err);
+      }
+      if (!Buffer.isBuffer(this.handle)) {
+        return this.once("open", function() {
+          this._write(data, encoding, cb);
+        });
+      }
+      this.sftp.write(
+        this.handle,
+        data,
+        0,
+        data.length,
+        this.pos,
+        (er, bytes) => {
+          if (er) {
+            if (this.autoClose)
+              this.destroy();
+            return cb(er);
+          }
+          this.bytesWritten += bytes;
+          cb();
+        }
+      );
+      this.pos += data.length;
+    };
+    WriteStream.prototype._writev = function(data, cb) {
+      if (!Buffer.isBuffer(this.handle)) {
+        return this.once("open", function() {
+          this._writev(data, cb);
+        });
+      }
+      const sftp = this.sftp;
+      const handle = this.handle;
+      let writesLeft = data.length;
+      const onwrite = /* @__PURE__ */ __name((er, bytes) => {
+        if (er) {
+          this.destroy();
+          return cb(er);
+        }
+        this.bytesWritten += bytes;
+        if (--writesLeft === 0)
+          cb();
+      }, "onwrite");
+      for (let i = 0; i < data.length; ++i) {
+        const chunk = data[i].chunk;
+        sftp.write(handle, chunk, 0, chunk.length, this.pos, onwrite);
+        this.pos += chunk.length;
+      }
+    };
+    if (typeof WritableStream.prototype.destroy !== "function")
+      WriteStream.prototype.destroy = ReadStream.prototype.destroy;
+    WriteStream.prototype._destroy = ReadStream.prototype._destroy;
+    WriteStream.prototype.close = function(cb) {
+      if (cb) {
+        if (this.isClosed) {
+          process.nextTick(cb);
+          return;
+        }
+        this.on("close", cb);
+      }
+      if (!this.autoClose)
+        this.on("finish", this.destroy.bind(this));
+      this.end();
+    };
+    WriteStream.prototype.destroySoon = WriteStream.prototype.end;
+    Object.defineProperty(WriteStream.prototype, "pending", {
+      get() {
+        return this.handle === null;
+      },
+      configurable: true
+    });
+    module.exports = {
+      flagsToString,
+      OPEN_MODE,
+      SFTP,
+      Stats,
+      STATUS_CODE,
+      stringToFlags
+    };
+  }
+});
+
+// node_modules/ssh2/lib/Channel.js
+var require_Channel = __commonJS({
+  "node_modules/ssh2/lib/Channel.js"(exports, module) {
+    "use strict";
+    var {
+      Duplex: DuplexStream,
+      Readable: ReadableStream,
+      Writable: WritableStream
+    } = require_stream();
+    var {
+      CHANNEL_EXTENDED_DATATYPE: { STDERR }
+    } = require_constants3();
+    var { bufferSlice } = require_utils4();
+    var PACKET_SIZE = 32 * 1024;
+    var MAX_WINDOW = 2 * 1024 * 1024;
+    var WINDOW_THRESHOLD = MAX_WINDOW / 2;
+    var ClientStderr = class extends ReadableStream {
+      static {
+        __name(this, "ClientStderr");
+      }
+      constructor(channel, streamOpts) {
+        super(streamOpts);
+        this._channel = channel;
+      }
+      _read(n) {
+        if (this._channel._waitChanDrain) {
+          this._channel._waitChanDrain = false;
+          if (this._channel.incoming.window <= WINDOW_THRESHOLD)
+            windowAdjust(this._channel);
+        }
+      }
+    };
+    var ServerStderr = class extends WritableStream {
+      static {
+        __name(this, "ServerStderr");
+      }
+      constructor(channel) {
+        super({ highWaterMark: MAX_WINDOW });
+        this._channel = channel;
+      }
+      _write(data, encoding, cb) {
+        const channel = this._channel;
+        const protocol = channel._client._protocol;
+        const outgoing = channel.outgoing;
+        const packetSize = outgoing.packetSize;
+        const id = outgoing.id;
+        let window2 = outgoing.window;
+        const len = data.length;
+        let p = 0;
+        if (outgoing.state !== "open")
+          return;
+        while (len - p > 0 && window2 > 0) {
+          let sliceLen = len - p;
+          if (sliceLen > window2)
+            sliceLen = window2;
+          if (sliceLen > packetSize)
+            sliceLen = packetSize;
+          if (p === 0 && sliceLen === len)
+            protocol.channelExtData(id, data, STDERR);
+          else
+            protocol.channelExtData(id, bufferSlice(data, p, p + sliceLen), STDERR);
+          p += sliceLen;
+          window2 -= sliceLen;
+        }
+        outgoing.window = window2;
+        if (len - p > 0) {
+          if (window2 === 0)
+            channel._waitWindow = true;
+          if (p > 0)
+            channel._chunkErr = bufferSlice(data, p, len);
+          else
+            channel._chunkErr = data;
+          channel._chunkcbErr = cb;
+          return;
+        }
+        cb();
+      }
+    };
+    var Channel = class extends DuplexStream {
+      static {
+        __name(this, "Channel");
+      }
+      constructor(client, info, opts) {
+        const streamOpts = {
+          highWaterMark: MAX_WINDOW,
+          allowHalfOpen: !opts || opts && opts.allowHalfOpen !== false,
+          emitClose: false
+        };
+        super(streamOpts);
+        this.allowHalfOpen = streamOpts.allowHalfOpen;
+        const server = !!(opts && opts.server);
+        this.server = server;
+        this.type = info.type;
+        this.subtype = void 0;
+        this.incoming = info.incoming;
+        this.outgoing = info.outgoing;
+        this._callbacks = [];
+        this._client = client;
+        this._hasX11 = false;
+        this._exit = {
+          code: void 0,
+          signal: void 0,
+          dump: void 0,
+          desc: void 0
+        };
+        this.stdin = this.stdout = this;
+        if (server)
+          this.stderr = new ServerStderr(this);
+        else
+          this.stderr = new ClientStderr(this, streamOpts);
+        this._waitWindow = false;
+        this._waitChanDrain = false;
+        this._chunk = void 0;
+        this._chunkcb = void 0;
+        this._chunkErr = void 0;
+        this._chunkcbErr = void 0;
+        this.on("finish", onFinish).on("prefinish", onFinish);
+        this.on("end", onEnd).on("close", onEnd);
+      }
+      _read(n) {
+        if (this._waitChanDrain) {
+          this._waitChanDrain = false;
+          if (this.incoming.window <= WINDOW_THRESHOLD)
+            windowAdjust(this);
+        }
+      }
+      _write(data, encoding, cb) {
+        const protocol = this._client._protocol;
+        const outgoing = this.outgoing;
+        const packetSize = outgoing.packetSize;
+        const id = outgoing.id;
+        let window2 = outgoing.window;
+        const len = data.length;
+        let p = 0;
+        if (outgoing.state !== "open")
+          return;
+        while (len - p > 0 && window2 > 0) {
+          let sliceLen = len - p;
+          if (sliceLen > window2)
+            sliceLen = window2;
+          if (sliceLen > packetSize)
+            sliceLen = packetSize;
+          if (p === 0 && sliceLen === len)
+            protocol.channelData(id, data);
+          else
+            protocol.channelData(id, bufferSlice(data, p, p + sliceLen));
+          p += sliceLen;
+          window2 -= sliceLen;
+        }
+        outgoing.window = window2;
+        if (len - p > 0) {
+          if (window2 === 0)
+            this._waitWindow = true;
+          if (p > 0)
+            this._chunk = bufferSlice(data, p, len);
+          else
+            this._chunk = data;
+          this._chunkcb = cb;
+          return;
+        }
+        cb();
+      }
+      eof() {
+        if (this.outgoing.state === "open") {
+          this.outgoing.state = "eof";
+          this._client._protocol.channelEOF(this.outgoing.id);
+        }
+      }
+      close() {
+        if (this.outgoing.state === "open" || this.outgoing.state === "eof") {
+          this.outgoing.state = "closing";
+          this._client._protocol.channelClose(this.outgoing.id);
+        }
+      }
+      destroy() {
+        this.end();
+        this.close();
+        return this;
+      }
+      // Session type-specific methods =============================================
+      setWindow(rows, cols, height, width) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (this.type === "session" && (this.subtype === "shell" || this.subtype === "exec") && this.writable && this.outgoing.state === "open") {
+          this._client._protocol.windowChange(
+            this.outgoing.id,
+            rows,
+            cols,
+            height,
+            width
+          );
+        }
+      }
+      signal(signalName) {
+        if (this.server)
+          throw new Error("Client-only method called in server mode");
+        if (this.type === "session" && this.writable && this.outgoing.state === "open") {
+          this._client._protocol.signal(this.outgoing.id, signalName);
+        }
+      }
+      exit(statusOrSignal, coreDumped, msg) {
+        if (!this.server)
+          throw new Error("Server-only method called in client mode");
+        if (this.type === "session" && this.writable && this.outgoing.state === "open") {
+          if (typeof statusOrSignal === "number") {
+            this._client._protocol.exitStatus(this.outgoing.id, statusOrSignal);
+          } else {
+            this._client._protocol.exitSignal(
+              this.outgoing.id,
+              statusOrSignal,
+              coreDumped,
+              msg
+            );
+          }
+        }
+      }
+    };
+    function onFinish() {
+      this.eof();
+      if (this.server || !this.allowHalfOpen)
+        this.close();
+      this.writable = false;
+    }
+    __name(onFinish, "onFinish");
+    function onEnd() {
+      this.readable = false;
+    }
+    __name(onEnd, "onEnd");
+    function windowAdjust(self2) {
+      if (self2.outgoing.state === "closed")
+        return;
+      const amt = MAX_WINDOW - self2.incoming.window;
+      if (amt <= 0)
+        return;
+      self2.incoming.window += amt;
+      self2._client._protocol.channelWindowAdjust(self2.outgoing.id, amt);
+    }
+    __name(windowAdjust, "windowAdjust");
+    module.exports = {
+      Channel,
+      MAX_WINDOW,
+      PACKET_SIZE,
+      windowAdjust,
+      WINDOW_THRESHOLD
+    };
+  }
+});
+
+// node_modules/ssh2/lib/utils.js
+var require_utils5 = __commonJS({
+  "node_modules/ssh2/lib/utils.js"(exports, module) {
+    "use strict";
+    var { SFTP } = require_SFTP();
+    var MAX_CHANNEL = 2 ** 32 - 1;
+    function onChannelOpenFailure(self2, recipient, info, cb) {
+      self2._chanMgr.remove(recipient);
+      if (typeof cb !== "function")
+        return;
+      let err;
+      if (info instanceof Error) {
+        err = info;
+      } else if (typeof info === "object" && info !== null) {
+        err = new Error(`(SSH) Channel open failure: ${info.description}`);
+        err.reason = info.reason;
+      } else {
+        err = new Error(
+          "(SSH) Channel open failure: server closed channel unexpectedly"
+        );
+        err.reason = "";
+      }
+      cb(err);
+    }
+    __name(onChannelOpenFailure, "onChannelOpenFailure");
+    function onCHANNEL_CLOSE(self2, recipient, channel, err, dead) {
+      if (typeof channel === "function") {
+        onChannelOpenFailure(self2, recipient, err, channel);
+        return;
+      }
+      if (typeof channel !== "object" || channel === null)
+        return;
+      if (channel.incoming && channel.incoming.state === "closed")
+        return;
+      self2._chanMgr.remove(recipient);
+      if (channel.server && channel.constructor.name === "Session")
+        return;
+      channel.incoming.state = "closed";
+      if (channel.readable)
+        channel.push(null);
+      if (channel.server) {
+        if (channel.stderr.writable)
+          channel.stderr.end();
+      } else if (channel.stderr.readable) {
+        channel.stderr.push(null);
+      }
+      if (channel.constructor !== SFTP && (channel.outgoing.state === "open" || channel.outgoing.state === "eof") && !dead) {
+        channel.close();
+      }
+      if (channel.outgoing.state === "closing")
+        channel.outgoing.state = "closed";
+      const readState = channel._readableState;
+      const writeState = channel._writableState;
+      if (writeState && !writeState.ending && !writeState.finished && !dead)
+        channel.end();
+      const chanCallbacks = channel._callbacks;
+      channel._callbacks = [];
+      for (let i = 0; i < chanCallbacks.length; ++i)
+        chanCallbacks[i](true);
+      if (channel.server) {
+        if (!channel.readable || channel.destroyed || readState && readState.endEmitted) {
+          channel.emit("close");
+        } else {
+          channel.once("end", () => channel.emit("close"));
+        }
+      } else {
+        let doClose;
+        switch (channel.type) {
+          case "direct-streamlocal@openssh.com":
+          case "direct-tcpip":
+            doClose = /* @__PURE__ */ __name(() => channel.emit("close"), "doClose");
+            break;
+          default: {
+            const exit = channel._exit;
+            doClose = /* @__PURE__ */ __name(() => {
+              if (exit.code === null)
+                channel.emit("close", exit.code, exit.signal, exit.dump, exit.desc);
+              else
+                channel.emit("close", exit.code);
+            }, "doClose");
+          }
+        }
+        if (!channel.readable || channel.destroyed || readState && readState.endEmitted) {
+          doClose();
+        } else {
+          channel.once("end", doClose);
+        }
+        const errReadState = channel.stderr._readableState;
+        if (!channel.stderr.readable || channel.stderr.destroyed || errReadState && errReadState.endEmitted) {
+          channel.stderr.emit("close");
+        } else {
+          channel.stderr.once("end", () => channel.stderr.emit("close"));
+        }
+      }
+    }
+    __name(onCHANNEL_CLOSE, "onCHANNEL_CLOSE");
+    var ChannelManager = class {
+      static {
+        __name(this, "ChannelManager");
+      }
+      constructor(client) {
+        this._client = client;
+        this._channels = {};
+        this._cur = -1;
+        this._count = 0;
+      }
+      add(val) {
+        let id;
+        if (this._cur < MAX_CHANNEL) {
+          id = ++this._cur;
+        } else if (this._count === 0) {
+          this._cur = 0;
+          id = 0;
+        } else {
+          const channels = this._channels;
+          for (let i = 0; i < MAX_CHANNEL; ++i) {
+            if (channels[i] === void 0) {
+              id = i;
+              break;
+            }
+          }
+        }
+        if (id === void 0)
+          return -1;
+        this._channels[id] = val || true;
+        ++this._count;
+        return id;
+      }
+      update(id, val) {
+        if (typeof id !== "number" || id < 0 || id >= MAX_CHANNEL || !isFinite(id))
+          throw new Error(`Invalid channel id: ${id}`);
+        if (val && this._channels[id])
+          this._channels[id] = val;
+      }
+      get(id) {
+        if (typeof id !== "number" || id < 0 || id >= MAX_CHANNEL || !isFinite(id))
+          throw new Error(`Invalid channel id: ${id}`);
+        return this._channels[id];
+      }
+      remove(id) {
+        if (typeof id !== "number" || id < 0 || id >= MAX_CHANNEL || !isFinite(id))
+          throw new Error(`Invalid channel id: ${id}`);
+        if (this._channels[id]) {
+          delete this._channels[id];
+          if (this._count)
+            --this._count;
+        }
+      }
+      cleanup(err) {
+        const channels = this._channels;
+        this._channels = {};
+        this._cur = -1;
+        this._count = 0;
+        const chanIDs = Object.keys(channels);
+        const client = this._client;
+        for (let i = 0; i < chanIDs.length; ++i) {
+          const id = +chanIDs[i];
+          const channel = channels[id];
+          onCHANNEL_CLOSE(client, id, channel._channel || channel, err, true);
+        }
+      }
+    };
+    var isRegExp = /* @__PURE__ */ (() => {
+      const toString = Object.prototype.toString;
+      return (val) => toString.call(val) === "[object RegExp]";
+    })();
+    function generateAlgorithmList(algoList, defaultList, supportedList) {
+      if (Array.isArray(algoList) && algoList.length > 0) {
+        for (let i = 0; i < algoList.length; ++i) {
+          if (supportedList.indexOf(algoList[i]) === -1)
+            throw new Error(`Unsupported algorithm: ${algoList[i]}`);
+        }
+        return algoList;
+      }
+      if (typeof algoList === "object" && algoList !== null) {
+        const keys = Object.keys(algoList);
+        let list = defaultList;
+        for (let i = 0; i < keys.length; ++i) {
+          const key = keys[i];
+          let val = algoList[key];
+          switch (key) {
+            case "append":
+              if (!Array.isArray(val))
+                val = [val];
+              if (Array.isArray(val)) {
+                for (let j = 0; j < val.length; ++j) {
+                  const append = val[j];
+                  if (typeof append === "string") {
+                    if (!append || list.indexOf(append) !== -1)
+                      continue;
+                    if (supportedList.indexOf(append) === -1)
+                      throw new Error(`Unsupported algorithm: ${append}`);
+                    if (list === defaultList)
+                      list = list.slice();
+                    list.push(append);
+                  } else if (isRegExp(append)) {
+                    for (let k = 0; k < supportedList.length; ++k) {
+                      const algo = supportedList[k];
+                      if (append.test(algo)) {
+                        if (list.indexOf(algo) !== -1)
+                          continue;
+                        if (list === defaultList)
+                          list = list.slice();
+                        list.push(algo);
+                      }
+                    }
+                  }
+                }
+              }
+              break;
+            case "prepend":
+              if (!Array.isArray(val))
+                val = [val];
+              if (Array.isArray(val)) {
+                for (let j = val.length; j >= 0; --j) {
+                  const prepend = val[j];
+                  if (typeof prepend === "string") {
+                    if (!prepend || list.indexOf(prepend) !== -1)
+                      continue;
+                    if (supportedList.indexOf(prepend) === -1)
+                      throw new Error(`Unsupported algorithm: ${prepend}`);
+                    if (list === defaultList)
+                      list = list.slice();
+                    list.unshift(prepend);
+                  } else if (isRegExp(prepend)) {
+                    for (let k = supportedList.length; k >= 0; --k) {
+                      const algo = supportedList[k];
+                      if (prepend.test(algo)) {
+                        if (list.indexOf(algo) !== -1)
+                          continue;
+                        if (list === defaultList)
+                          list = list.slice();
+                        list.unshift(algo);
+                      }
+                    }
+                  }
+                }
+              }
+              break;
+            case "remove":
+              if (!Array.isArray(val))
+                val = [val];
+              if (Array.isArray(val)) {
+                for (let j = 0; j < val.length; ++j) {
+                  const search = val[j];
+                  if (typeof search === "string") {
+                    if (!search)
+                      continue;
+                    const idx = list.indexOf(search);
+                    if (idx === -1)
+                      continue;
+                    if (list === defaultList)
+                      list = list.slice();
+                    list.splice(idx, 1);
+                  } else if (isRegExp(search)) {
+                    for (let k = 0; k < list.length; ++k) {
+                      if (search.test(list[k])) {
+                        if (list === defaultList)
+                          list = list.slice();
+                        list.splice(k, 1);
+                        --k;
+                      }
+                    }
+                  }
+                }
+              }
+              break;
+          }
+        }
+        return list;
+      }
+      return defaultList;
+    }
+    __name(generateAlgorithmList, "generateAlgorithmList");
+    module.exports = {
+      ChannelManager,
+      generateAlgorithmList,
+      onChannelOpenFailure,
+      onCHANNEL_CLOSE,
+      isWritable: /* @__PURE__ */ __name((stream) => {
+        return stream && stream.writable && stream._readableState && stream._readableState.ended === false;
+      }, "isWritable")
+    };
+  }
+});
+
+// node_modules/ssh2/lib/client.js
+var require_client9 = __commonJS({
+  "node_modules/ssh2/lib/client.js"(exports, module) {
+    "use strict";
+    var {
+      createHash,
+      getHashes,
+      randomFillSync
+    } = require_crypto();
+    var { Socket } = require_net();
+    var { lookup: dnsLookup } = require_dns();
+    var EventEmitter = require_events();
+    var HASHES = getHashes();
+    var {
+      COMPAT,
+      CHANNEL_EXTENDED_DATATYPE: { STDERR },
+      CHANNEL_OPEN_FAILURE,
+      DEFAULT_CIPHER,
+      DEFAULT_COMPRESSION,
+      DEFAULT_KEX,
+      DEFAULT_MAC,
+      DEFAULT_SERVER_HOST_KEY,
+      DISCONNECT_REASON,
+      DISCONNECT_REASON_BY_VALUE,
+      SUPPORTED_CIPHER,
+      SUPPORTED_COMPRESSION,
+      SUPPORTED_KEX,
+      SUPPORTED_MAC,
+      SUPPORTED_SERVER_HOST_KEY
+    } = require_constants3();
+    var { init: cryptoInit } = require_crypto2();
+    var Protocol = require_Protocol();
+    var { parseKey } = require_keyParser();
+    var { SFTP } = require_SFTP();
+    var {
+      bufferCopy,
+      makeBufferParser,
+      makeError,
+      readUInt32BE,
+      sigSSHToASN1,
+      writeUInt32BE
+    } = require_utils4();
+    var { AgentContext, createAgent, isAgent } = require_agent();
+    var {
+      Channel,
+      MAX_WINDOW,
+      PACKET_SIZE,
+      windowAdjust,
+      WINDOW_THRESHOLD
+    } = require_Channel();
+    var {
+      ChannelManager,
+      generateAlgorithmList,
+      isWritable,
+      onChannelOpenFailure,
+      onCHANNEL_CLOSE
+    } = require_utils5();
+    var bufferParser = makeBufferParser();
+    var sigParser = makeBufferParser();
+    var RE_OPENSSH = /^OpenSSH_(?:(?![0-4])\d)|(?:\d{2,})/;
+    var noop = /* @__PURE__ */ __name((err) => {
+    }, "noop");
+    var Client = class extends EventEmitter {
+      static {
+        __name(this, "Client");
+      }
+      constructor() {
+        super();
+        this.config = {
+          host: void 0,
+          port: void 0,
+          localAddress: void 0,
+          localPort: void 0,
+          forceIPv4: void 0,
+          forceIPv6: void 0,
+          keepaliveCountMax: void 0,
+          keepaliveInterval: void 0,
+          readyTimeout: void 0,
+          ident: void 0,
+          username: void 0,
+          password: void 0,
+          privateKey: void 0,
+          tryKeyboard: void 0,
+          agent: void 0,
+          allowAgentFwd: void 0,
+          authHandler: void 0,
+          hostHashAlgo: void 0,
+          hostHashCb: void 0,
+          strictVendor: void 0,
+          debug: void 0
+        };
+        this._agent = void 0;
+        this._readyTimeout = void 0;
+        this._chanMgr = void 0;
+        this._callbacks = void 0;
+        this._forwarding = void 0;
+        this._forwardingUnix = void 0;
+        this._acceptX11 = void 0;
+        this._agentFwdEnabled = void 0;
+        this._remoteVer = void 0;
+        this._protocol = void 0;
+        this._sock = void 0;
+        this._resetKA = void 0;
+      }
+      connect(cfg) {
+        if (this._sock && isWritable(this._sock)) {
+          this.once("close", () => {
+            this.connect(cfg);
+          });
+          this.end();
+          return this;
+        }
+        this.config.host = cfg.hostname || cfg.host || "localhost";
+        this.config.port = cfg.port || 22;
+        this.config.localAddress = typeof cfg.localAddress === "string" ? cfg.localAddress : void 0;
+        this.config.localPort = typeof cfg.localPort === "string" || typeof cfg.localPort === "number" ? cfg.localPort : void 0;
+        this.config.forceIPv4 = cfg.forceIPv4 || false;
+        this.config.forceIPv6 = cfg.forceIPv6 || false;
+        this.config.keepaliveCountMax = typeof cfg.keepaliveCountMax === "number" && cfg.keepaliveCountMax >= 0 ? cfg.keepaliveCountMax : 3;
+        this.config.keepaliveInterval = typeof cfg.keepaliveInterval === "number" && cfg.keepaliveInterval > 0 ? cfg.keepaliveInterval : 0;
+        this.config.readyTimeout = typeof cfg.readyTimeout === "number" && cfg.readyTimeout >= 0 ? cfg.readyTimeout : 2e4;
+        this.config.ident = typeof cfg.ident === "string" || Buffer.isBuffer(cfg.ident) ? cfg.ident : void 0;
+        const algorithms = {
+          kex: void 0,
+          serverHostKey: void 0,
+          cs: {
+            cipher: void 0,
+            mac: void 0,
+            compress: void 0,
+            lang: []
+          },
+          sc: void 0
+        };
+        let allOfferDefaults = true;
+        if (typeof cfg.algorithms === "object" && cfg.algorithms !== null) {
+          algorithms.kex = generateAlgorithmList(
+            cfg.algorithms.kex,
+            DEFAULT_KEX,
+            SUPPORTED_KEX
+          );
+          if (algorithms.kex !== DEFAULT_KEX)
+            allOfferDefaults = false;
+          algorithms.serverHostKey = generateAlgorithmList(
+            cfg.algorithms.serverHostKey,
+            DEFAULT_SERVER_HOST_KEY,
+            SUPPORTED_SERVER_HOST_KEY
+          );
+          if (algorithms.serverHostKey !== DEFAULT_SERVER_HOST_KEY)
+            allOfferDefaults = false;
+          algorithms.cs.cipher = generateAlgorithmList(
+            cfg.algorithms.cipher,
+            DEFAULT_CIPHER,
+            SUPPORTED_CIPHER
+          );
+          if (algorithms.cs.cipher !== DEFAULT_CIPHER)
+            allOfferDefaults = false;
+          algorithms.cs.mac = generateAlgorithmList(
+            cfg.algorithms.hmac,
+            DEFAULT_MAC,
+            SUPPORTED_MAC
+          );
+          if (algorithms.cs.mac !== DEFAULT_MAC)
+            allOfferDefaults = false;
+          algorithms.cs.compress = generateAlgorithmList(
+            cfg.algorithms.compress,
+            DEFAULT_COMPRESSION,
+            SUPPORTED_COMPRESSION
+          );
+          if (algorithms.cs.compress !== DEFAULT_COMPRESSION)
+            allOfferDefaults = false;
+          if (!allOfferDefaults)
+            algorithms.sc = algorithms.cs;
+        }
+        if (typeof cfg.username === "string")
+          this.config.username = cfg.username;
+        else if (typeof cfg.user === "string")
+          this.config.username = cfg.user;
+        else
+          throw new Error("Invalid username");
+        this.config.password = typeof cfg.password === "string" ? cfg.password : void 0;
+        this.config.privateKey = typeof cfg.privateKey === "string" || Buffer.isBuffer(cfg.privateKey) ? cfg.privateKey : void 0;
+        this.config.localHostname = typeof cfg.localHostname === "string" ? cfg.localHostname : void 0;
+        this.config.localUsername = typeof cfg.localUsername === "string" ? cfg.localUsername : void 0;
+        this.config.tryKeyboard = cfg.tryKeyboard === true;
+        if (typeof cfg.agent === "string" && cfg.agent.length)
+          this.config.agent = createAgent(cfg.agent);
+        else if (isAgent(cfg.agent))
+          this.config.agent = cfg.agent;
+        else
+          this.config.agent = void 0;
+        this.config.allowAgentFwd = cfg.agentForward === true && this.config.agent !== void 0;
+        let authHandler = this.config.authHandler = typeof cfg.authHandler === "function" || Array.isArray(cfg.authHandler) ? cfg.authHandler : void 0;
+        this.config.strictVendor = typeof cfg.strictVendor === "boolean" ? cfg.strictVendor : true;
+        const debug = this.config.debug = typeof cfg.debug === "function" ? cfg.debug : void 0;
+        if (cfg.agentForward === true && !this.config.allowAgentFwd) {
+          throw new Error(
+            "You must set a valid agent path to allow agent forwarding"
+          );
+        }
+        let callbacks = this._callbacks = [];
+        this._chanMgr = new ChannelManager(this);
+        this._forwarding = {};
+        this._forwardingUnix = {};
+        this._acceptX11 = 0;
+        this._agentFwdEnabled = false;
+        this._agent = this.config.agent ? this.config.agent : void 0;
+        this._remoteVer = void 0;
+        let privateKey;
+        if (this.config.privateKey) {
+          privateKey = parseKey(this.config.privateKey, cfg.passphrase);
+          if (privateKey instanceof Error)
+            throw new Error(`Cannot parse privateKey: ${privateKey.message}`);
+          if (Array.isArray(privateKey)) {
+            privateKey = privateKey[0];
+          }
+          if (privateKey.getPrivatePEM() === null) {
+            throw new Error(
+              "privateKey value does not contain a (valid) private key"
+            );
+          }
+        }
+        let hostVerifier;
+        if (typeof cfg.hostVerifier === "function") {
+          const hashCb = cfg.hostVerifier;
+          let hashAlgo;
+          if (HASHES.indexOf(cfg.hostHash) !== -1) {
+            hashAlgo = cfg.hostHash;
+          }
+          hostVerifier = /* @__PURE__ */ __name((key, verify) => {
+            if (hashAlgo)
+              key = createHash(hashAlgo).update(key).digest("hex");
+            const ret = hashCb(key, verify);
+            if (ret !== void 0)
+              verify(ret);
+          }, "hostVerifier");
+        }
+        const sock = this._sock = cfg.sock || new Socket();
+        let ready = false;
+        let sawHeader = false;
+        if (this._protocol)
+          this._protocol.cleanup();
+        const DEBUG_HANDLER = !debug ? void 0 : (p, display, msg) => {
+          debug(`Debug output from server: ${JSON.stringify(msg)}`);
+        };
+        let serverSigAlgs;
+        const proto = this._protocol = new Protocol({
+          ident: this.config.ident,
+          offer: allOfferDefaults ? void 0 : algorithms,
+          onWrite: /* @__PURE__ */ __name((data) => {
+            if (isWritable(sock))
+              sock.write(data);
+          }, "onWrite"),
+          onError: /* @__PURE__ */ __name((err) => {
+            if (err.level === "handshake")
+              clearTimeout(this._readyTimeout);
+            if (!proto._destruct)
+              sock.removeAllListeners("data");
+            this.emit("error", err);
+            try {
+              sock.end();
+            } catch {
+            }
+          }, "onError"),
+          onHeader: /* @__PURE__ */ __name((header) => {
+            sawHeader = true;
+            this._remoteVer = header.versions.software;
+            if (header.greeting)
+              this.emit("greeting", header.greeting);
+          }, "onHeader"),
+          onHandshakeComplete: /* @__PURE__ */ __name((negotiated) => {
+            this.emit("handshake", negotiated);
+            if (!ready) {
+              ready = true;
+              proto.service("ssh-userauth");
+            }
+          }, "onHandshakeComplete"),
+          debug,
+          hostVerifier,
+          messageHandlers: {
+            DEBUG: DEBUG_HANDLER,
+            DISCONNECT: /* @__PURE__ */ __name((p, reason, desc) => {
+              if (reason !== DISCONNECT_REASON.BY_APPLICATION) {
+                if (!desc) {
+                  desc = DISCONNECT_REASON_BY_VALUE[reason];
+                  if (desc === void 0)
+                    desc = `Unexpected disconnection reason: ${reason}`;
+                }
+                const err = new Error(desc);
+                err.code = reason;
+                this.emit("error", err);
+              }
+              sock.end();
+            }, "DISCONNECT"),
+            SERVICE_ACCEPT: /* @__PURE__ */ __name((p, name) => {
+              if (name === "ssh-userauth")
+                tryNextAuth();
+            }, "SERVICE_ACCEPT"),
+            EXT_INFO: /* @__PURE__ */ __name((p, exts) => {
+              if (serverSigAlgs === void 0) {
+                for (const ext of exts) {
+                  if (ext.name === "server-sig-algs") {
+                    serverSigAlgs = ext.algs;
+                    return;
+                  }
+                }
+                serverSigAlgs = null;
+              }
+            }, "EXT_INFO"),
+            USERAUTH_BANNER: /* @__PURE__ */ __name((p, msg) => {
+              this.emit("banner", msg);
+            }, "USERAUTH_BANNER"),
+            USERAUTH_SUCCESS: /* @__PURE__ */ __name((p) => {
+              resetKA();
+              clearTimeout(this._readyTimeout);
+              this.emit("ready");
+            }, "USERAUTH_SUCCESS"),
+            USERAUTH_FAILURE: /* @__PURE__ */ __name((p, authMethods, partialSuccess) => {
+              if (curAuth.keyAlgos) {
+                const oldKeyAlgo = curAuth.keyAlgos[0][0];
+                if (debug)
+                  debug(`Client: ${curAuth.type} (${oldKeyAlgo}) auth failed`);
+                curAuth.keyAlgos.shift();
+                if (curAuth.keyAlgos.length) {
+                  const [keyAlgo, hashAlgo] = curAuth.keyAlgos[0];
+                  switch (curAuth.type) {
+                    case "agent":
+                      proto.authPK(
+                        curAuth.username,
+                        curAuth.agentCtx.currentKey(),
+                        keyAlgo
+                      );
+                      return;
+                    case "publickey":
+                      proto.authPK(curAuth.username, curAuth.key, keyAlgo);
+                      return;
+                    case "hostbased":
+                      proto.authHostbased(
+                        curAuth.username,
+                        curAuth.key,
+                        curAuth.localHostname,
+                        curAuth.localUsername,
+                        keyAlgo,
+                        (buf, cb) => {
+                          const signature = curAuth.key.sign(buf, hashAlgo);
+                          if (signature instanceof Error) {
+                            signature.message = `Error while signing with key: ${signature.message}`;
+                            signature.level = "client-authentication";
+                            this.emit("error", signature);
+                            return tryNextAuth();
+                          }
+                          cb(signature);
+                        }
+                      );
+                      return;
+                  }
+                } else {
+                  curAuth.keyAlgos = void 0;
+                }
+              }
+              if (curAuth.type === "agent") {
+                const pos = curAuth.agentCtx.pos();
+                debug && debug(`Client: Agent key #${pos + 1} failed`);
+                return tryNextAgentKey();
+              }
+              debug && debug(`Client: ${curAuth.type} auth failed`);
+              curPartial = partialSuccess;
+              curAuthsLeft = authMethods;
+              tryNextAuth();
+            }, "USERAUTH_FAILURE"),
+            USERAUTH_PASSWD_CHANGEREQ: /* @__PURE__ */ __name((p, prompt) => {
+              if (curAuth.type === "password") {
+                this.emit("change password", prompt, (newPassword) => {
+                  proto.authPassword(
+                    this.config.username,
+                    this.config.password,
+                    newPassword
+                  );
+                });
+              }
+            }, "USERAUTH_PASSWD_CHANGEREQ"),
+            USERAUTH_PK_OK: /* @__PURE__ */ __name((p) => {
+              let keyAlgo;
+              let hashAlgo;
+              if (curAuth.keyAlgos)
+                [keyAlgo, hashAlgo] = curAuth.keyAlgos[0];
+              if (curAuth.type === "agent") {
+                const key = curAuth.agentCtx.currentKey();
+                proto.authPK(curAuth.username, key, keyAlgo, (buf, cb) => {
+                  const opts = { hash: hashAlgo };
+                  curAuth.agentCtx.sign(key, buf, opts, (err, signed) => {
+                    if (err) {
+                      err.level = "agent";
+                      this.emit("error", err);
+                    } else {
+                      return cb(signed);
+                    }
+                    tryNextAgentKey();
+                  });
+                });
+              } else if (curAuth.type === "publickey") {
+                proto.authPK(curAuth.username, curAuth.key, keyAlgo, (buf, cb) => {
+                  const signature = curAuth.key.sign(buf, hashAlgo);
+                  if (signature instanceof Error) {
+                    signature.message = `Error signing data with key: ${signature.message}`;
+                    signature.level = "client-authentication";
+                    this.emit("error", signature);
+                    return tryNextAuth();
+                  }
+                  cb(signature);
+                });
+              }
+            }, "USERAUTH_PK_OK"),
+            USERAUTH_INFO_REQUEST: /* @__PURE__ */ __name((p, name, instructions, prompts) => {
+              if (curAuth.type === "keyboard-interactive") {
+                const nprompts = Array.isArray(prompts) ? prompts.length : 0;
+                if (nprompts === 0) {
+                  debug && debug(
+                    "Client: Sending automatic USERAUTH_INFO_RESPONSE"
+                  );
+                  proto.authInfoRes();
+                  return;
+                }
+                curAuth.prompt(
+                  name,
+                  instructions,
+                  "",
+                  prompts,
+                  (answers) => {
+                    proto.authInfoRes(answers);
+                  }
+                );
+              }
+            }, "USERAUTH_INFO_REQUEST"),
+            REQUEST_SUCCESS: /* @__PURE__ */ __name((p, data) => {
+              if (callbacks.length)
+                callbacks.shift()(false, data);
+            }, "REQUEST_SUCCESS"),
+            REQUEST_FAILURE: /* @__PURE__ */ __name((p) => {
+              if (callbacks.length)
+                callbacks.shift()(true);
+            }, "REQUEST_FAILURE"),
+            GLOBAL_REQUEST: /* @__PURE__ */ __name((p, name, wantReply, data) => {
+              switch (name) {
+                case "hostkeys-00@openssh.com":
+                  hostKeysProve(this, data, (err, keys) => {
+                    if (err)
+                      return;
+                    this.emit("hostkeys", keys);
+                  });
+                  if (wantReply)
+                    proto.requestSuccess();
+                  break;
+                default:
+                  if (wantReply)
+                    proto.requestFailure();
+              }
+            }, "GLOBAL_REQUEST"),
+            CHANNEL_OPEN: /* @__PURE__ */ __name((p, info) => {
+              onCHANNEL_OPEN(this, info);
+            }, "CHANNEL_OPEN"),
+            CHANNEL_OPEN_CONFIRMATION: /* @__PURE__ */ __name((p, info) => {
+              const channel = this._chanMgr.get(info.recipient);
+              if (typeof channel !== "function")
+                return;
+              const isSFTP = channel.type === "sftp";
+              const type = isSFTP ? "session" : channel.type;
+              const chanInfo = {
+                type,
+                incoming: {
+                  id: info.recipient,
+                  window: MAX_WINDOW,
+                  packetSize: PACKET_SIZE,
+                  state: "open"
+                },
+                outgoing: {
+                  id: info.sender,
+                  window: info.window,
+                  packetSize: info.packetSize,
+                  state: "open"
+                }
+              };
+              const instance = isSFTP ? new SFTP(this, chanInfo, { debug }) : new Channel(this, chanInfo);
+              this._chanMgr.update(info.recipient, instance);
+              channel(void 0, instance);
+            }, "CHANNEL_OPEN_CONFIRMATION"),
+            CHANNEL_OPEN_FAILURE: /* @__PURE__ */ __name((p, recipient, reason, description) => {
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "function")
+                return;
+              const info = { reason, description };
+              onChannelOpenFailure(this, recipient, info, channel);
+            }, "CHANNEL_OPEN_FAILURE"),
+            CHANNEL_DATA: /* @__PURE__ */ __name((p, recipient, data) => {
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.incoming.window === 0)
+                return;
+              channel.incoming.window -= data.length;
+              if (channel.push(data) === false) {
+                channel._waitChanDrain = true;
+                return;
+              }
+              if (channel.incoming.window <= WINDOW_THRESHOLD)
+                windowAdjust(channel);
+            }, "CHANNEL_DATA"),
+            CHANNEL_EXTENDED_DATA: /* @__PURE__ */ __name((p, recipient, data, type) => {
+              if (type !== STDERR)
+                return;
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.incoming.window === 0)
+                return;
+              channel.incoming.window -= data.length;
+              if (!channel.stderr.push(data)) {
+                channel._waitChanDrain = true;
+                return;
+              }
+              if (channel.incoming.window <= WINDOW_THRESHOLD)
+                windowAdjust(channel);
+            }, "CHANNEL_EXTENDED_DATA"),
+            CHANNEL_WINDOW_ADJUST: /* @__PURE__ */ __name((p, recipient, amount) => {
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              channel.outgoing.window += amount;
+              if (channel._waitWindow) {
+                channel._waitWindow = false;
+                if (channel._chunk) {
+                  channel._write(channel._chunk, null, channel._chunkcb);
+                } else if (channel._chunkcb) {
+                  channel._chunkcb();
+                } else if (channel._chunkErr) {
+                  channel.stderr._write(
+                    channel._chunkErr,
+                    null,
+                    channel._chunkcbErr
+                  );
+                } else if (channel._chunkcbErr) {
+                  channel._chunkcbErr();
+                }
+              }
+            }, "CHANNEL_WINDOW_ADJUST"),
+            CHANNEL_SUCCESS: /* @__PURE__ */ __name((p, recipient) => {
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              this._resetKA();
+              if (channel._callbacks.length)
+                channel._callbacks.shift()(false);
+            }, "CHANNEL_SUCCESS"),
+            CHANNEL_FAILURE: /* @__PURE__ */ __name((p, recipient) => {
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              this._resetKA();
+              if (channel._callbacks.length)
+                channel._callbacks.shift()(true);
+            }, "CHANNEL_FAILURE"),
+            CHANNEL_REQUEST: /* @__PURE__ */ __name((p, recipient, type, wantReply, data) => {
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              const exit = channel._exit;
+              if (exit.code !== void 0)
+                return;
+              switch (type) {
+                case "exit-status":
+                  channel.emit("exit", exit.code = data);
+                  return;
+                case "exit-signal":
+                  channel.emit(
+                    "exit",
+                    exit.code = null,
+                    exit.signal = `SIG${data.signal}`,
+                    exit.dump = data.coreDumped,
+                    exit.desc = data.errorMessage
+                  );
+                  return;
+              }
+              if (wantReply)
+                p.channelFailure(channel.outgoing.id);
+            }, "CHANNEL_REQUEST"),
+            CHANNEL_EOF: /* @__PURE__ */ __name((p, recipient) => {
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.incoming.state !== "open")
+                return;
+              channel.incoming.state = "eof";
+              if (channel.readable)
+                channel.push(null);
+              if (channel.stderr.readable)
+                channel.stderr.push(null);
+            }, "CHANNEL_EOF"),
+            CHANNEL_CLOSE: /* @__PURE__ */ __name((p, recipient) => {
+              onCHANNEL_CLOSE(this, recipient, this._chanMgr.get(recipient));
+            }, "CHANNEL_CLOSE")
+          }
+        });
+        sock.pause();
+        const kainterval = this.config.keepaliveInterval;
+        const kacountmax = this.config.keepaliveCountMax;
+        let kacount = 0;
+        let katimer;
+        const sendKA = /* @__PURE__ */ __name(() => {
+          if (++kacount > kacountmax) {
+            clearInterval(katimer);
+            if (sock.readable) {
+              const err = new Error("Keepalive timeout");
+              err.level = "client-timeout";
+              this.emit("error", err);
+              sock.destroy();
+            }
+            return;
+          }
+          if (isWritable(sock)) {
+            callbacks.push(resetKA);
+            proto.ping();
+          } else {
+            clearInterval(katimer);
+          }
+        }, "sendKA");
+        function resetKA() {
+          if (kainterval > 0) {
+            kacount = 0;
+            clearInterval(katimer);
+            if (isWritable(sock))
+              katimer = setInterval(sendKA, kainterval);
+          }
+        }
+        __name(resetKA, "resetKA");
+        this._resetKA = resetKA;
+        const onDone = /* @__PURE__ */ (() => {
+          let called = false;
+          return () => {
+            if (called)
+              return;
+            called = true;
+            if (wasConnected && !sawHeader) {
+              const err = makeError("Connection lost before handshake", "protocol", true);
+              this.emit("error", err);
+            }
+          };
+        })();
+        const onConnect = /* @__PURE__ */ (() => {
+          let called = false;
+          return () => {
+            if (called)
+              return;
+            called = true;
+            wasConnected = true;
+            debug && debug("Socket connected");
+            this.emit("connect");
+            cryptoInit.then(() => {
+              proto.start();
+              sock.on("data", (data) => {
+                try {
+                  proto.parse(data, 0, data.length);
+                } catch (ex) {
+                  this.emit("error", ex);
+                  try {
+                    if (isWritable(sock))
+                      sock.end();
+                  } catch {
+                  }
+                }
+              });
+              if (sock.stderr && typeof sock.stderr.resume === "function")
+                sock.stderr.resume();
+              sock.resume();
+            }).catch((err) => {
+              this.emit("error", err);
+              try {
+                if (isWritable(sock))
+                  sock.end();
+              } catch {
+              }
+            });
+          };
+        })();
+        let wasConnected = false;
+        sock.on("connect", onConnect).on("timeout", () => {
+          this.emit("timeout");
+        }).on("error", (err) => {
+          debug && debug(`Socket error: ${err.message}`);
+          clearTimeout(this._readyTimeout);
+          err.level = "client-socket";
+          this.emit("error", err);
+        }).on("end", () => {
+          debug && debug("Socket ended");
+          onDone();
+          proto.cleanup();
+          clearTimeout(this._readyTimeout);
+          clearInterval(katimer);
+          this.emit("end");
+        }).on("close", () => {
+          debug && debug("Socket closed");
+          onDone();
+          proto.cleanup();
+          clearTimeout(this._readyTimeout);
+          clearInterval(katimer);
+          this.emit("close");
+          const callbacks_ = callbacks;
+          callbacks = this._callbacks = [];
+          const err = new Error("No response from server");
+          for (let i = 0; i < callbacks_.length; ++i)
+            callbacks_[i](err);
+          this._chanMgr.cleanup(err);
+        });
+        let curAuth;
+        let curPartial = null;
+        let curAuthsLeft = null;
+        const authsAllowed = ["none"];
+        if (this.config.password !== void 0)
+          authsAllowed.push("password");
+        if (privateKey !== void 0)
+          authsAllowed.push("publickey");
+        if (this._agent !== void 0)
+          authsAllowed.push("agent");
+        if (this.config.tryKeyboard)
+          authsAllowed.push("keyboard-interactive");
+        if (privateKey !== void 0 && this.config.localHostname !== void 0 && this.config.localUsername !== void 0) {
+          authsAllowed.push("hostbased");
+        }
+        if (Array.isArray(authHandler))
+          authHandler = makeSimpleAuthHandler(authHandler);
+        else if (typeof authHandler !== "function")
+          authHandler = makeSimpleAuthHandler(authsAllowed);
+        let hasSentAuth = false;
+        const doNextAuth = /* @__PURE__ */ __name((nextAuth) => {
+          if (hasSentAuth)
+            return;
+          hasSentAuth = true;
+          if (nextAuth === false) {
+            const err = new Error("All configured authentication methods failed");
+            err.level = "client-authentication";
+            this.emit("error", err);
+            this.end();
+            return;
+          }
+          if (typeof nextAuth === "string") {
+            const type = nextAuth;
+            if (authsAllowed.indexOf(type) === -1)
+              return skipAuth(`Authentication method not allowed: ${type}`);
+            const username = this.config.username;
+            switch (type) {
+              case "password":
+                nextAuth = { type, username, password: this.config.password };
+                break;
+              case "publickey":
+                nextAuth = { type, username, key: privateKey };
+                break;
+              case "hostbased":
+                nextAuth = {
+                  type,
+                  username,
+                  key: privateKey,
+                  localHostname: this.config.localHostname,
+                  localUsername: this.config.localUsername
+                };
+                break;
+              case "agent":
+                nextAuth = {
+                  type,
+                  username,
+                  agentCtx: new AgentContext(this._agent)
+                };
+                break;
+              case "keyboard-interactive":
+                nextAuth = {
+                  type,
+                  username,
+                  prompt: /* @__PURE__ */ __name((...args) => this.emit("keyboard-interactive", ...args), "prompt")
+                };
+                break;
+              case "none":
+                nextAuth = { type, username };
+                break;
+              default:
+                return skipAuth(
+                  `Skipping unsupported authentication method: ${nextAuth}`
+                );
+            }
+          } else if (typeof nextAuth !== "object" || nextAuth === null) {
+            return skipAuth(
+              `Skipping invalid authentication attempt: ${nextAuth}`
+            );
+          } else {
+            const username = nextAuth.username;
+            if (typeof username !== "string") {
+              return skipAuth(
+                `Skipping invalid authentication attempt: ${nextAuth}`
+              );
+            }
+            const type = nextAuth.type;
+            switch (type) {
+              case "password": {
+                const { password } = nextAuth;
+                if (typeof password !== "string" && !Buffer.isBuffer(password))
+                  return skipAuth("Skipping invalid password auth attempt");
+                nextAuth = { type, username, password };
+                break;
+              }
+              case "publickey": {
+                const key = parseKey(nextAuth.key, nextAuth.passphrase);
+                if (key instanceof Error)
+                  return skipAuth("Skipping invalid key auth attempt");
+                if (!key.isPrivateKey())
+                  return skipAuth("Skipping non-private key");
+                nextAuth = { type, username, key };
+                break;
+              }
+              case "hostbased": {
+                const { localHostname, localUsername } = nextAuth;
+                const key = parseKey(nextAuth.key, nextAuth.passphrase);
+                if (key instanceof Error || typeof localHostname !== "string" || typeof localUsername !== "string") {
+                  return skipAuth("Skipping invalid hostbased auth attempt");
+                }
+                if (!key.isPrivateKey())
+                  return skipAuth("Skipping non-private key");
+                nextAuth = { type, username, key, localHostname, localUsername };
+                break;
+              }
+              case "agent": {
+                let agent = nextAuth.agent;
+                if (typeof agent === "string" && agent.length) {
+                  agent = createAgent(agent);
+                } else if (!isAgent(agent)) {
+                  return skipAuth(
+                    `Skipping invalid agent: ${nextAuth.agent}`
+                  );
+                }
+                nextAuth = { type, username, agentCtx: new AgentContext(agent) };
+                break;
+              }
+              case "keyboard-interactive": {
+                const { prompt } = nextAuth;
+                if (typeof prompt !== "function") {
+                  return skipAuth(
+                    "Skipping invalid keyboard-interactive auth attempt"
+                  );
+                }
+                nextAuth = { type, username, prompt };
+                break;
+              }
+              case "none":
+                nextAuth = { type, username };
+                break;
+              default:
+                return skipAuth(
+                  `Skipping unsupported authentication method: ${nextAuth}`
+                );
+            }
+          }
+          curAuth = nextAuth;
+          try {
+            const username = curAuth.username;
+            switch (curAuth.type) {
+              case "password":
+                proto.authPassword(username, curAuth.password);
+                break;
+              case "publickey": {
+                let keyAlgo;
+                curAuth.keyAlgos = getKeyAlgos(this, curAuth.key, serverSigAlgs);
+                if (curAuth.keyAlgos) {
+                  if (curAuth.keyAlgos.length) {
+                    keyAlgo = curAuth.keyAlgos[0][0];
+                  } else {
+                    return skipAuth(
+                      "Skipping key authentication (no mutual hash algorithm)"
+                    );
+                  }
+                }
+                proto.authPK(username, curAuth.key, keyAlgo);
+                break;
+              }
+              case "hostbased": {
+                let keyAlgo;
+                let hashAlgo;
+                curAuth.keyAlgos = getKeyAlgos(this, curAuth.key, serverSigAlgs);
+                if (curAuth.keyAlgos) {
+                  if (curAuth.keyAlgos.length) {
+                    [keyAlgo, hashAlgo] = curAuth.keyAlgos[0];
+                  } else {
+                    return skipAuth(
+                      "Skipping hostbased authentication (no mutual hash algorithm)"
+                    );
+                  }
+                }
+                proto.authHostbased(
+                  username,
+                  curAuth.key,
+                  curAuth.localHostname,
+                  curAuth.localUsername,
+                  keyAlgo,
+                  (buf, cb) => {
+                    const signature = curAuth.key.sign(buf, hashAlgo);
+                    if (signature instanceof Error) {
+                      signature.message = `Error while signing with key: ${signature.message}`;
+                      signature.level = "client-authentication";
+                      this.emit("error", signature);
+                      return tryNextAuth();
+                    }
+                    cb(signature);
+                  }
+                );
+                break;
+              }
+              case "agent":
+                curAuth.agentCtx.init((err) => {
+                  if (err) {
+                    err.level = "agent";
+                    this.emit("error", err);
+                    return tryNextAuth();
+                  }
+                  tryNextAgentKey();
+                });
+                break;
+              case "keyboard-interactive":
+                proto.authKeyboard(username);
+                break;
+              case "none":
+                proto.authNone(username);
+                break;
+            }
+          } finally {
+            hasSentAuth = false;
+          }
+        }, "doNextAuth");
+        function skipAuth(msg) {
+          debug && debug(msg);
+          process.nextTick(tryNextAuth);
+        }
+        __name(skipAuth, "skipAuth");
+        function tryNextAuth() {
+          hasSentAuth = false;
+          const auth = authHandler(curAuthsLeft, curPartial, doNextAuth);
+          if (hasSentAuth || auth === void 0)
+            return;
+          doNextAuth(auth);
+        }
+        __name(tryNextAuth, "tryNextAuth");
+        const tryNextAgentKey = /* @__PURE__ */ __name(() => {
+          if (curAuth.type === "agent") {
+            const key = curAuth.agentCtx.nextKey();
+            if (key === false) {
+              debug && debug("Agent: No more keys left to try");
+              debug && debug("Client: agent auth failed");
+              tryNextAuth();
+            } else {
+              const pos = curAuth.agentCtx.pos();
+              let keyAlgo;
+              curAuth.keyAlgos = getKeyAlgos(this, key, serverSigAlgs);
+              if (curAuth.keyAlgos) {
+                if (curAuth.keyAlgos.length) {
+                  keyAlgo = curAuth.keyAlgos[0][0];
+                } else {
+                  debug && debug(
+                    `Agent: Skipping key #${pos + 1} (no mutual hash algorithm)`
+                  );
+                  tryNextAgentKey();
+                  return;
+                }
+              }
+              debug && debug(`Agent: Trying key #${pos + 1}`);
+              proto.authPK(curAuth.username, key, keyAlgo);
+            }
+          }
+        }, "tryNextAgentKey");
+        const startTimeout = /* @__PURE__ */ __name(() => {
+          if (this.config.readyTimeout > 0) {
+            this._readyTimeout = setTimeout(() => {
+              const err = new Error("Timed out while waiting for handshake");
+              err.level = "client-timeout";
+              this.emit("error", err);
+              sock.destroy();
+            }, this.config.readyTimeout);
+          }
+        }, "startTimeout");
+        if (!cfg.sock) {
+          let host = this.config.host;
+          const forceIPv4 = this.config.forceIPv4;
+          const forceIPv6 = this.config.forceIPv6;
+          debug && debug(`Client: Trying ${host} on port ${this.config.port} ...`);
+          const doConnect = /* @__PURE__ */ __name(() => {
+            startTimeout();
+            sock.connect({
+              host,
+              port: this.config.port,
+              localAddress: this.config.localAddress,
+              localPort: this.config.localPort
+            });
+            sock.setMaxListeners(0);
+            sock.setTimeout(typeof cfg.timeout === "number" ? cfg.timeout : 0);
+          }, "doConnect");
+          if (!forceIPv4 && !forceIPv6 || forceIPv4 && forceIPv6) {
+            doConnect();
+          } else {
+            dnsLookup(host, forceIPv4 ? 4 : 6, (err, address, family) => {
+              if (err) {
+                const type = forceIPv4 ? "IPv4" : "IPv6";
+                const error = new Error(
+                  `Error while looking up ${type} address for '${host}': ${err}`
+                );
+                clearTimeout(this._readyTimeout);
+                error.level = "client-dns";
+                this.emit("error", error);
+                this.emit("close");
+                return;
+              }
+              host = address;
+              doConnect();
+            });
+          }
+        } else {
+          startTimeout();
+          if (typeof sock.connecting === "boolean") {
+            if (!sock.connecting) {
+              onConnect();
+            }
+          } else {
+            onConnect();
+          }
+        }
+        return this;
+      }
+      end() {
+        if (this._sock && isWritable(this._sock)) {
+          this._protocol.disconnect(DISCONNECT_REASON.BY_APPLICATION);
+          this._sock.end();
+        }
+        return this;
+      }
+      destroy() {
+        this._sock && isWritable(this._sock) && this._sock.destroy();
+        return this;
+      }
+      exec(cmd, opts, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        if (typeof opts === "function") {
+          cb = opts;
+          opts = {};
+        }
+        const extraOpts = { allowHalfOpen: opts.allowHalfOpen !== false };
+        openChannel(this, "session", extraOpts, (err, chan) => {
+          if (err) {
+            cb(err);
+            return;
+          }
+          const todo = [];
+          function reqCb(err2) {
+            if (err2) {
+              chan.close();
+              cb(err2);
+              return;
+            }
+            if (todo.length)
+              todo.shift()();
+          }
+          __name(reqCb, "reqCb");
+          if (this.config.allowAgentFwd === true || opts && opts.agentForward === true && this._agent !== void 0) {
+            todo.push(() => reqAgentFwd(chan, reqCb));
+          }
+          if (typeof opts === "object" && opts !== null) {
+            if (typeof opts.env === "object" && opts.env !== null)
+              reqEnv(chan, opts.env);
+            if (typeof opts.pty === "object" && opts.pty !== null || opts.pty === true) {
+              todo.push(() => reqPty(chan, opts.pty, reqCb));
+            }
+            if (typeof opts.x11 === "object" && opts.x11 !== null || opts.x11 === "number" || opts.x11 === true) {
+              todo.push(() => reqX11(chan, opts.x11, reqCb));
+            }
+          }
+          todo.push(() => reqExec(chan, cmd, opts, cb));
+          todo.shift()();
+        });
+        return this;
+      }
+      shell(wndopts, opts, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        if (typeof wndopts === "function") {
+          cb = wndopts;
+          wndopts = opts = void 0;
+        } else if (typeof opts === "function") {
+          cb = opts;
+          opts = void 0;
+        }
+        if (wndopts && (wndopts.x11 !== void 0 || wndopts.env !== void 0)) {
+          opts = wndopts;
+          wndopts = void 0;
+        }
+        openChannel(this, "session", (err, chan) => {
+          if (err) {
+            cb(err);
+            return;
+          }
+          const todo = [];
+          function reqCb(err2) {
+            if (err2) {
+              chan.close();
+              cb(err2);
+              return;
+            }
+            if (todo.length)
+              todo.shift()();
+          }
+          __name(reqCb, "reqCb");
+          if (this.config.allowAgentFwd === true || opts && opts.agentForward === true && this._agent !== void 0) {
+            todo.push(() => reqAgentFwd(chan, reqCb));
+          }
+          if (wndopts !== false)
+            todo.push(() => reqPty(chan, wndopts, reqCb));
+          if (typeof opts === "object" && opts !== null) {
+            if (typeof opts.env === "object" && opts.env !== null)
+              reqEnv(chan, opts.env);
+            if (typeof opts.x11 === "object" && opts.x11 !== null || opts.x11 === "number" || opts.x11 === true) {
+              todo.push(() => reqX11(chan, opts.x11, reqCb));
+            }
+          }
+          todo.push(() => reqShell(chan, cb));
+          todo.shift()();
+        });
+        return this;
+      }
+      subsys(name, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        openChannel(this, "session", (err, chan) => {
+          if (err) {
+            cb(err);
+            return;
+          }
+          reqSubsystem(chan, name, (err2, stream) => {
+            if (err2) {
+              cb(err2);
+              return;
+            }
+            cb(void 0, stream);
+          });
+        });
+        return this;
+      }
+      forwardIn(bindAddr, bindPort, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        const wantReply = typeof cb === "function";
+        if (wantReply) {
+          this._callbacks.push((had_err, data) => {
+            if (had_err) {
+              cb(had_err !== true ? had_err : new Error(`Unable to bind to ${bindAddr}:${bindPort}`));
+              return;
+            }
+            let realPort = bindPort;
+            if (bindPort === 0 && data && data.length >= 4) {
+              realPort = readUInt32BE(data, 0);
+              if (!(this._protocol._compatFlags & COMPAT.DYN_RPORT_BUG))
+                bindPort = realPort;
+            }
+            this._forwarding[`${bindAddr}:${bindPort}`] = realPort;
+            cb(void 0, realPort);
+          });
+        }
+        this._protocol.tcpipForward(bindAddr, bindPort, wantReply);
+        return this;
+      }
+      unforwardIn(bindAddr, bindPort, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        const wantReply = typeof cb === "function";
+        if (wantReply) {
+          this._callbacks.push((had_err) => {
+            if (had_err) {
+              cb(had_err !== true ? had_err : new Error(`Unable to unbind from ${bindAddr}:${bindPort}`));
+              return;
+            }
+            delete this._forwarding[`${bindAddr}:${bindPort}`];
+            cb();
+          });
+        }
+        this._protocol.cancelTcpipForward(bindAddr, bindPort, wantReply);
+        return this;
+      }
+      forwardOut(srcIP, srcPort, dstIP, dstPort, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        const cfg = {
+          srcIP,
+          srcPort,
+          dstIP,
+          dstPort
+        };
+        if (typeof cb !== "function")
+          cb = noop;
+        openChannel(this, "direct-tcpip", cfg, cb);
+        return this;
+      }
+      openssh_noMoreSessions(cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        const wantReply = typeof cb === "function";
+        if (!this.config.strictVendor || this.config.strictVendor && RE_OPENSSH.test(this._remoteVer)) {
+          if (wantReply) {
+            this._callbacks.push((had_err) => {
+              if (had_err) {
+                cb(had_err !== true ? had_err : new Error("Unable to disable future sessions"));
+                return;
+              }
+              cb();
+            });
+          }
+          this._protocol.openssh_noMoreSessions(wantReply);
+          return this;
+        }
+        if (!wantReply)
+          return this;
+        process.nextTick(
+          cb,
+          new Error(
+            "strictVendor enabled and server is not OpenSSH or compatible version"
+          )
+        );
+        return this;
+      }
+      openssh_forwardInStreamLocal(socketPath, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        const wantReply = typeof cb === "function";
+        if (!this.config.strictVendor || this.config.strictVendor && RE_OPENSSH.test(this._remoteVer)) {
+          if (wantReply) {
+            this._callbacks.push((had_err) => {
+              if (had_err) {
+                cb(had_err !== true ? had_err : new Error(`Unable to bind to ${socketPath}`));
+                return;
+              }
+              this._forwardingUnix[socketPath] = true;
+              cb();
+            });
+          }
+          this._protocol.openssh_streamLocalForward(socketPath, wantReply);
+          return this;
+        }
+        if (!wantReply)
+          return this;
+        process.nextTick(
+          cb,
+          new Error(
+            "strictVendor enabled and server is not OpenSSH or compatible version"
+          )
+        );
+        return this;
+      }
+      openssh_unforwardInStreamLocal(socketPath, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        const wantReply = typeof cb === "function";
+        if (!this.config.strictVendor || this.config.strictVendor && RE_OPENSSH.test(this._remoteVer)) {
+          if (wantReply) {
+            this._callbacks.push((had_err) => {
+              if (had_err) {
+                cb(had_err !== true ? had_err : new Error(`Unable to unbind from ${socketPath}`));
+                return;
+              }
+              delete this._forwardingUnix[socketPath];
+              cb();
+            });
+          }
+          this._protocol.openssh_cancelStreamLocalForward(socketPath, wantReply);
+          return this;
+        }
+        if (!wantReply)
+          return this;
+        process.nextTick(
+          cb,
+          new Error(
+            "strictVendor enabled and server is not OpenSSH or compatible version"
+          )
+        );
+        return this;
+      }
+      openssh_forwardOutStreamLocal(socketPath, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        if (typeof cb !== "function")
+          cb = noop;
+        if (!this.config.strictVendor || this.config.strictVendor && RE_OPENSSH.test(this._remoteVer)) {
+          openChannel(this, "direct-streamlocal@openssh.com", { socketPath }, cb);
+          return this;
+        }
+        process.nextTick(
+          cb,
+          new Error(
+            "strictVendor enabled and server is not OpenSSH or compatible version"
+          )
+        );
+        return this;
+      }
+      sftp(env, cb) {
+        if (!this._sock || !isWritable(this._sock))
+          throw new Error("Not connected");
+        if (typeof env === "function") {
+          cb = env;
+          env = void 0;
+        }
+        openChannel(this, "sftp", (err, sftp) => {
+          if (err) {
+            cb(err);
+            return;
+          }
+          const reqSubsystemCb = /* @__PURE__ */ __name((err2, sftp_) => {
+            if (err2) {
+              cb(err2);
+              return;
+            }
+            function removeListeners() {
+              sftp.removeListener("ready", onReady);
+              sftp.removeListener("error", onError);
+              sftp.removeListener("exit", onExit);
+              sftp.removeListener("close", onExit);
+            }
+            __name(removeListeners, "removeListeners");
+            function onReady() {
+              removeListeners();
+              cb(void 0, sftp);
+            }
+            __name(onReady, "onReady");
+            function onError(err3) {
+              removeListeners();
+              cb(err3);
+            }
+            __name(onError, "onError");
+            function onExit(code, signal) {
+              removeListeners();
+              let msg;
+              if (typeof code === "number")
+                msg = `Received exit code ${code} while establishing SFTP session`;
+              else if (signal !== void 0)
+                msg = `Received signal ${signal} while establishing SFTP session`;
+              else
+                msg = "Received unexpected SFTP session termination";
+              const err3 = new Error(msg);
+              err3.code = code;
+              err3.signal = signal;
+              cb(err3);
+            }
+            __name(onExit, "onExit");
+            sftp.on("ready", onReady).on("error", onError).on("exit", onExit).on("close", onExit);
+            sftp._init();
+          }, "reqSubsystemCb");
+          if (typeof env === "object" && env !== null) {
+            reqEnv(sftp, env, (err2) => {
+              if (err2) {
+                cb(err2);
+                return;
+              }
+              reqSubsystem(sftp, "sftp", reqSubsystemCb);
+            });
+          } else {
+            reqSubsystem(sftp, "sftp", reqSubsystemCb);
+          }
+        });
+        return this;
+      }
+      setNoDelay(noDelay) {
+        if (this._sock && typeof this._sock.setNoDelay === "function")
+          this._sock.setNoDelay(noDelay);
+        return this;
+      }
+    };
+    function openChannel(self2, type, opts, cb) {
+      const initWindow = MAX_WINDOW;
+      const maxPacket = PACKET_SIZE;
+      if (typeof opts === "function") {
+        cb = opts;
+        opts = {};
+      }
+      const wrapper = /* @__PURE__ */ __name((err, stream) => {
+        cb(err, stream);
+      }, "wrapper");
+      wrapper.type = type;
+      const localChan = self2._chanMgr.add(wrapper);
+      if (localChan === -1) {
+        cb(new Error("No free channels available"));
+        return;
+      }
+      switch (type) {
+        case "session":
+        case "sftp":
+          self2._protocol.session(localChan, initWindow, maxPacket);
+          break;
+        case "direct-tcpip":
+          self2._protocol.directTcpip(localChan, initWindow, maxPacket, opts);
+          break;
+        case "direct-streamlocal@openssh.com":
+          self2._protocol.openssh_directStreamLocal(
+            localChan,
+            initWindow,
+            maxPacket,
+            opts
+          );
+          break;
+        default:
+          throw new Error(`Unsupported channel type: ${type}`);
+      }
+    }
+    __name(openChannel, "openChannel");
+    function reqX11(chan, screen, cb) {
+      const cfg = {
+        single: false,
+        protocol: "MIT-MAGIC-COOKIE-1",
+        cookie: void 0,
+        screen: 0
+      };
+      if (typeof screen === "function") {
+        cb = screen;
+      } else if (typeof screen === "object" && screen !== null) {
+        if (typeof screen.single === "boolean")
+          cfg.single = screen.single;
+        if (typeof screen.screen === "number")
+          cfg.screen = screen.screen;
+        if (typeof screen.protocol === "string")
+          cfg.protocol = screen.protocol;
+        if (typeof screen.cookie === "string")
+          cfg.cookie = screen.cookie;
+        else if (Buffer.isBuffer(screen.cookie))
+          cfg.cookie = screen.cookie.hexSlice(0, screen.cookie.length);
+      }
+      if (cfg.cookie === void 0)
+        cfg.cookie = randomCookie();
+      const wantReply = typeof cb === "function";
+      if (chan.outgoing.state !== "open") {
+        if (wantReply)
+          cb(new Error("Channel is not open"));
+        return;
+      }
+      if (wantReply) {
+        chan._callbacks.push((had_err) => {
+          if (had_err) {
+            cb(had_err !== true ? had_err : new Error("Unable to request X11"));
+            return;
+          }
+          chan._hasX11 = true;
+          ++chan._client._acceptX11;
+          chan.once("close", () => {
+            if (chan._client._acceptX11)
+              --chan._client._acceptX11;
+          });
+          cb();
+        });
+      }
+      chan._client._protocol.x11Forward(chan.outgoing.id, cfg, wantReply);
+    }
+    __name(reqX11, "reqX11");
+    function reqPty(chan, opts, cb) {
+      let rows = 24;
+      let cols = 80;
+      let width = 640;
+      let height = 480;
+      let term = "vt100";
+      let modes = null;
+      if (typeof opts === "function") {
+        cb = opts;
+      } else if (typeof opts === "object" && opts !== null) {
+        if (typeof opts.rows === "number")
+          rows = opts.rows;
+        if (typeof opts.cols === "number")
+          cols = opts.cols;
+        if (typeof opts.width === "number")
+          width = opts.width;
+        if (typeof opts.height === "number")
+          height = opts.height;
+        if (typeof opts.term === "string")
+          term = opts.term;
+        if (typeof opts.modes === "object")
+          modes = opts.modes;
+      }
+      const wantReply = typeof cb === "function";
+      if (chan.outgoing.state !== "open") {
+        if (wantReply)
+          cb(new Error("Channel is not open"));
+        return;
+      }
+      if (wantReply) {
+        chan._callbacks.push((had_err) => {
+          if (had_err) {
+            cb(had_err !== true ? had_err : new Error("Unable to request a pseudo-terminal"));
+            return;
+          }
+          cb();
+        });
+      }
+      chan._client._protocol.pty(
+        chan.outgoing.id,
+        rows,
+        cols,
+        height,
+        width,
+        term,
+        modes,
+        wantReply
+      );
+    }
+    __name(reqPty, "reqPty");
+    function reqAgentFwd(chan, cb) {
+      const wantReply = typeof cb === "function";
+      if (chan.outgoing.state !== "open") {
+        wantReply && cb(new Error("Channel is not open"));
+        return;
+      }
+      if (chan._client._agentFwdEnabled) {
+        wantReply && cb(false);
+        return;
+      }
+      chan._client._agentFwdEnabled = true;
+      chan._callbacks.push((had_err) => {
+        if (had_err) {
+          chan._client._agentFwdEnabled = false;
+          if (wantReply) {
+            cb(had_err !== true ? had_err : new Error("Unable to request agent forwarding"));
+          }
+          return;
+        }
+        if (wantReply)
+          cb();
+      });
+      chan._client._protocol.openssh_agentForward(chan.outgoing.id, true);
+    }
+    __name(reqAgentFwd, "reqAgentFwd");
+    function reqShell(chan, cb) {
+      if (chan.outgoing.state !== "open") {
+        cb(new Error("Channel is not open"));
+        return;
+      }
+      chan._callbacks.push((had_err) => {
+        if (had_err) {
+          cb(had_err !== true ? had_err : new Error("Unable to open shell"));
+          return;
+        }
+        chan.subtype = "shell";
+        cb(void 0, chan);
+      });
+      chan._client._protocol.shell(chan.outgoing.id, true);
+    }
+    __name(reqShell, "reqShell");
+    function reqExec(chan, cmd, opts, cb) {
+      if (chan.outgoing.state !== "open") {
+        cb(new Error("Channel is not open"));
+        return;
+      }
+      chan._callbacks.push((had_err) => {
+        if (had_err) {
+          cb(had_err !== true ? had_err : new Error("Unable to exec"));
+          return;
+        }
+        chan.subtype = "exec";
+        chan.allowHalfOpen = opts.allowHalfOpen !== false;
+        cb(void 0, chan);
+      });
+      chan._client._protocol.exec(chan.outgoing.id, cmd, true);
+    }
+    __name(reqExec, "reqExec");
+    function reqEnv(chan, env, cb) {
+      const wantReply = typeof cb === "function";
+      if (chan.outgoing.state !== "open") {
+        if (wantReply)
+          cb(new Error("Channel is not open"));
+        return;
+      }
+      if (wantReply) {
+        chan._callbacks.push((had_err) => {
+          if (had_err) {
+            cb(had_err !== true ? had_err : new Error("Unable to set environment"));
+            return;
+          }
+          cb();
+        });
+      }
+      const keys = Object.keys(env || {});
+      for (let i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+        const val = env[key];
+        chan._client._protocol.env(chan.outgoing.id, key, val, wantReply);
+      }
+    }
+    __name(reqEnv, "reqEnv");
+    function reqSubsystem(chan, name, cb) {
+      if (chan.outgoing.state !== "open") {
+        cb(new Error("Channel is not open"));
+        return;
+      }
+      chan._callbacks.push((had_err) => {
+        if (had_err) {
+          cb(had_err !== true ? had_err : new Error(`Unable to start subsystem: ${name}`));
+          return;
+        }
+        chan.subtype = "subsystem";
+        cb(void 0, chan);
+      });
+      chan._client._protocol.subsystem(chan.outgoing.id, name, true);
+    }
+    __name(reqSubsystem, "reqSubsystem");
+    function onCHANNEL_OPEN(self2, info) {
+      let localChan = -1;
+      let reason;
+      const accept = /* @__PURE__ */ __name(() => {
+        const chanInfo = {
+          type: info.type,
+          incoming: {
+            id: localChan,
+            window: MAX_WINDOW,
+            packetSize: PACKET_SIZE,
+            state: "open"
+          },
+          outgoing: {
+            id: info.sender,
+            window: info.window,
+            packetSize: info.packetSize,
+            state: "open"
+          }
+        };
+        const stream = new Channel(self2, chanInfo);
+        self2._chanMgr.update(localChan, stream);
+        self2._protocol.channelOpenConfirm(
+          info.sender,
+          localChan,
+          MAX_WINDOW,
+          PACKET_SIZE
+        );
+        return stream;
+      }, "accept");
+      const reject = /* @__PURE__ */ __name(() => {
+        if (reason === void 0) {
+          if (localChan === -1)
+            reason = CHANNEL_OPEN_FAILURE.RESOURCE_SHORTAGE;
+          else
+            reason = CHANNEL_OPEN_FAILURE.CONNECT_FAILED;
+        }
+        if (localChan !== -1)
+          self2._chanMgr.remove(localChan);
+        self2._protocol.channelOpenFail(info.sender, reason, "");
+      }, "reject");
+      const reserveChannel = /* @__PURE__ */ __name(() => {
+        localChan = self2._chanMgr.add();
+        if (localChan === -1) {
+          reason = CHANNEL_OPEN_FAILURE.RESOURCE_SHORTAGE;
+          if (self2.config.debug) {
+            self2.config.debug(
+              "Client: Automatic rejection of incoming channel open: no channels available"
+            );
+          }
+        }
+        return localChan !== -1;
+      }, "reserveChannel");
+      const data = info.data;
+      switch (info.type) {
+        case "forwarded-tcpip": {
+          const val = self2._forwarding[`${data.destIP}:${data.destPort}`];
+          if (val !== void 0 && reserveChannel()) {
+            if (data.destPort === 0)
+              data.destPort = val;
+            self2.emit("tcp connection", data, accept, reject);
+            return;
+          }
+          break;
+        }
+        case "forwarded-streamlocal@openssh.com":
+          if (self2._forwardingUnix[data.socketPath] !== void 0 && reserveChannel()) {
+            self2.emit("unix connection", data, accept, reject);
+            return;
+          }
+          break;
+        case "auth-agent@openssh.com":
+          if (self2._agentFwdEnabled && typeof self2._agent.getStream === "function" && reserveChannel()) {
+            self2._agent.getStream((err, stream) => {
+              if (err)
+                return reject();
+              const upstream = accept();
+              upstream.pipe(stream).pipe(upstream);
+            });
+            return;
+          }
+          break;
+        case "x11":
+          if (self2._acceptX11 !== 0 && reserveChannel()) {
+            self2.emit("x11", data, accept, reject);
+            return;
+          }
+          break;
+        default:
+          reason = CHANNEL_OPEN_FAILURE.UNKNOWN_CHANNEL_TYPE;
+          if (self2.config.debug) {
+            self2.config.debug(
+              `Client: Automatic rejection of unsupported incoming channel open type: ${info.type}`
+            );
+          }
+      }
+      if (reason === void 0) {
+        reason = CHANNEL_OPEN_FAILURE.ADMINISTRATIVELY_PROHIBITED;
+        if (self2.config.debug) {
+          self2.config.debug(
+            "Client: Automatic rejection of unexpected incoming channel open for: " + info.type
+          );
+        }
+      }
+      reject();
+    }
+    __name(onCHANNEL_OPEN, "onCHANNEL_OPEN");
+    var randomCookie = (() => {
+      const buffer = Buffer.allocUnsafe(16);
+      return () => {
+        randomFillSync(buffer, 0, 16);
+        return buffer.hexSlice(0, 16);
+      };
+    })();
+    function makeSimpleAuthHandler(authList) {
+      if (!Array.isArray(authList))
+        throw new Error("authList must be an array");
+      let a = 0;
+      return (authsLeft, partialSuccess, cb) => {
+        if (a === authList.length)
+          return false;
+        return authList[a++];
+      };
+    }
+    __name(makeSimpleAuthHandler, "makeSimpleAuthHandler");
+    function hostKeysProve(client, keys_, cb) {
+      if (!client._sock || !isWritable(client._sock))
+        return;
+      if (typeof cb !== "function")
+        cb = noop;
+      if (!Array.isArray(keys_))
+        throw new TypeError("Invalid keys argument type");
+      const keys = [];
+      for (const key of keys_) {
+        const parsed = parseKey(key);
+        if (parsed instanceof Error)
+          throw parsed;
+        keys.push(parsed);
+      }
+      if (!client.config.strictVendor || client.config.strictVendor && RE_OPENSSH.test(client._remoteVer)) {
+        client._callbacks.push((had_err, data) => {
+          if (had_err) {
+            cb(had_err !== true ? had_err : new Error("Server failed to prove supplied keys"));
+            return;
+          }
+          const ret = [];
+          let keyIdx = 0;
+          bufferParser.init(data, 0);
+          while (bufferParser.avail()) {
+            if (keyIdx === keys.length)
+              break;
+            const key = keys[keyIdx++];
+            const keyPublic = key.getPublicSSH();
+            const sigEntry = bufferParser.readString();
+            sigParser.init(sigEntry, 0);
+            const type = sigParser.readString(true);
+            let value = sigParser.readString();
+            let algo;
+            if (type !== key.type) {
+              if (key.type === "ssh-rsa") {
+                switch (type) {
+                  case "rsa-sha2-256":
+                    algo = "sha256";
+                    break;
+                  case "rsa-sha2-512":
+                    algo = "sha512";
+                    break;
+                  default:
+                    continue;
+                }
+              } else {
+                continue;
+              }
+            }
+            const sessionID = client._protocol._kex.sessionID;
+            const verifyData = Buffer.allocUnsafe(
+              4 + 29 + 4 + sessionID.length + 4 + keyPublic.length
+            );
+            let p = 0;
+            writeUInt32BE(verifyData, 29, p);
+            verifyData.utf8Write("hostkeys-prove-00@openssh.com", p += 4, 29);
+            writeUInt32BE(verifyData, sessionID.length, p += 29);
+            bufferCopy(sessionID, verifyData, 0, sessionID.length, p += 4);
+            writeUInt32BE(verifyData, keyPublic.length, p += sessionID.length);
+            bufferCopy(keyPublic, verifyData, 0, keyPublic.length, p += 4);
+            if (!(value = sigSSHToASN1(value, type)))
+              continue;
+            if (key.verify(verifyData, value, algo) === true)
+              ret.push(key);
+          }
+          sigParser.clear();
+          bufferParser.clear();
+          cb(null, ret);
+        });
+        client._protocol.openssh_hostKeysProve(keys);
+        return;
+      }
+      process.nextTick(
+        cb,
+        new Error(
+          "strictVendor enabled and server is not OpenSSH or compatible version"
+        )
+      );
+    }
+    __name(hostKeysProve, "hostKeysProve");
+    function getKeyAlgos(client, key, serverSigAlgs) {
+      switch (key.type) {
+        case "ssh-rsa":
+          if (client._protocol._compatFlags & COMPAT.IMPLY_RSA_SHA2_SIGALGS) {
+            if (!Array.isArray(serverSigAlgs))
+              serverSigAlgs = ["rsa-sha2-256", "rsa-sha2-512"];
+            else
+              serverSigAlgs = ["rsa-sha2-256", "rsa-sha2-512", ...serverSigAlgs];
+          }
+          if (Array.isArray(serverSigAlgs)) {
+            if (serverSigAlgs.indexOf("rsa-sha2-256") !== -1)
+              return [["rsa-sha2-256", "sha256"]];
+            if (serverSigAlgs.indexOf("rsa-sha2-512") !== -1)
+              return [["rsa-sha2-512", "sha512"]];
+            if (serverSigAlgs.indexOf("ssh-rsa") === -1)
+              return [];
+          }
+          return [["ssh-rsa", "sha1"]];
+      }
+    }
+    __name(getKeyAlgos, "getKeyAlgos");
+    module.exports = Client;
+  }
+});
+
+// node_modules/ssh2/lib/http-agents.js
+var require_http_agents = __commonJS({
+  "node_modules/ssh2/lib/http-agents.js"(exports) {
+    "use strict";
+    var { Agent: HttpAgent } = require_http2();
+    var { Agent: HttpsAgent } = require_https();
+    var { connect: tlsConnect } = require_tls();
+    var Client;
+    for (const ctor of [HttpAgent, HttpsAgent]) {
+      class SSHAgent extends ctor {
+        static {
+          __name(this, "SSHAgent");
+        }
+        constructor(connectCfg, agentOptions) {
+          super(agentOptions);
+          this._connectCfg = connectCfg;
+          this._defaultSrcIP = agentOptions && agentOptions.srcIP || "localhost";
+        }
+        createConnection(options, cb) {
+          const srcIP = options && options.localAddress || this._defaultSrcIP;
+          const srcPort = options && options.localPort || 0;
+          const dstIP = options.host;
+          const dstPort = options.port;
+          if (Client === void 0)
+            Client = require_client9();
+          const client = new Client();
+          let triedForward = false;
+          client.on("ready", () => {
+            client.forwardOut(srcIP, srcPort, dstIP, dstPort, (err, stream) => {
+              triedForward = true;
+              if (err) {
+                client.end();
+                return cb(err);
+              }
+              stream.once("close", () => client.end());
+              cb(null, decorateStream(stream, ctor, options));
+            });
+          }).on("error", cb).on("close", () => {
+            if (!triedForward)
+              cb(new Error("Unexpected connection close"));
+          }).connect(this._connectCfg);
+        }
+      }
+      exports[ctor === HttpAgent ? "SSHTTPAgent" : "SSHTTPSAgent"] = SSHAgent;
+    }
+    function noop() {
+    }
+    __name(noop, "noop");
+    function decorateStream(stream, ctor, options) {
+      if (ctor === HttpAgent) {
+        stream.setKeepAlive = noop;
+        stream.setNoDelay = noop;
+        stream.setTimeout = noop;
+        stream.ref = noop;
+        stream.unref = noop;
+        stream.destroySoon = stream.destroy;
+        return stream;
+      }
+      options.socket = stream;
+      const wrapped = tlsConnect(options);
+      const onClose = /* @__PURE__ */ (() => {
+        let called = false;
+        return () => {
+          if (called)
+            return;
+          called = true;
+          if (stream.isPaused())
+            stream.resume();
+        };
+      })();
+      wrapped.on("end", onClose).on("close", onClose);
+      return wrapped;
+    }
+    __name(decorateStream, "decorateStream");
+  }
+});
+
+// node_modules/ssh2/lib/server.js
+var require_server = __commonJS({
+  "node_modules/ssh2/lib/server.js"(exports, module) {
+    "use strict";
+    var { Server: netServer } = require_net();
+    var EventEmitter = require_events();
+    var { listenerCount } = EventEmitter;
+    var {
+      CHANNEL_OPEN_FAILURE,
+      DEFAULT_CIPHER,
+      DEFAULT_COMPRESSION,
+      DEFAULT_KEX,
+      DEFAULT_MAC,
+      DEFAULT_SERVER_HOST_KEY,
+      DISCONNECT_REASON,
+      DISCONNECT_REASON_BY_VALUE,
+      SUPPORTED_CIPHER,
+      SUPPORTED_COMPRESSION,
+      SUPPORTED_KEX,
+      SUPPORTED_MAC,
+      SUPPORTED_SERVER_HOST_KEY
+    } = require_constants3();
+    var { init: cryptoInit } = require_crypto2();
+    var { KexInit } = require_kex();
+    var { parseKey } = require_keyParser();
+    var Protocol = require_Protocol();
+    var { SFTP } = require_SFTP();
+    var { writeUInt32BE } = require_utils4();
+    var {
+      Channel,
+      MAX_WINDOW,
+      PACKET_SIZE,
+      windowAdjust,
+      WINDOW_THRESHOLD
+    } = require_Channel();
+    var {
+      ChannelManager,
+      generateAlgorithmList,
+      isWritable,
+      onChannelOpenFailure,
+      onCHANNEL_CLOSE
+    } = require_utils5();
+    var MAX_PENDING_AUTHS = 10;
+    var AuthContext = class extends EventEmitter {
+      static {
+        __name(this, "AuthContext");
+      }
+      constructor(protocol, username, service, method, cb) {
+        super();
+        this.username = this.user = username;
+        this.service = service;
+        this.method = method;
+        this._initialResponse = false;
+        this._finalResponse = false;
+        this._multistep = false;
+        this._cbfinal = (allowed, methodsLeft, isPartial) => {
+          if (!this._finalResponse) {
+            this._finalResponse = true;
+            cb(this, allowed, methodsLeft, isPartial);
+          }
+        };
+        this._protocol = protocol;
+      }
+      accept() {
+        this._cleanup && this._cleanup();
+        this._initialResponse = true;
+        this._cbfinal(true);
+      }
+      reject(methodsLeft, isPartial) {
+        this._cleanup && this._cleanup();
+        this._initialResponse = true;
+        this._cbfinal(false, methodsLeft, isPartial);
+      }
+    };
+    var KeyboardAuthContext = class extends AuthContext {
+      static {
+        __name(this, "KeyboardAuthContext");
+      }
+      constructor(protocol, username, service, method, submethods, cb) {
+        super(protocol, username, service, method, cb);
+        this._multistep = true;
+        this._cb = void 0;
+        this._onInfoResponse = (responses) => {
+          const callback = this._cb;
+          if (callback) {
+            this._cb = void 0;
+            callback(responses);
+          }
+        };
+        this.submethods = submethods;
+        this.on("abort", () => {
+          this._cb && this._cb(new Error("Authentication request aborted"));
+        });
+      }
+      prompt(prompts, title, instructions, cb) {
+        if (!Array.isArray(prompts))
+          prompts = [prompts];
+        if (typeof title === "function") {
+          cb = title;
+          title = instructions = void 0;
+        } else if (typeof instructions === "function") {
+          cb = instructions;
+          instructions = void 0;
+        } else if (typeof cb !== "function") {
+          cb = void 0;
+        }
+        for (let i = 0; i < prompts.length; ++i) {
+          if (typeof prompts[i] === "string") {
+            prompts[i] = {
+              prompt: prompts[i],
+              echo: true
+            };
+          }
+        }
+        this._cb = cb;
+        this._initialResponse = true;
+        this._protocol.authInfoReq(title, instructions, prompts);
+      }
+    };
+    var PKAuthContext = class extends AuthContext {
+      static {
+        __name(this, "PKAuthContext");
+      }
+      constructor(protocol, username, service, method, pkInfo, cb) {
+        super(protocol, username, service, method, cb);
+        this.key = { algo: pkInfo.keyAlgo, data: pkInfo.key };
+        this.hashAlgo = pkInfo.hashAlgo;
+        this.signature = pkInfo.signature;
+        this.blob = pkInfo.blob;
+      }
+      accept() {
+        if (!this.signature) {
+          this._initialResponse = true;
+          this._protocol.authPKOK(this.key.algo, this.key.data);
+        } else {
+          AuthContext.prototype.accept.call(this);
+        }
+      }
+    };
+    var HostbasedAuthContext = class extends AuthContext {
+      static {
+        __name(this, "HostbasedAuthContext");
+      }
+      constructor(protocol, username, service, method, pkInfo, cb) {
+        super(protocol, username, service, method, cb);
+        this.key = { algo: pkInfo.keyAlgo, data: pkInfo.key };
+        this.hashAlgo = pkInfo.hashAlgo;
+        this.signature = pkInfo.signature;
+        this.blob = pkInfo.blob;
+        this.localHostname = pkInfo.localHostname;
+        this.localUsername = pkInfo.localUsername;
+      }
+    };
+    var PwdAuthContext = class extends AuthContext {
+      static {
+        __name(this, "PwdAuthContext");
+      }
+      constructor(protocol, username, service, method, password, cb) {
+        super(protocol, username, service, method, cb);
+        this.password = password;
+        this._changeCb = void 0;
+      }
+      requestChange(prompt, cb) {
+        if (this._changeCb)
+          throw new Error("Change request already in progress");
+        if (typeof prompt !== "string")
+          throw new Error("prompt argument must be a string");
+        if (typeof cb !== "function")
+          throw new Error("Callback argument must be a function");
+        this._changeCb = cb;
+        this._protocol.authPasswdChg(prompt);
+      }
+    };
+    var Session = class extends EventEmitter {
+      static {
+        __name(this, "Session");
+      }
+      constructor(client, info, localChan) {
+        super();
+        this.type = "session";
+        this.subtype = void 0;
+        this.server = true;
+        this._ending = false;
+        this._channel = void 0;
+        this._chanInfo = {
+          type: "session",
+          incoming: {
+            id: localChan,
+            window: MAX_WINDOW,
+            packetSize: PACKET_SIZE,
+            state: "open"
+          },
+          outgoing: {
+            id: info.sender,
+            window: info.window,
+            packetSize: info.packetSize,
+            state: "open"
+          }
+        };
+      }
+    };
+    var Server = class extends EventEmitter {
+      static {
+        __name(this, "Server");
+      }
+      constructor(cfg, listener) {
+        super();
+        if (typeof cfg !== "object" || cfg === null)
+          throw new Error("Missing configuration object");
+        const hostKeys = /* @__PURE__ */ Object.create(null);
+        const hostKeyAlgoOrder = [];
+        const hostKeys_ = cfg.hostKeys;
+        if (!Array.isArray(hostKeys_))
+          throw new Error("hostKeys must be an array");
+        const cfgAlgos = typeof cfg.algorithms === "object" && cfg.algorithms !== null ? cfg.algorithms : {};
+        const hostKeyAlgos = generateAlgorithmList(
+          cfgAlgos.serverHostKey,
+          DEFAULT_SERVER_HOST_KEY,
+          SUPPORTED_SERVER_HOST_KEY
+        );
+        for (let i = 0; i < hostKeys_.length; ++i) {
+          let privateKey;
+          if (Buffer.isBuffer(hostKeys_[i]) || typeof hostKeys_[i] === "string")
+            privateKey = parseKey(hostKeys_[i]);
+          else
+            privateKey = parseKey(hostKeys_[i].key, hostKeys_[i].passphrase);
+          if (privateKey instanceof Error)
+            throw new Error(`Cannot parse privateKey: ${privateKey.message}`);
+          if (Array.isArray(privateKey)) {
+            privateKey = privateKey[0];
+          }
+          if (privateKey.getPrivatePEM() === null)
+            throw new Error("privateKey value contains an invalid private key");
+          if (hostKeyAlgoOrder.includes(privateKey.type))
+            continue;
+          if (privateKey.type === "ssh-rsa") {
+            let sha1Pos = hostKeyAlgos.indexOf("ssh-rsa");
+            const sha256Pos = hostKeyAlgos.indexOf("rsa-sha2-256");
+            const sha512Pos = hostKeyAlgos.indexOf("rsa-sha2-512");
+            if (sha1Pos === -1) {
+              sha1Pos = Infinity;
+            }
+            [sha1Pos, sha256Pos, sha512Pos].sort(compareNumbers).forEach((pos) => {
+              if (pos === -1)
+                return;
+              let type;
+              switch (pos) {
+                case sha1Pos:
+                  type = "ssh-rsa";
+                  break;
+                case sha256Pos:
+                  type = "rsa-sha2-256";
+                  break;
+                case sha512Pos:
+                  type = "rsa-sha2-512";
+                  break;
+                default:
+                  return;
+              }
+              hostKeys[type] = privateKey;
+              hostKeyAlgoOrder.push(type);
+            });
+          } else {
+            hostKeys[privateKey.type] = privateKey;
+            hostKeyAlgoOrder.push(privateKey.type);
+          }
+        }
+        const algorithms = {
+          kex: generateAlgorithmList(
+            cfgAlgos.kex,
+            DEFAULT_KEX,
+            SUPPORTED_KEX
+          ).concat(["kex-strict-s-v00@openssh.com"]),
+          serverHostKey: hostKeyAlgoOrder,
+          cs: {
+            cipher: generateAlgorithmList(
+              cfgAlgos.cipher,
+              DEFAULT_CIPHER,
+              SUPPORTED_CIPHER
+            ),
+            mac: generateAlgorithmList(cfgAlgos.hmac, DEFAULT_MAC, SUPPORTED_MAC),
+            compress: generateAlgorithmList(
+              cfgAlgos.compress,
+              DEFAULT_COMPRESSION,
+              SUPPORTED_COMPRESSION
+            ),
+            lang: []
+          },
+          sc: void 0
+        };
+        algorithms.sc = algorithms.cs;
+        if (typeof listener === "function")
+          this.on("connection", listener);
+        const origDebug = typeof cfg.debug === "function" ? cfg.debug : void 0;
+        const ident = cfg.ident ? Buffer.from(cfg.ident) : void 0;
+        const offer = new KexInit(algorithms);
+        this._srv = new netServer((socket) => {
+          if (this._connections >= this.maxConnections) {
+            socket.destroy();
+            return;
+          }
+          ++this._connections;
+          socket.once("close", () => {
+            --this._connections;
+          });
+          let debug;
+          if (origDebug) {
+            const debugPrefix = `[${process.hrtime().join(".")}] `;
+            debug = /* @__PURE__ */ __name((msg) => {
+              origDebug(`${debugPrefix}${msg}`);
+            }, "debug");
+          }
+          new Client(socket, hostKeys, ident, offer, debug, this, cfg);
+        }).on("error", (err) => {
+          this.emit("error", err);
+        }).on("listening", () => {
+          this.emit("listening");
+        }).on("close", () => {
+          this.emit("close");
+        });
+        this._connections = 0;
+        this.maxConnections = Infinity;
+      }
+      injectSocket(socket) {
+        this._srv.emit("connection", socket);
+      }
+      listen(...args) {
+        this._srv.listen(...args);
+        return this;
+      }
+      address() {
+        return this._srv.address();
+      }
+      getConnections(cb) {
+        this._srv.getConnections(cb);
+        return this;
+      }
+      close(cb) {
+        this._srv.close(cb);
+        return this;
+      }
+      ref() {
+        this._srv.ref();
+        return this;
+      }
+      unref() {
+        this._srv.unref();
+        return this;
+      }
+    };
+    Server.KEEPALIVE_CLIENT_INTERVAL = 15e3;
+    Server.KEEPALIVE_CLIENT_COUNT_MAX = 3;
+    var Client = class extends EventEmitter {
+      static {
+        __name(this, "Client");
+      }
+      constructor(socket, hostKeys, ident, offer, debug, server, srvCfg) {
+        super();
+        let exchanges = 0;
+        let acceptedAuthSvc = false;
+        let pendingAuths = [];
+        let authCtx;
+        let kaTimer;
+        let onPacket;
+        const unsentGlobalRequestsReplies = [];
+        this._sock = socket;
+        this._chanMgr = new ChannelManager(this);
+        this._debug = debug;
+        this.noMoreSessions = false;
+        this.authenticated = false;
+        function onClientPreHeaderError(err) {
+        }
+        __name(onClientPreHeaderError, "onClientPreHeaderError");
+        this.on("error", onClientPreHeaderError);
+        const DEBUG_HANDLER = !debug ? void 0 : (p, display, msg) => {
+          debug(`Debug output from client: ${JSON.stringify(msg)}`);
+        };
+        const kaIntvl = typeof srvCfg.keepaliveInterval === "number" && isFinite(srvCfg.keepaliveInterval) && srvCfg.keepaliveInterval > 0 ? srvCfg.keepaliveInterval : typeof Server.KEEPALIVE_CLIENT_INTERVAL === "number" && isFinite(Server.KEEPALIVE_CLIENT_INTERVAL) && Server.KEEPALIVE_CLIENT_INTERVAL > 0 ? Server.KEEPALIVE_CLIENT_INTERVAL : -1;
+        const kaCountMax = typeof srvCfg.keepaliveCountMax === "number" && isFinite(srvCfg.keepaliveCountMax) && srvCfg.keepaliveCountMax >= 0 ? srvCfg.keepaliveCountMax : typeof Server.KEEPALIVE_CLIENT_COUNT_MAX === "number" && isFinite(Server.KEEPALIVE_CLIENT_COUNT_MAX) && Server.KEEPALIVE_CLIENT_COUNT_MAX >= 0 ? Server.KEEPALIVE_CLIENT_COUNT_MAX : -1;
+        let kaCurCount = 0;
+        if (kaIntvl !== -1 && kaCountMax !== -1) {
+          this.once("ready", () => {
+            const onClose = /* @__PURE__ */ __name(() => {
+              clearInterval(kaTimer);
+            }, "onClose");
+            this.on("close", onClose).on("end", onClose);
+            kaTimer = setInterval(() => {
+              if (++kaCurCount > kaCountMax) {
+                clearInterval(kaTimer);
+                const err = new Error("Keepalive timeout");
+                err.level = "client-timeout";
+                this.emit("error", err);
+                this.end();
+              } else {
+                proto.ping();
+              }
+            }, kaIntvl);
+          });
+          onPacket = /* @__PURE__ */ __name(() => {
+            kaTimer && kaTimer.refresh();
+            kaCurCount = 0;
+          }, "onPacket");
+        }
+        const proto = this._protocol = new Protocol({
+          server: true,
+          hostKeys,
+          ident,
+          offer,
+          onPacket,
+          greeting: srvCfg.greeting,
+          banner: srvCfg.banner,
+          onWrite: /* @__PURE__ */ __name((data) => {
+            if (isWritable(socket))
+              socket.write(data);
+          }, "onWrite"),
+          onError: /* @__PURE__ */ __name((err) => {
+            if (!proto._destruct)
+              socket.removeAllListeners("data");
+            this.emit("error", err);
+            try {
+              socket.end();
+            } catch {
+            }
+          }, "onError"),
+          onHeader: /* @__PURE__ */ __name((header) => {
+            this.removeListener("error", onClientPreHeaderError);
+            const info = {
+              ip: socket.remoteAddress,
+              family: socket.remoteFamily,
+              port: socket.remotePort,
+              header
+            };
+            if (!server.emit("connection", this, info)) {
+              proto.disconnect(DISCONNECT_REASON.BY_APPLICATION);
+              socket.end();
+              return;
+            }
+            if (header.greeting)
+              this.emit("greeting", header.greeting);
+          }, "onHeader"),
+          onHandshakeComplete: /* @__PURE__ */ __name((negotiated) => {
+            if (++exchanges > 1)
+              this.emit("rekey");
+            this.emit("handshake", negotiated);
+          }, "onHandshakeComplete"),
+          debug,
+          messageHandlers: {
+            DEBUG: DEBUG_HANDLER,
+            DISCONNECT: /* @__PURE__ */ __name((p, reason, desc) => {
+              if (reason !== DISCONNECT_REASON.BY_APPLICATION) {
+                if (!desc) {
+                  desc = DISCONNECT_REASON_BY_VALUE[reason];
+                  if (desc === void 0)
+                    desc = `Unexpected disconnection reason: ${reason}`;
+                }
+                const err = new Error(desc);
+                err.code = reason;
+                this.emit("error", err);
+              }
+              socket.end();
+            }, "DISCONNECT"),
+            CHANNEL_OPEN: /* @__PURE__ */ __name((p, info) => {
+              if (info.type === "session" && this.noMoreSessions || !this.authenticated) {
+                const reasonCode = CHANNEL_OPEN_FAILURE.ADMINISTRATIVELY_PROHIBITED;
+                return proto.channelOpenFail(info.sender, reasonCode);
+              }
+              let localChan = -1;
+              let reason;
+              let replied = false;
+              let accept;
+              const reject = /* @__PURE__ */ __name(() => {
+                if (replied)
+                  return;
+                replied = true;
+                if (reason === void 0) {
+                  if (localChan === -1)
+                    reason = CHANNEL_OPEN_FAILURE.RESOURCE_SHORTAGE;
+                  else
+                    reason = CHANNEL_OPEN_FAILURE.CONNECT_FAILED;
+                }
+                if (localChan !== -1)
+                  this._chanMgr.remove(localChan);
+                proto.channelOpenFail(info.sender, reason, "");
+              }, "reject");
+              const reserveChannel = /* @__PURE__ */ __name(() => {
+                localChan = this._chanMgr.add();
+                if (localChan === -1) {
+                  reason = CHANNEL_OPEN_FAILURE.RESOURCE_SHORTAGE;
+                  if (debug) {
+                    debug("Automatic rejection of incoming channel open: no channels available");
+                  }
+                }
+                return localChan !== -1;
+              }, "reserveChannel");
+              const data = info.data;
+              switch (info.type) {
+                case "session":
+                  if (listenerCount(this, "session") && reserveChannel()) {
+                    accept = /* @__PURE__ */ __name(() => {
+                      if (replied)
+                        return;
+                      replied = true;
+                      const instance = new Session(this, info, localChan);
+                      this._chanMgr.update(localChan, instance);
+                      proto.channelOpenConfirm(
+                        info.sender,
+                        localChan,
+                        MAX_WINDOW,
+                        PACKET_SIZE
+                      );
+                      return instance;
+                    }, "accept");
+                    this.emit("session", accept, reject);
+                    return;
+                  }
+                  break;
+                case "direct-tcpip":
+                  if (listenerCount(this, "tcpip") && reserveChannel()) {
+                    accept = /* @__PURE__ */ __name(() => {
+                      if (replied)
+                        return;
+                      replied = true;
+                      const chanInfo = {
+                        type: void 0,
+                        incoming: {
+                          id: localChan,
+                          window: MAX_WINDOW,
+                          packetSize: PACKET_SIZE,
+                          state: "open"
+                        },
+                        outgoing: {
+                          id: info.sender,
+                          window: info.window,
+                          packetSize: info.packetSize,
+                          state: "open"
+                        }
+                      };
+                      const stream = new Channel(this, chanInfo, { server: true });
+                      this._chanMgr.update(localChan, stream);
+                      proto.channelOpenConfirm(
+                        info.sender,
+                        localChan,
+                        MAX_WINDOW,
+                        PACKET_SIZE
+                      );
+                      return stream;
+                    }, "accept");
+                    this.emit("tcpip", accept, reject, data);
+                    return;
+                  }
+                  break;
+                case "direct-streamlocal@openssh.com":
+                  if (listenerCount(this, "openssh.streamlocal") && reserveChannel()) {
+                    accept = /* @__PURE__ */ __name(() => {
+                      if (replied)
+                        return;
+                      replied = true;
+                      const chanInfo = {
+                        type: void 0,
+                        incoming: {
+                          id: localChan,
+                          window: MAX_WINDOW,
+                          packetSize: PACKET_SIZE,
+                          state: "open"
+                        },
+                        outgoing: {
+                          id: info.sender,
+                          window: info.window,
+                          packetSize: info.packetSize,
+                          state: "open"
+                        }
+                      };
+                      const stream = new Channel(this, chanInfo, { server: true });
+                      this._chanMgr.update(localChan, stream);
+                      proto.channelOpenConfirm(
+                        info.sender,
+                        localChan,
+                        MAX_WINDOW,
+                        PACKET_SIZE
+                      );
+                      return stream;
+                    }, "accept");
+                    this.emit("openssh.streamlocal", accept, reject, data);
+                    return;
+                  }
+                  break;
+                default:
+                  reason = CHANNEL_OPEN_FAILURE.UNKNOWN_CHANNEL_TYPE;
+                  if (debug) {
+                    debug(`Automatic rejection of unsupported incoming channel open type: ${info.type}`);
+                  }
+              }
+              if (reason === void 0) {
+                reason = CHANNEL_OPEN_FAILURE.ADMINISTRATIVELY_PROHIBITED;
+                if (debug) {
+                  debug(`Automatic rejection of unexpected incoming channel open for: ${info.type}`);
+                }
+              }
+              reject();
+            }, "CHANNEL_OPEN"),
+            CHANNEL_OPEN_CONFIRMATION: /* @__PURE__ */ __name((p, info) => {
+              const channel = this._chanMgr.get(info.recipient);
+              if (typeof channel !== "function")
+                return;
+              const chanInfo = {
+                type: channel.type,
+                incoming: {
+                  id: info.recipient,
+                  window: MAX_WINDOW,
+                  packetSize: PACKET_SIZE,
+                  state: "open"
+                },
+                outgoing: {
+                  id: info.sender,
+                  window: info.window,
+                  packetSize: info.packetSize,
+                  state: "open"
+                }
+              };
+              const instance = new Channel(this, chanInfo, { server: true });
+              this._chanMgr.update(info.recipient, instance);
+              channel(void 0, instance);
+            }, "CHANNEL_OPEN_CONFIRMATION"),
+            CHANNEL_OPEN_FAILURE: /* @__PURE__ */ __name((p, recipient, reason, description) => {
+              const channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "function")
+                return;
+              const info = { reason, description };
+              onChannelOpenFailure(this, recipient, info, channel);
+            }, "CHANNEL_OPEN_FAILURE"),
+            CHANNEL_DATA: /* @__PURE__ */ __name((p, recipient, data) => {
+              let channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.constructor === Session) {
+                channel = channel._channel;
+                if (!channel)
+                  return;
+              }
+              if (channel.incoming.window === 0)
+                return;
+              channel.incoming.window -= data.length;
+              if (channel.push(data) === false) {
+                channel._waitChanDrain = true;
+                return;
+              }
+              if (channel.incoming.window <= WINDOW_THRESHOLD)
+                windowAdjust(channel);
+            }, "CHANNEL_DATA"),
+            CHANNEL_EXTENDED_DATA: /* @__PURE__ */ __name((p, recipient, data, type) => {
+            }, "CHANNEL_EXTENDED_DATA"),
+            CHANNEL_WINDOW_ADJUST: /* @__PURE__ */ __name((p, recipient, amount) => {
+              let channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.constructor === Session) {
+                channel = channel._channel;
+                if (!channel)
+                  return;
+              }
+              channel.outgoing.window += amount;
+              if (channel._waitWindow) {
+                channel._waitWindow = false;
+                if (channel._chunk) {
+                  channel._write(channel._chunk, null, channel._chunkcb);
+                } else if (channel._chunkcb) {
+                  channel._chunkcb();
+                } else if (channel._chunkErr) {
+                  channel.stderr._write(
+                    channel._chunkErr,
+                    null,
+                    channel._chunkcbErr
+                  );
+                } else if (channel._chunkcbErr) {
+                  channel._chunkcbErr();
+                }
+              }
+            }, "CHANNEL_WINDOW_ADJUST"),
+            CHANNEL_SUCCESS: /* @__PURE__ */ __name((p, recipient) => {
+              let channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.constructor === Session) {
+                channel = channel._channel;
+                if (!channel)
+                  return;
+              }
+              if (channel._callbacks.length)
+                channel._callbacks.shift()(false);
+            }, "CHANNEL_SUCCESS"),
+            CHANNEL_FAILURE: /* @__PURE__ */ __name((p, recipient) => {
+              let channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.constructor === Session) {
+                channel = channel._channel;
+                if (!channel)
+                  return;
+              }
+              if (channel._callbacks.length)
+                channel._callbacks.shift()(true);
+            }, "CHANNEL_FAILURE"),
+            CHANNEL_REQUEST: /* @__PURE__ */ __name((p, recipient, type, wantReply, data) => {
+              const session = this._chanMgr.get(recipient);
+              if (typeof session !== "object" || session === null)
+                return;
+              let replied = false;
+              let accept;
+              let reject;
+              if (session.constructor !== Session) {
+                if (wantReply)
+                  proto.channelFailure(session.outgoing.id);
+                return;
+              }
+              if (wantReply) {
+                if (type !== "shell" && type !== "exec" && type !== "subsystem") {
+                  accept = /* @__PURE__ */ __name(() => {
+                    if (replied || session._ending || session._channel)
+                      return;
+                    replied = true;
+                    proto.channelSuccess(session._chanInfo.outgoing.id);
+                  }, "accept");
+                }
+                reject = /* @__PURE__ */ __name(() => {
+                  if (replied || session._ending || session._channel)
+                    return;
+                  replied = true;
+                  proto.channelFailure(session._chanInfo.outgoing.id);
+                }, "reject");
+              }
+              if (session._ending) {
+                reject && reject();
+                return;
+              }
+              switch (type) {
+                // "pre-real session start" requests
+                case "env":
+                  if (listenerCount(session, "env")) {
+                    session.emit("env", accept, reject, {
+                      key: data.name,
+                      val: data.value
+                    });
+                    return;
+                  }
+                  break;
+                case "pty-req":
+                  if (listenerCount(session, "pty")) {
+                    session.emit("pty", accept, reject, data);
+                    return;
+                  }
+                  break;
+                case "window-change":
+                  if (listenerCount(session, "window-change"))
+                    session.emit("window-change", accept, reject, data);
+                  else
+                    reject && reject();
+                  break;
+                case "x11-req":
+                  if (listenerCount(session, "x11")) {
+                    session.emit("x11", accept, reject, data);
+                    return;
+                  }
+                  break;
+                // "post-real session start" requests
+                case "signal":
+                  if (listenerCount(session, "signal")) {
+                    session.emit("signal", accept, reject, {
+                      name: data
+                    });
+                    return;
+                  }
+                  break;
+                // XXX: is `auth-agent-req@openssh.com` really "post-real session
+                // start"?
+                case "auth-agent-req@openssh.com":
+                  if (listenerCount(session, "auth-agent")) {
+                    session.emit("auth-agent", accept, reject);
+                    return;
+                  }
+                  break;
+                // "real session start" requests
+                case "shell":
+                  if (listenerCount(session, "shell")) {
+                    accept = /* @__PURE__ */ __name(() => {
+                      if (replied || session._ending || session._channel)
+                        return;
+                      replied = true;
+                      if (wantReply)
+                        proto.channelSuccess(session._chanInfo.outgoing.id);
+                      const channel = new Channel(
+                        this,
+                        session._chanInfo,
+                        { server: true }
+                      );
+                      channel.subtype = session.subtype = type;
+                      session._channel = channel;
+                      return channel;
+                    }, "accept");
+                    session.emit("shell", accept, reject);
+                    return;
+                  }
+                  break;
+                case "exec":
+                  if (listenerCount(session, "exec")) {
+                    accept = /* @__PURE__ */ __name(() => {
+                      if (replied || session._ending || session._channel)
+                        return;
+                      replied = true;
+                      if (wantReply)
+                        proto.channelSuccess(session._chanInfo.outgoing.id);
+                      const channel = new Channel(
+                        this,
+                        session._chanInfo,
+                        { server: true }
+                      );
+                      channel.subtype = session.subtype = type;
+                      session._channel = channel;
+                      return channel;
+                    }, "accept");
+                    session.emit("exec", accept, reject, {
+                      command: data
+                    });
+                    return;
+                  }
+                  break;
+                case "subsystem": {
+                  let useSFTP = data === "sftp";
+                  accept = /* @__PURE__ */ __name(() => {
+                    if (replied || session._ending || session._channel)
+                      return;
+                    replied = true;
+                    if (wantReply)
+                      proto.channelSuccess(session._chanInfo.outgoing.id);
+                    let instance;
+                    if (useSFTP) {
+                      instance = new SFTP(this, session._chanInfo, {
+                        server: true,
+                        debug
+                      });
+                    } else {
+                      instance = new Channel(
+                        this,
+                        session._chanInfo,
+                        { server: true }
+                      );
+                      instance.subtype = session.subtype = `${type}:${data}`;
+                    }
+                    session._channel = instance;
+                    return instance;
+                  }, "accept");
+                  if (data === "sftp") {
+                    if (listenerCount(session, "sftp")) {
+                      session.emit("sftp", accept, reject);
+                      return;
+                    }
+                    useSFTP = false;
+                  }
+                  if (listenerCount(session, "subsystem")) {
+                    session.emit("subsystem", accept, reject, {
+                      name: data
+                    });
+                    return;
+                  }
+                  break;
+                }
+              }
+              debug && debug(
+                `Automatic rejection of incoming channel request: ${type}`
+              );
+              reject && reject();
+            }, "CHANNEL_REQUEST"),
+            CHANNEL_EOF: /* @__PURE__ */ __name((p, recipient) => {
+              let channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.constructor === Session) {
+                if (!channel._ending) {
+                  channel._ending = true;
+                  channel.emit("eof");
+                  channel.emit("end");
+                }
+                channel = channel._channel;
+                if (!channel)
+                  return;
+              }
+              if (channel.incoming.state !== "open")
+                return;
+              channel.incoming.state = "eof";
+              if (channel.readable)
+                channel.push(null);
+            }, "CHANNEL_EOF"),
+            CHANNEL_CLOSE: /* @__PURE__ */ __name((p, recipient) => {
+              let channel = this._chanMgr.get(recipient);
+              if (typeof channel !== "object" || channel === null)
+                return;
+              if (channel.constructor === Session) {
+                channel._ending = true;
+                channel.emit("close");
+                channel = channel._channel;
+                if (!channel)
+                  return;
+              }
+              onCHANNEL_CLOSE(this, recipient, channel);
+            }, "CHANNEL_CLOSE"),
+            // Begin service/auth-related ==========================================
+            SERVICE_REQUEST: /* @__PURE__ */ __name((p, service) => {
+              if (exchanges === 0 || acceptedAuthSvc || this.authenticated || service !== "ssh-userauth") {
+                proto.disconnect(DISCONNECT_REASON.SERVICE_NOT_AVAILABLE);
+                socket.end();
+                return;
+              }
+              acceptedAuthSvc = true;
+              proto.serviceAccept(service);
+            }, "SERVICE_REQUEST"),
+            USERAUTH_REQUEST: /* @__PURE__ */ __name((p, username, service, method, methodData) => {
+              if (exchanges === 0 || this.authenticated || authCtx && (authCtx.username !== username || authCtx.service !== service) || method !== "password" && method !== "publickey" && method !== "hostbased" && method !== "keyboard-interactive" && method !== "none" || pendingAuths.length === MAX_PENDING_AUTHS) {
+                proto.disconnect(DISCONNECT_REASON.PROTOCOL_ERROR);
+                socket.end();
+                return;
+              } else if (service !== "ssh-connection") {
+                proto.disconnect(DISCONNECT_REASON.SERVICE_NOT_AVAILABLE);
+                socket.end();
+                return;
+              }
+              let ctx;
+              switch (method) {
+                case "keyboard-interactive":
+                  ctx = new KeyboardAuthContext(
+                    proto,
+                    username,
+                    service,
+                    method,
+                    methodData,
+                    onAuthDecide
+                  );
+                  break;
+                case "publickey":
+                  ctx = new PKAuthContext(
+                    proto,
+                    username,
+                    service,
+                    method,
+                    methodData,
+                    onAuthDecide
+                  );
+                  break;
+                case "hostbased":
+                  ctx = new HostbasedAuthContext(
+                    proto,
+                    username,
+                    service,
+                    method,
+                    methodData,
+                    onAuthDecide
+                  );
+                  break;
+                case "password":
+                  if (authCtx && authCtx instanceof PwdAuthContext && authCtx._changeCb) {
+                    const cb = authCtx._changeCb;
+                    authCtx._changeCb = void 0;
+                    cb(methodData.newPassword);
+                    return;
+                  }
+                  ctx = new PwdAuthContext(
+                    proto,
+                    username,
+                    service,
+                    method,
+                    methodData,
+                    onAuthDecide
+                  );
+                  break;
+                case "none":
+                  ctx = new AuthContext(
+                    proto,
+                    username,
+                    service,
+                    method,
+                    onAuthDecide
+                  );
+                  break;
+              }
+              if (authCtx) {
+                if (!authCtx._initialResponse) {
+                  return pendingAuths.push(ctx);
+                } else if (authCtx._multistep && !authCtx._finalResponse) {
+                  authCtx._cleanup && authCtx._cleanup();
+                  authCtx.emit("abort");
+                }
+              }
+              authCtx = ctx;
+              if (listenerCount(this, "authentication"))
+                this.emit("authentication", authCtx);
+              else
+                authCtx.reject();
+            }, "USERAUTH_REQUEST"),
+            USERAUTH_INFO_RESPONSE: /* @__PURE__ */ __name((p, responses) => {
+              if (authCtx && authCtx instanceof KeyboardAuthContext)
+                authCtx._onInfoResponse(responses);
+            }, "USERAUTH_INFO_RESPONSE"),
+            // End service/auth-related ============================================
+            GLOBAL_REQUEST: /* @__PURE__ */ __name((p, name, wantReply, data) => {
+              const reply = {
+                type: null,
+                buf: null
+              };
+              function setReply(type, buf) {
+                reply.type = type;
+                reply.buf = buf;
+                sendReplies();
+              }
+              __name(setReply, "setReply");
+              if (wantReply)
+                unsentGlobalRequestsReplies.push(reply);
+              if ((name === "tcpip-forward" || name === "cancel-tcpip-forward" || name === "no-more-sessions@openssh.com" || name === "streamlocal-forward@openssh.com" || name === "cancel-streamlocal-forward@openssh.com") && listenerCount(this, "request") && this.authenticated) {
+                let accept;
+                let reject;
+                if (wantReply) {
+                  let replied = false;
+                  accept = /* @__PURE__ */ __name((chosenPort) => {
+                    if (replied)
+                      return;
+                    replied = true;
+                    let bufPort;
+                    if (name === "tcpip-forward" && data.bindPort === 0 && typeof chosenPort === "number") {
+                      bufPort = Buffer.allocUnsafe(4);
+                      writeUInt32BE(bufPort, chosenPort, 0);
+                    }
+                    setReply("SUCCESS", bufPort);
+                  }, "accept");
+                  reject = /* @__PURE__ */ __name(() => {
+                    if (replied)
+                      return;
+                    replied = true;
+                    setReply("FAILURE");
+                  }, "reject");
+                }
+                if (name === "no-more-sessions@openssh.com") {
+                  this.noMoreSessions = true;
+                  accept && accept();
+                  return;
+                }
+                this.emit("request", accept, reject, name, data);
+              } else if (wantReply) {
+                setReply("FAILURE");
+              }
+            }, "GLOBAL_REQUEST")
+          }
+        });
+        socket.pause();
+        cryptoInit.then(() => {
+          proto.start();
+          socket.on("data", (data) => {
+            try {
+              proto.parse(data, 0, data.length);
+            } catch (ex) {
+              this.emit("error", ex);
+              try {
+                if (isWritable(socket))
+                  socket.end();
+              } catch {
+              }
+            }
+          });
+          socket.resume();
+        }).catch((err) => {
+          this.emit("error", err);
+          try {
+            if (isWritable(socket))
+              socket.end();
+          } catch {
+          }
+        });
+        socket.on("error", (err) => {
+          err.level = "socket";
+          this.emit("error", err);
+        }).once("end", () => {
+          debug && debug("Socket ended");
+          proto.cleanup();
+          this.emit("end");
+        }).once("close", () => {
+          debug && debug("Socket closed");
+          proto.cleanup();
+          this.emit("close");
+          const err = new Error("No response from server");
+          this._chanMgr.cleanup(err);
+        });
+        const onAuthDecide = /* @__PURE__ */ __name((ctx, allowed, methodsLeft, isPartial) => {
+          if (authCtx === ctx && !this.authenticated) {
+            if (allowed) {
+              authCtx = void 0;
+              this.authenticated = true;
+              proto.authSuccess();
+              pendingAuths = [];
+              this.emit("ready");
+            } else {
+              proto.authFailure(methodsLeft, isPartial);
+              if (pendingAuths.length) {
+                authCtx = pendingAuths.pop();
+                if (listenerCount(this, "authentication"))
+                  this.emit("authentication", authCtx);
+                else
+                  authCtx.reject();
+              }
+            }
+          }
+        }, "onAuthDecide");
+        function sendReplies() {
+          while (unsentGlobalRequestsReplies.length > 0 && unsentGlobalRequestsReplies[0].type) {
+            const reply = unsentGlobalRequestsReplies.shift();
+            if (reply.type === "SUCCESS")
+              proto.requestSuccess(reply.buf);
+            if (reply.type === "FAILURE")
+              proto.requestFailure();
+          }
+        }
+        __name(sendReplies, "sendReplies");
+      }
+      end() {
+        if (this._sock && isWritable(this._sock)) {
+          this._protocol.disconnect(DISCONNECT_REASON.BY_APPLICATION);
+          this._sock.end();
+        }
+        return this;
+      }
+      x11(originAddr, originPort, cb) {
+        const opts = { originAddr, originPort };
+        openChannel(this, "x11", opts, cb);
+        return this;
+      }
+      forwardOut(boundAddr, boundPort, remoteAddr, remotePort, cb) {
+        const opts = { boundAddr, boundPort, remoteAddr, remotePort };
+        openChannel(this, "forwarded-tcpip", opts, cb);
+        return this;
+      }
+      openssh_forwardOutStreamLocal(socketPath, cb) {
+        const opts = { socketPath };
+        openChannel(this, "forwarded-streamlocal@openssh.com", opts, cb);
+        return this;
+      }
+      rekey(cb) {
+        let error;
+        try {
+          this._protocol.rekey();
+        } catch (ex) {
+          error = ex;
+        }
+        if (typeof cb === "function") {
+          if (error)
+            process.nextTick(cb, error);
+          else
+            this.once("rekey", cb);
+        }
+      }
+      setNoDelay(noDelay) {
+        if (this._sock && typeof this._sock.setNoDelay === "function")
+          this._sock.setNoDelay(noDelay);
+        return this;
+      }
+    };
+    function openChannel(self2, type, opts, cb) {
+      const initWindow = MAX_WINDOW;
+      const maxPacket = PACKET_SIZE;
+      if (typeof opts === "function") {
+        cb = opts;
+        opts = {};
+      }
+      const wrapper = /* @__PURE__ */ __name((err, stream) => {
+        cb(err, stream);
+      }, "wrapper");
+      wrapper.type = type;
+      const localChan = self2._chanMgr.add(wrapper);
+      if (localChan === -1) {
+        cb(new Error("No free channels available"));
+        return;
+      }
+      switch (type) {
+        case "forwarded-tcpip":
+          self2._protocol.forwardedTcpip(localChan, initWindow, maxPacket, opts);
+          break;
+        case "x11":
+          self2._protocol.x11(localChan, initWindow, maxPacket, opts);
+          break;
+        case "forwarded-streamlocal@openssh.com":
+          self2._protocol.openssh_forwardedStreamLocal(
+            localChan,
+            initWindow,
+            maxPacket,
+            opts
+          );
+          break;
+        default:
+          throw new Error(`Unsupported channel type: ${type}`);
+      }
+    }
+    __name(openChannel, "openChannel");
+    function compareNumbers(a, b) {
+      return a - b;
+    }
+    __name(compareNumbers, "compareNumbers");
+    module.exports = Server;
+    module.exports.IncomingClient = Client;
+  }
+});
+
+// node_modules/ssh2/lib/keygen.js
+var require_keygen = __commonJS({
+  "node_modules/ssh2/lib/keygen.js"(exports, module) {
+    "use strict";
+    var {
+      createCipheriv,
+      generateKeyPair: generateKeyPair_,
+      generateKeyPairSync: generateKeyPairSync_,
+      getCurves,
+      randomBytes
+    } = require_crypto();
+    var { Ber } = require_lib();
+    var bcrypt_pbkdf = require_bcrypt_pbkdf().pbkdf;
+    var { CIPHER_INFO } = require_crypto2();
+    var SALT_LEN = 16;
+    var DEFAULT_ROUNDS = 16;
+    var curves = getCurves();
+    var ciphers = new Map(Object.entries(CIPHER_INFO));
+    function makeArgs(type, opts) {
+      if (typeof type !== "string")
+        throw new TypeError("Key type must be a string");
+      const publicKeyEncoding = { type: "spki", format: "der" };
+      const privateKeyEncoding = { type: "pkcs8", format: "der" };
+      switch (type.toLowerCase()) {
+        case "rsa": {
+          if (typeof opts !== "object" || opts === null)
+            throw new TypeError("Missing options object for RSA key");
+          const modulusLength = opts.bits;
+          if (!Number.isInteger(modulusLength))
+            throw new TypeError("RSA bits must be an integer");
+          if (modulusLength <= 0 || modulusLength > 16384)
+            throw new RangeError("RSA bits must be non-zero and <= 16384");
+          return ["rsa", { modulusLength, publicKeyEncoding, privateKeyEncoding }];
+        }
+        case "ecdsa": {
+          if (typeof opts !== "object" || opts === null)
+            throw new TypeError("Missing options object for ECDSA key");
+          if (!Number.isInteger(opts.bits))
+            throw new TypeError("ECDSA bits must be an integer");
+          let namedCurve;
+          switch (opts.bits) {
+            case 256:
+              namedCurve = "prime256v1";
+              break;
+            case 384:
+              namedCurve = "secp384r1";
+              break;
+            case 521:
+              namedCurve = "secp521r1";
+              break;
+            default:
+              throw new Error("ECDSA bits must be 256, 384, or 521");
+          }
+          if (!curves.includes(namedCurve))
+            throw new Error("Unsupported ECDSA bits value");
+          return ["ec", { namedCurve, publicKeyEncoding, privateKeyEncoding }];
+        }
+        case "ed25519":
+          return ["ed25519", { publicKeyEncoding, privateKeyEncoding }];
+        default:
+          throw new Error(`Unsupported key type: ${type}`);
+      }
+    }
+    __name(makeArgs, "makeArgs");
+    function parseDERs(keyType, pub, priv) {
+      switch (keyType) {
+        case "rsa": {
+          let reader = new Ber.Reader(priv);
+          reader.readSequence();
+          if (reader.readInt() !== 0)
+            throw new Error("Unsupported version in RSA private key");
+          reader.readSequence();
+          if (reader.readOID() !== "1.2.840.113549.1.1.1")
+            throw new Error("Bad RSA private OID");
+          if (reader.readByte() !== Ber.Null)
+            throw new Error("Malformed RSA private key (expected null)");
+          if (reader.readByte() !== 0) {
+            throw new Error(
+              "Malformed RSA private key (expected zero-length null)"
+            );
+          }
+          reader = new Ber.Reader(reader.readString(Ber.OctetString, true));
+          reader.readSequence();
+          if (reader.readInt() !== 0)
+            throw new Error("Unsupported version in RSA private key");
+          const n = reader.readString(Ber.Integer, true);
+          const e = reader.readString(Ber.Integer, true);
+          const d = reader.readString(Ber.Integer, true);
+          const p = reader.readString(Ber.Integer, true);
+          const q2 = reader.readString(Ber.Integer, true);
+          reader.readString(Ber.Integer, true);
+          reader.readString(Ber.Integer, true);
+          const iqmp = reader.readString(Ber.Integer, true);
+          const keyName = Buffer.from("ssh-rsa");
+          const privBuf = Buffer.allocUnsafe(
+            4 + keyName.length + 4 + n.length + 4 + e.length + 4 + d.length + 4 + iqmp.length + 4 + p.length + 4 + q2.length
+          );
+          let pos = 0;
+          privBuf.writeUInt32BE(keyName.length, pos += 0);
+          privBuf.set(keyName, pos += 4);
+          privBuf.writeUInt32BE(n.length, pos += keyName.length);
+          privBuf.set(n, pos += 4);
+          privBuf.writeUInt32BE(e.length, pos += n.length);
+          privBuf.set(e, pos += 4);
+          privBuf.writeUInt32BE(d.length, pos += e.length);
+          privBuf.set(d, pos += 4);
+          privBuf.writeUInt32BE(iqmp.length, pos += d.length);
+          privBuf.set(iqmp, pos += 4);
+          privBuf.writeUInt32BE(p.length, pos += iqmp.length);
+          privBuf.set(p, pos += 4);
+          privBuf.writeUInt32BE(q2.length, pos += p.length);
+          privBuf.set(q2, pos += 4);
+          const pubBuf = Buffer.allocUnsafe(
+            4 + keyName.length + 4 + e.length + 4 + n.length
+          );
+          pos = 0;
+          pubBuf.writeUInt32BE(keyName.length, pos += 0);
+          pubBuf.set(keyName, pos += 4);
+          pubBuf.writeUInt32BE(e.length, pos += keyName.length);
+          pubBuf.set(e, pos += 4);
+          pubBuf.writeUInt32BE(n.length, pos += e.length);
+          pubBuf.set(n, pos += 4);
+          return { sshName: keyName.toString(), priv: privBuf, pub: pubBuf };
+        }
+        case "ec": {
+          let reader = new Ber.Reader(pub);
+          reader.readSequence();
+          reader.readSequence();
+          if (reader.readOID() !== "1.2.840.10045.2.1")
+            throw new Error("Bad ECDSA public OID");
+          reader.readOID();
+          let pubBin = reader.readString(Ber.BitString, true);
+          {
+            let i = 0;
+            for (; i < pubBin.length && pubBin[i] === 0; ++i) ;
+            if (i > 0)
+              pubBin = pubBin.slice(i);
+          }
+          reader = new Ber.Reader(priv);
+          reader.readSequence();
+          if (reader.readInt() !== 0)
+            throw new Error("Unsupported version in ECDSA private key");
+          reader.readSequence();
+          if (reader.readOID() !== "1.2.840.10045.2.1")
+            throw new Error("Bad ECDSA private OID");
+          const curveOID = reader.readOID();
+          let sshCurveName;
+          switch (curveOID) {
+            case "1.2.840.10045.3.1.7":
+              sshCurveName = "nistp256";
+              break;
+            case "1.3.132.0.34":
+              sshCurveName = "nistp384";
+              break;
+            case "1.3.132.0.35":
+              sshCurveName = "nistp521";
+              break;
+            default:
+              throw new Error("Unsupported curve in ECDSA private key");
+          }
+          reader = new Ber.Reader(reader.readString(Ber.OctetString, true));
+          reader.readSequence();
+          if (reader.readInt() !== 1)
+            throw new Error("Unsupported version in ECDSA private key");
+          const privBin = Buffer.concat([
+            Buffer.from([0]),
+            reader.readString(Ber.OctetString, true)
+          ]);
+          const keyName = Buffer.from(`ecdsa-sha2-${sshCurveName}`);
+          sshCurveName = Buffer.from(sshCurveName);
+          const privBuf = Buffer.allocUnsafe(
+            4 + keyName.length + 4 + sshCurveName.length + 4 + pubBin.length + 4 + privBin.length
+          );
+          let pos = 0;
+          privBuf.writeUInt32BE(keyName.length, pos += 0);
+          privBuf.set(keyName, pos += 4);
+          privBuf.writeUInt32BE(sshCurveName.length, pos += keyName.length);
+          privBuf.set(sshCurveName, pos += 4);
+          privBuf.writeUInt32BE(pubBin.length, pos += sshCurveName.length);
+          privBuf.set(pubBin, pos += 4);
+          privBuf.writeUInt32BE(privBin.length, pos += pubBin.length);
+          privBuf.set(privBin, pos += 4);
+          const pubBuf = Buffer.allocUnsafe(
+            4 + keyName.length + 4 + sshCurveName.length + 4 + pubBin.length
+          );
+          pos = 0;
+          pubBuf.writeUInt32BE(keyName.length, pos += 0);
+          pubBuf.set(keyName, pos += 4);
+          pubBuf.writeUInt32BE(sshCurveName.length, pos += keyName.length);
+          pubBuf.set(sshCurveName, pos += 4);
+          pubBuf.writeUInt32BE(pubBin.length, pos += sshCurveName.length);
+          pubBuf.set(pubBin, pos += 4);
+          return { sshName: keyName.toString(), priv: privBuf, pub: pubBuf };
+        }
+        case "ed25519": {
+          let reader = new Ber.Reader(pub);
+          reader.readSequence();
+          reader.readSequence();
+          if (reader.readOID() !== "1.3.101.112")
+            throw new Error("Bad ED25519 public OID");
+          let pubBin = reader.readString(Ber.BitString, true);
+          {
+            let i = 0;
+            for (; i < pubBin.length && pubBin[i] === 0; ++i) ;
+            if (i > 0)
+              pubBin = pubBin.slice(i);
+          }
+          reader = new Ber.Reader(priv);
+          reader.readSequence();
+          if (reader.readInt() !== 0)
+            throw new Error("Unsupported version in ED25519 private key");
+          reader.readSequence();
+          if (reader.readOID() !== "1.3.101.112")
+            throw new Error("Bad ED25519 private OID");
+          reader = new Ber.Reader(reader.readString(Ber.OctetString, true));
+          const privBin = reader.readString(Ber.OctetString, true);
+          const keyName = Buffer.from("ssh-ed25519");
+          const privBuf = Buffer.allocUnsafe(
+            4 + keyName.length + 4 + pubBin.length + 4 + (privBin.length + pubBin.length)
+          );
+          let pos = 0;
+          privBuf.writeUInt32BE(keyName.length, pos += 0);
+          privBuf.set(keyName, pos += 4);
+          privBuf.writeUInt32BE(pubBin.length, pos += keyName.length);
+          privBuf.set(pubBin, pos += 4);
+          privBuf.writeUInt32BE(
+            privBin.length + pubBin.length,
+            pos += pubBin.length
+          );
+          privBuf.set(privBin, pos += 4);
+          privBuf.set(pubBin, pos += privBin.length);
+          const pubBuf = Buffer.allocUnsafe(
+            4 + keyName.length + 4 + pubBin.length
+          );
+          pos = 0;
+          pubBuf.writeUInt32BE(keyName.length, pos += 0);
+          pubBuf.set(keyName, pos += 4);
+          pubBuf.writeUInt32BE(pubBin.length, pos += keyName.length);
+          pubBuf.set(pubBin, pos += 4);
+          return { sshName: keyName.toString(), priv: privBuf, pub: pubBuf };
+        }
+      }
+    }
+    __name(parseDERs, "parseDERs");
+    function convertKeys(keyType, pub, priv, opts) {
+      let format = "new";
+      let encrypted;
+      let comment = "";
+      if (typeof opts === "object" && opts !== null) {
+        if (typeof opts.comment === "string" && opts.comment)
+          comment = opts.comment;
+        if (typeof opts.format === "string" && opts.format)
+          format = opts.format;
+        if (opts.passphrase) {
+          let passphrase;
+          if (typeof opts.passphrase === "string")
+            passphrase = Buffer.from(opts.passphrase);
+          else if (Buffer.isBuffer(opts.passphrase))
+            passphrase = opts.passphrase;
+          else
+            throw new Error("Invalid passphrase");
+          if (opts.cipher === void 0)
+            throw new Error("Missing cipher name");
+          const cipher = ciphers.get(opts.cipher);
+          if (cipher === void 0)
+            throw new Error("Invalid cipher name");
+          if (format === "new") {
+            let rounds = DEFAULT_ROUNDS;
+            if (opts.rounds !== void 0) {
+              if (!Number.isInteger(opts.rounds))
+                throw new TypeError("rounds must be an integer");
+              if (opts.rounds > 0)
+                rounds = opts.rounds;
+            }
+            const gen = Buffer.allocUnsafe(cipher.keyLen + cipher.ivLen);
+            const salt = randomBytes(SALT_LEN);
+            const r = bcrypt_pbkdf(
+              passphrase,
+              passphrase.length,
+              salt,
+              salt.length,
+              gen,
+              gen.length,
+              rounds
+            );
+            if (r !== 0)
+              return new Error("Failed to generate information to encrypt key");
+            const kdfOptions = Buffer.allocUnsafe(4 + salt.length + 4);
+            {
+              let pos = 0;
+              kdfOptions.writeUInt32BE(salt.length, pos += 0);
+              kdfOptions.set(salt, pos += 4);
+              kdfOptions.writeUInt32BE(rounds, pos += salt.length);
+            }
+            encrypted = {
+              cipher,
+              cipherName: opts.cipher,
+              kdfName: "bcrypt",
+              kdfOptions,
+              key: gen.slice(0, cipher.keyLen),
+              iv: gen.slice(cipher.keyLen)
+            };
+          }
+        }
+      }
+      switch (format) {
+        case "new": {
+          let privateB64 = "-----BEGIN OPENSSH PRIVATE KEY-----\n";
+          let publicB64;
+          const cipherName = Buffer.from(encrypted ? encrypted.cipherName : "none");
+          const kdfName = Buffer.from(encrypted ? encrypted.kdfName : "none");
+          const kdfOptions = encrypted ? encrypted.kdfOptions : Buffer.alloc(0);
+          const blockLen = encrypted ? encrypted.cipher.blockLen : 8;
+          const parsed = parseDERs(keyType, pub, priv);
+          const checkInt = randomBytes(4);
+          const commentBin = Buffer.from(comment);
+          const privBlobLen = 4 + 4 + parsed.priv.length + 4 + commentBin.length;
+          let padding = [];
+          for (let i = 1; (privBlobLen + padding.length) % blockLen; ++i)
+            padding.push(i & 255);
+          padding = Buffer.from(padding);
+          let privBlob = Buffer.allocUnsafe(privBlobLen + padding.length);
+          let extra;
+          {
+            let pos = 0;
+            privBlob.set(checkInt, pos += 0);
+            privBlob.set(checkInt, pos += 4);
+            privBlob.set(parsed.priv, pos += 4);
+            privBlob.writeUInt32BE(commentBin.length, pos += parsed.priv.length);
+            privBlob.set(commentBin, pos += 4);
+            privBlob.set(padding, pos += commentBin.length);
+          }
+          if (encrypted) {
+            const options = { authTagLength: encrypted.cipher.authLen };
+            const cipher = createCipheriv(
+              encrypted.cipher.sslName,
+              encrypted.key,
+              encrypted.iv,
+              options
+            );
+            cipher.setAutoPadding(false);
+            privBlob = Buffer.concat([cipher.update(privBlob), cipher.final()]);
+            if (encrypted.cipher.authLen > 0)
+              extra = cipher.getAuthTag();
+            else
+              extra = Buffer.alloc(0);
+            encrypted.key.fill(0);
+            encrypted.iv.fill(0);
+          } else {
+            extra = Buffer.alloc(0);
+          }
+          const magicBytes = Buffer.from("openssh-key-v1\0");
+          const privBin = Buffer.allocUnsafe(
+            magicBytes.length + 4 + cipherName.length + 4 + kdfName.length + 4 + kdfOptions.length + 4 + 4 + parsed.pub.length + 4 + privBlob.length + extra.length
+          );
+          {
+            let pos = 0;
+            privBin.set(magicBytes, pos += 0);
+            privBin.writeUInt32BE(cipherName.length, pos += magicBytes.length);
+            privBin.set(cipherName, pos += 4);
+            privBin.writeUInt32BE(kdfName.length, pos += cipherName.length);
+            privBin.set(kdfName, pos += 4);
+            privBin.writeUInt32BE(kdfOptions.length, pos += kdfName.length);
+            privBin.set(kdfOptions, pos += 4);
+            privBin.writeUInt32BE(1, pos += kdfOptions.length);
+            privBin.writeUInt32BE(parsed.pub.length, pos += 4);
+            privBin.set(parsed.pub, pos += 4);
+            privBin.writeUInt32BE(privBlob.length, pos += parsed.pub.length);
+            privBin.set(privBlob, pos += 4);
+            privBin.set(extra, pos += privBlob.length);
+          }
+          {
+            const b64 = privBin.base64Slice(0, privBin.length);
+            let formatted = b64.replace(/.{64}/g, "$&\n");
+            if (b64.length & 63)
+              formatted += "\n";
+            privateB64 += formatted;
+          }
+          {
+            const b64 = parsed.pub.base64Slice(0, parsed.pub.length);
+            publicB64 = `${parsed.sshName} ${b64}${comment ? ` ${comment}` : ""}`;
+          }
+          privateB64 += "-----END OPENSSH PRIVATE KEY-----\n";
+          return {
+            private: privateB64,
+            public: publicB64
+          };
+        }
+        default:
+          throw new Error("Invalid output key format");
+      }
+    }
+    __name(convertKeys, "convertKeys");
+    function noop() {
+    }
+    __name(noop, "noop");
+    module.exports = {
+      generateKeyPair: /* @__PURE__ */ __name((keyType, opts, cb) => {
+        if (typeof opts === "function") {
+          cb = opts;
+          opts = void 0;
+        }
+        if (typeof cb !== "function")
+          cb = noop;
+        const args = makeArgs(keyType, opts);
+        generateKeyPair_(...args, (err, pub, priv) => {
+          if (err)
+            return cb(err);
+          let ret;
+          try {
+            ret = convertKeys(args[0], pub, priv, opts);
+          } catch (ex) {
+            return cb(ex);
+          }
+          cb(null, ret);
+        });
+      }, "generateKeyPair"),
+      generateKeyPairSync: /* @__PURE__ */ __name((keyType, opts) => {
+        const args = makeArgs(keyType, opts);
+        const { publicKey: pub, privateKey: priv } = generateKeyPairSync_(...args);
+        return convertKeys(args[0], pub, priv, opts);
+      }, "generateKeyPairSync")
+    };
+  }
+});
+
+// node_modules/ssh2/lib/index.js
+var require_lib4 = __commonJS({
+  "node_modules/ssh2/lib/index.js"(exports, module) {
+    "use strict";
+    var {
+      AgentProtocol,
+      BaseAgent,
+      createAgent,
+      CygwinAgent,
+      OpenSSHAgent,
+      PageantAgent
+    } = require_agent();
+    var {
+      SSHTTPAgent: HTTPAgent,
+      SSHTTPSAgent: HTTPSAgent
+    } = require_http_agents();
+    var { parseKey } = require_keyParser();
+    var {
+      flagsToString,
+      OPEN_MODE,
+      STATUS_CODE,
+      stringToFlags
+    } = require_SFTP();
+    module.exports = {
+      AgentProtocol,
+      BaseAgent,
+      createAgent,
+      Client: require_client9(),
+      CygwinAgent,
+      HTTPAgent,
+      HTTPSAgent,
+      OpenSSHAgent,
+      PageantAgent,
+      Server: require_server(),
+      utils: {
+        parseKey,
+        ...require_keygen(),
+        sftp: {
+          flagsToString,
+          OPEN_MODE,
+          STATUS_CODE,
+          stringToFlags
+        }
+      }
+    };
+  }
+});
+
 // node_modules/hono/dist/http-exception.js
 var HTTPException = class extends Error {
   static {
@@ -183963,6 +199993,172 @@ function randomPassword(length = 16) {
   return Array.from(bytes, (b) => chars[b % chars.length]).join("");
 }
 __name(randomPassword, "randomPassword");
+
+// src/lib/vnc.ts
+function base64UrlToBytes(s) {
+  const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = b64.padEnd(Math.ceil(b64.length / 4) * 4, "=");
+  const bin = atob(padded);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+__name(base64UrlToBytes, "base64UrlToBytes");
+function bytesToBase64(bytes) {
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s);
+}
+__name(bytesToBase64, "bytesToBase64");
+function toBase64Url2(bytes) {
+  return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+__name(toBase64Url2, "toBase64Url");
+function mpint(bytes) {
+  let start = 0;
+  while (start < bytes.length - 1 && bytes[start] === 0) start++;
+  let slice = bytes.slice(start);
+  if (slice[0] & 128) {
+    const out2 = new Uint8Array(slice.length + 1);
+    out2.set(slice, 1);
+    slice = out2;
+  }
+  const out = new Uint8Array(4 + slice.length);
+  new DataView(out.buffer).setUint32(0, slice.length);
+  out.set(slice, 4);
+  return out;
+}
+__name(mpint, "mpint");
+async function generateVncKeyPair() {
+  const kp = await crypto.subtle.generateKey(
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256"
+    },
+    true,
+    ["sign", "verify"]
+  );
+  const jwk = await crypto.subtle.exportKey("jwk", kp.publicKey);
+  if (!jwk.n || !jwk.e) throw new Error("\u5BFC\u51FA RSA \u516C\u94A5\u5931\u8D25");
+  const e = base64UrlToBytes(jwk.e);
+  const n = base64UrlToBytes(jwk.n);
+  const alg = new TextEncoder().encode("ssh-rsa");
+  const algLen = new Uint8Array(4);
+  new DataView(algLen.buffer).setUint32(0, alg.length);
+  const eMp = mpint(e);
+  const nMp = mpint(n);
+  const body = new Uint8Array(algLen.length + alg.length + eMp.length + nMp.length);
+  let off = 0;
+  body.set(algLen, off);
+  off += algLen.length;
+  body.set(alg, off);
+  off += alg.length;
+  body.set(eMp, off);
+  off += eMp.length;
+  body.set(nMp, off);
+  const publicKeyOpenSSH = `ssh-rsa ${bytesToBase64(body)} oci-helper-vnc`;
+  const pkcs8 = await crypto.subtle.exportKey("pkcs8", kp.privateKey);
+  const der = bytesToBase64(new Uint8Array(pkcs8));
+  const lines = der.match(/.{1,64}/g) ?? [];
+  const privateKeyPem = `-----BEGIN PRIVATE KEY-----
+${lines.join("\n")}
+-----END PRIVATE KEY-----
+`;
+  return { publicKeyOpenSSH, privateKeyPem };
+}
+__name(generateVncKeyPair, "generateVncKeyPair");
+function parseVncConnectionString(str) {
+  const proxyMatch = str.match(/ProxyCommand='([^']+)'/);
+  if (!proxyMatch) throw new Error("\u65E0\u6CD5\u89E3\u6790 vncConnectionString \u4E2D\u7684 ProxyCommand");
+  const proxy = proxyMatch[1];
+  const proxyUserHost = proxy.match(/(-p\s+(\d+)\s+)?([^\s@]+)@([^\s]+)/);
+  if (!proxyUserHost) throw new Error("\u65E0\u6CD5\u89E3\u6790 ProxyCommand \u4E2D\u7684\u7528\u6237\u540D\u4E0E\u4E3B\u673A");
+  const relayPort = proxyUserHost[2] ? Number(proxyUserHost[2]) : 443;
+  const connectionOcid = proxyUserHost[3];
+  const relayHost = proxyUserHost[4];
+  const forwardMatch = str.match(/-L\s+[\d.]+:(\d+):([^\s]+):(\d+)/);
+  const instanceOcid = forwardMatch ? forwardMatch[2] : str.trim().split(/\s+/).pop() ?? "";
+  if (!instanceOcid.startsWith("ocid1.")) throw new Error("\u65E0\u6CD5\u89E3\u6790 vncConnectionString \u4E2D\u7684\u5B9E\u4F8B OCID");
+  return { relayHost, relayPort, connectionOcid, instanceOcid };
+}
+__name(parseVncConnectionString, "parseVncConnectionString");
+async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
+  const resp = await clients.compute.createInstanceConsoleConnection({
+    createInstanceConsoleConnectionDetails: {
+      instanceId,
+      publicKey: publicKeyOpenSSH
+    }
+  });
+  const connectionId = resp.instanceConsoleConnection?.id;
+  if (!connectionId) throw new Error("\u521B\u5EFA Console Connection \u5931\u8D25\uFF1A\u672A\u8FD4\u56DE ID");
+  for (let i = 0; i < 15; i++) {
+    const info = await clients.compute.getInstanceConsoleConnection({
+      instanceConsoleConnectionId: connectionId
+    });
+    const conn = info.instanceConsoleConnection;
+    if (conn?.lifecycleState === "ACTIVE" && conn.vncConnectionString) {
+      return { connectionId, vncConnectionString: conn.vncConnectionString };
+    }
+    if (conn?.lifecycleState === "FAILED") throw new Error("Console Connection \u521B\u5EFA\u5931\u8D25");
+    await new Promise((r) => setTimeout(r, 4e3));
+  }
+  throw new Error("\u7B49\u5F85 Console Connection \u5C31\u7EEA\u8D85\u65F6");
+}
+__name(createConsoleConnection, "createConsoleConnection");
+async function deleteConsoleConnection(clients, connectionId) {
+  try {
+    await clients.compute.deleteInstanceConsoleConnection({
+      instanceConsoleConnectionId: connectionId
+    });
+  } catch {
+  }
+}
+__name(deleteConsoleConnection, "deleteConsoleConnection");
+function vncSessionId() {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  return `vnc_${toBase64Url2(bytes)}`;
+}
+__name(vncSessionId, "vncSessionId");
+async function signVncToken(secret, sessionId, expiresAt) {
+  const payload = toBase64Url2(
+    new TextEncoder().encode(JSON.stringify({ sid: sessionId, exp: expiresAt }))
+  );
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(`vnc-ws:${secret}`),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  return `${payload}.${toBase64Url2(new Uint8Array(sig))}`;
+}
+__name(signVncToken, "signVncToken");
+async function verifyVncToken(secret, token) {
+  const parts = (token ?? "").split(".");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+  try {
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(`vnc-ws:${secret}`),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+    const sigBytes = base64UrlToBytes(parts[1]);
+    const ok = await crypto.subtle.verify("HMAC", key, sigBytes, new TextEncoder().encode(parts[0]));
+    if (!ok) return null;
+    const data = JSON.parse(new TextDecoder().decode(base64UrlToBytes(parts[0])));
+    if (typeof data.exp !== "number" || data.exp <= Date.now()) return null;
+    if (typeof data.sid !== "string" || !data.sid) return null;
+    return data.sid;
+  } catch {
+    return null;
+  }
+}
+__name(verifyVncToken, "verifyVncToken");
 
 // src/lib/oci.ts
 var common = __toESM(require_oci_common(), 1);
@@ -186788,6 +202984,192 @@ var LogHub = class {
   }
 };
 
+// src/vnc-tunnel.ts
+var VNC_SESSION_PREFIX = "vnc.session:";
+var HANDSHAKE_TIMEOUT = 3e4;
+var VncTunnel = class {
+  static {
+    __name(this, "VncTunnel");
+  }
+  state;
+  env;
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+  }
+  async fetch(request) {
+    const url = new URL(request.url);
+    if ((request.headers.get("Upgrade") ?? "").toLowerCase() !== "websocket") {
+      return new Response("expected websocket upgrade", { status: 400 });
+    }
+    const sessionId = url.searchParams.get("session");
+    if (!sessionId) return new Response("missing session", { status: 400 });
+    let session;
+    try {
+      const row = await this.env.DB.prepare("SELECT value FROM sys_cfg WHERE key = ?").bind(VNC_SESSION_PREFIX + sessionId).first();
+      if (!row?.value) return new Response("session not found", { status: 404 });
+      session = JSON.parse(await decryptText(keySecretsForRead(this.env), row.value));
+      if (session.expiresAt <= Date.now()) return new Response("session expired", { status: 410 });
+    } catch (e) {
+      return new Response(`session error: ${e?.message ?? e}`, { status: 500 });
+    }
+    const pair = new WebSocketPair();
+    const client = pair[0];
+    const server = pair[1];
+    server.accept();
+    this.connectAndBridge(server, session).catch((e) => {
+      try {
+        server.send(JSON.stringify({ type: "error", message: e?.message ?? String(e) }));
+        server.close(1011, e?.message ?? "tunnel error");
+      } catch {
+      }
+    });
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  async connectAndBridge(ws, session) {
+    const privateKey = session.privateKey;
+    let outer = null;
+    let inner = null;
+    let vncChannel = null;
+    let wsClosed = false;
+    ws.addEventListener("close", () => {
+      wsClosed = true;
+      try {
+        vncChannel?.close();
+      } catch {
+      }
+      try {
+        inner?.end();
+      } catch {
+      }
+      try {
+        outer?.end();
+      } catch {
+      }
+    });
+    ws.addEventListener("error", () => {
+      wsClosed = true;
+    });
+    const timeout = setTimeout(() => {
+      if (!vncChannel) {
+        try {
+          ws.send(JSON.stringify({ type: "error", message: "SSH \u96A7\u9053\u5EFA\u7ACB\u8D85\u65F6" }));
+          ws.close(1011, "timeout");
+        } catch {
+        }
+      }
+    }, HANDSHAKE_TIMEOUT);
+    try {
+      const { Client } = await Promise.resolve().then(() => __toESM(require_lib4(), 1));
+      outer = new Client();
+      await new Promise((resolve, reject) => {
+        outer.on("ready", () => resolve());
+        outer.on("error", reject);
+        outer.on("close", () => {
+          if (!vncChannel && !wsClosed) reject(new Error("SSH \u8FDE\u63A5\u610F\u5916\u5173\u95ED"));
+        });
+        outer.connect({
+          host: session.relayHost,
+          port: session.relayPort,
+          username: session.connectionOcid,
+          privateKey,
+          hostHash: "sha256",
+          hostVerifier: /* @__PURE__ */ __name(() => true, "hostVerifier"),
+          algorithms: {
+            cipher: ["aes256-ctr", "aes128-ctr", "aes256-gcm@openssh.com", "aes128-gcm@openssh.com"],
+            hmac: ["hmac-sha2-256", "hmac-sha2-512"],
+            serverHostKey: ["ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"]
+          },
+          readyTimeout: HANDSHAKE_TIMEOUT
+        });
+      });
+      if (wsClosed) return;
+      const upstream = await new Promise((resolve, reject) => {
+        outer.forwardOut("127.0.0.1", 0, session.instanceId, 22, (err, stream) => {
+          if (err) reject(err);
+          else resolve(stream);
+        });
+      });
+      if (wsClosed) return;
+      inner = new Client();
+      await new Promise((resolve, reject) => {
+        inner.on("ready", () => resolve());
+        inner.on("error", reject);
+        inner.on("close", () => {
+          if (!vncChannel && !wsClosed) reject(new Error("\u5185\u5C42 SSH \u8FDE\u63A5\u610F\u5916\u5173\u95ED"));
+        });
+        inner.connect({
+          sock: upstream,
+          username: session.instanceId,
+          privateKey,
+          hostHash: "sha256",
+          hostVerifier: /* @__PURE__ */ __name(() => true, "hostVerifier"),
+          algorithms: {
+            cipher: ["aes256-ctr", "aes128-ctr", "aes256-gcm@openssh.com", "aes128-gcm@openssh.com"],
+            hmac: ["hmac-sha2-256", "hmac-sha2-512"],
+            serverHostKey: ["ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"]
+          },
+          readyTimeout: HANDSHAKE_TIMEOUT
+        });
+      });
+      if (wsClosed) return;
+      vncChannel = await new Promise((resolve, reject) => {
+        inner.forwardOut("127.0.0.1", 0, session.instanceId, 5900, (err, stream) => {
+          if (err) reject(err);
+          else resolve(stream);
+        });
+      });
+      clearTimeout(timeout);
+      if (wsClosed) {
+        try {
+          vncChannel.close();
+        } catch {
+        }
+        return;
+      }
+      ws.addEventListener("message", (event) => {
+        if (wsClosed || !vncChannel) return;
+        try {
+          const data = event.data;
+          if (data instanceof ArrayBuffer) vncChannel.write(new Uint8Array(data));
+          else if (typeof data === "string") vncChannel.write(data);
+        } catch {
+          try {
+            ws.close();
+          } catch {
+          }
+        }
+      });
+      vncChannel.on("data", (chunk) => {
+        if (wsClosed) return;
+        try {
+          ws.send(new Uint8Array(chunk));
+        } catch {
+          try {
+            ws.close();
+          } catch {
+          }
+        }
+      });
+      vncChannel.on("close", () => {
+        try {
+          ws.close();
+        } catch {
+        }
+      });
+      vncChannel.on("error", () => {
+        try {
+          ws.close();
+        } catch {
+        }
+      });
+    } catch (e) {
+      clearTimeout(timeout);
+      throw e;
+    }
+  }
+};
+
 // src/index.ts
 installOciFetchTracer();
 var app = new Hono3();
@@ -187027,7 +203409,9 @@ var PUBLIC_API_PATHS = /* @__PURE__ */ new Set([
   "/api/login",
   "/api/health",
   "/api/google/client-id",
-  "/api/google/login"
+  "/api/google/login",
+  // VNC WS 用短时效签名 token 自校验（noVNC 无法设置自定义 header）
+  "/api/vnc/ws"
 ]);
 app.use("/api/*", async (c, next) => {
   let path = c.req.path;
@@ -187053,6 +203437,77 @@ app.get("/api/logs/stream", async (c) => {
   const stub = c.env.LOG_HUB.get(c.env.LOG_HUB.idFromName("global"));
   return stub.fetch(c.req.raw);
 });
+var VNC_SESSION_PREFIX2 = "vnc.session:";
+var VNC_SESSION_TTL = 15 * 60 * 1e3;
+app.post("/api/vnc/start", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const cfgId = (body.cfgId ?? "").trim();
+  const instanceId = (body.instanceId ?? "").trim();
+  if (!cfgId || !instanceId) return badRequest("\u7F3A\u5C11\u914D\u7F6E ID \u6216\u5B9E\u4F8B ID");
+  const cfg = await getCfg2(c.env, cfgId);
+  if (!cfg) return badRequest("OCI \u914D\u7F6E\u4E0D\u5B58\u5728");
+  try {
+    const clients = await clientsFor(c.env, cfg, body.region || cfg.region, body.compartment);
+    const keyPair = await generateVncKeyPair();
+    const { connectionId, vncConnectionString } = await createConsoleConnection(
+      clients,
+      instanceId,
+      keyPair.publicKeyOpenSSH
+    );
+    const parsed = parseVncConnectionString(vncConnectionString);
+    const sessionId = vncSessionId();
+    const session = {
+      connectionId,
+      instanceId,
+      cfgId,
+      region: body.region || cfg.region,
+      relayHost: parsed.relayHost,
+      relayPort: parsed.relayPort,
+      connectionOcid: parsed.connectionOcid,
+      privateKey: keyPair.privateKeyPem,
+      expiresAt: Date.now() + VNC_SESSION_TTL
+    };
+    await c.env.DB.prepare(
+      `INSERT INTO sys_cfg (key, value, updated_at) VALUES (?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+    ).bind(VNC_SESSION_PREFIX2 + sessionId, await encryptText(keySecret(c.env), JSON.stringify(session)), nowIso2()).run();
+    const wsSecret = await authSecret(c.env);
+    const token = await signVncToken(wsSecret, sessionId, session.expiresAt);
+    c.executionCtx.waitUntil(cleanupExpiredVncSessions(c.env, clients, cfg));
+    return c.json({ token, ttl: VNC_SESSION_TTL });
+  } catch (e) {
+    return Response.json({ error: errorMessage(e) }, { status: 400 });
+  }
+});
+app.get("/api/vnc/ws", async (c) => {
+  if ((c.req.header("upgrade") ?? "").toLowerCase() !== "websocket") {
+    return c.text("expected websocket upgrade", { status: 400 });
+  }
+  const token = (c.req.query("token") ?? "").trim();
+  const sessionId = await verifyVncToken(await authSecret(c.env), token);
+  if (!sessionId) return c.text("invalid or expired vnc token", { status: 401 });
+  const url = new URL(c.req.url);
+  url.searchParams.delete("token");
+  url.searchParams.set("session", sessionId);
+  const stub = c.env.VNC_TUNNEL.get(c.env.VNC_TUNNEL.idFromName(sessionId));
+  return stub.fetch(new Request(url.toString(), c.req.raw));
+});
+async function cleanupExpiredVncSessions(env, clients, cfg) {
+  const now = Date.now();
+  const rows = await env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
+  for (const row of rows.results ?? []) {
+    try {
+      const session = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
+      if (session.expiresAt <= now) {
+        await deleteConsoleConnection(clients, session.connectionId);
+        await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+      }
+    } catch {
+      await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+    }
+  }
+}
+__name(cleanupExpiredVncSessions, "cleanupExpiredVncSessions");
 app.get(
   "/api/meta",
   (c) => c.json({
@@ -188529,6 +204984,7 @@ var index_default = {
 };
 export {
   LogHub,
+  VncTunnel,
   index_default as default
 };
 /*! Bundled license information:

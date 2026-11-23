@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cloud Shell · noVNC</title>
+    <style>
+        html, body { height: 100%; margin: 0; background: #0b1120; color: #e2e8f0; font-family: system-ui, sans-serif; }
+        body { display: flex; flex-direction: column; }
+        #bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: #111a2e; border-bottom: 1px solid #1e293b; font-size: 13px; }
+        #status { flex: 1; }
+        #bar button { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 12px; }
+        #bar button:hover { background: #334155; }
+        #screen { flex: 1; overflow: hidden; background: #000; }
+        #error { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px; color: #fca5a5; font-size: 14px; }
+    </style>
+    <script type="module" crossorigin="anonymous">
+        import RFB from './core/rfb.js';
+
+        const $ = (id) => document.getElementById(id);
+        const status = (t) => { $('status').textContent = t; };
+        const showError = (t) => { $('error').textContent = t; $('error').style.display = 'flex'; };
+
+        function query(name, def) {
+            const m = location.href.match(new RegExp('.*[?&]' + name + '=([^&#]*)'));
+            return m ? decodeURIComponent(m[1]) : def;
+        }
+
+        const token = query('token', '');
+        if (!token) {
+            showError('缺少 VNC 令牌，请从实例列表重新点击「启动 VNC」。');
+        } else {
+            const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+            const url = proto + '://' + location.host + '/api/vnc/ws?token=' + encodeURIComponent(token);
+            status('正在连接实例控制台…');
+            try {
+                const rfb = new RFB($('screen'), url, { credentials: {} });
+                rfb.addEventListener('connect', () => status('已连接'));
+                rfb.addEventListener('disconnect', (e) => status(e.detail.clean ? '已断开' : '连接异常中断'));
+                rfb.addEventListener('desktopname', (e) => status('已连接 · ' + e.detail.name));
+                rfb.addEventListener('credentialsrequired', () => {
+                    const password = prompt('该控制台需要 VNC 密码：');
+                    if (password) rfb.sendCredentials({ password });
+                });
+                rfb.viewOnly = false;
+                rfb.scaleViewport = true;
+                $('cad').onclick = () => rfb.sendCtrlAltDel();
+                $('reconnect').onclick = () => rfb.connect();
+            } catch (e) {
+                showError('连接失败：' + (e?.message ?? e));
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="bar">
+        <span id="status">Loading</span>
+        <button id="cad">Ctrl+Alt+Del</button>
+        <button id="reconnect">重连</button>
+    </div>
+    <div id="screen"></div>
+    <div id="error"></div>
+</body>
+</html>
