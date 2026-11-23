@@ -175,8 +175,26 @@
             }
 
             try {
-                rfb = new RFB($("screen"), url, { credentials: {} });
-                rfb.addEventListener("connect", () => status("已连接"));
+                // 手动建 WebSocket，以便在失败时拿到关闭码与原因（RFB 内部建的话拿不到）
+                const ws = new WebSocket(url);
+                ws.binaryType = "arraybuffer";
+                let everConnected = false;
+                ws.addEventListener("close", (e) => {
+                    const detail = `code=${e.code}${e.reason ? " · " + e.reason : ""}`;
+                    if (everConnected) {
+                        status("已断开：" + detail);
+                    } else {
+                        showError(
+                            e.code === 1006
+                                ? "连接失败（令牌可能已过期，请重新从实例列表点击「启动 VNC」）"
+                                : "连接失败：" + detail
+                        );
+                        status("连接失败：" + detail);
+                    }
+                });
+
+                rfb = new RFB($("screen"), ws, { credentials: {} });
+                rfb.addEventListener("connect", () => { everConnected = true; status("已连接"); });
                 rfb.addEventListener("disconnect", (e) => status(e.detail.clean ? "已断开" : "连接异常中断"));
                 rfb.addEventListener("desktopname", (e) => status("已连接 · " + e.detail.name));
                 rfb.addEventListener("credentialsrequired", () => {

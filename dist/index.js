@@ -18485,12 +18485,12 @@ var require_client = __commonJS({
               serverSigAlgs = ["rsa-sha2-256", "rsa-sha2-512", ...serverSigAlgs];
           }
           if (Array.isArray(serverSigAlgs)) {
+            const algos = [["ssh-rsa", "sha1"]];
             if (serverSigAlgs.indexOf("rsa-sha2-256") !== -1)
-              return [["rsa-sha2-256", "sha256"]];
+              algos.push(["rsa-sha2-256", "sha256"]);
             if (serverSigAlgs.indexOf("rsa-sha2-512") !== -1)
-              return [["rsa-sha2-512", "sha512"]];
-            if (serverSigAlgs.indexOf("ssh-rsa") === -1)
-              return [];
+              algos.push(["rsa-sha2-512", "sha512"]);
+            return algos;
           }
           return [["ssh-rsa", "sha1"]];
       }
@@ -200023,13 +200023,21 @@ function toBase64Url2(bytes) {
 __name(toBase64Url2, "toBase64Url");
 async function generateVncKeyPair() {
   const { utils: ssh2Utils } = await Promise.resolve().then(() => __toESM(require_lib2(), 1));
-  const pair = ssh2Utils.generateKeyPairSync("rsa", { bits: 2048 });
-  const publicParsed = ssh2Utils.parseKey(Buffer.from(pair.public));
-  const privateParsed = ssh2Utils.parseKey(Buffer.from(pair.private));
-  if (!publicParsed || !privateParsed) throw new Error("\u89E3\u6790 ssh2 \u751F\u6210\u7684\u5BC6\u94A5\u5BF9\u5931\u8D25");
-  const publicKeyOpenSSH = `ssh-rsa ${Buffer.from(publicParsed.getPublicSSH()).toString("base64")} oci-helper-vnc`;
-  const privateKeyPem = privateParsed.getPrivatePEM().toString();
-  return { publicKeyOpenSSH, privateKeyPem };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const pair = ssh2Utils.generateKeyPairSync("rsa", { bits: 2048 });
+    const publicParsed = ssh2Utils.parseKey(Buffer.from(pair.public));
+    const privateParsed = ssh2Utils.parseKey(Buffer.from(pair.private));
+    if (!publicParsed || !privateParsed) continue;
+    const pubBlob = Buffer.from(publicParsed.getPublicSSH());
+    const derivedBlob = Buffer.from(privateParsed.getPublicSSH());
+    if (!pubBlob.length || !derivedBlob.length || !pubBlob.equals(derivedBlob)) continue;
+    return {
+      // getPublicSSH() 是二进制 blob（含 ssh-rsa 算法名），需自行 base64 化为 OpenSSH 单行格式
+      publicKeyOpenSSH: `ssh-rsa ${pubBlob.toString("base64")} oci-helper-vnc`,
+      privateKeyPem: privateParsed.getPrivatePEM().toString()
+    };
+  }
+  throw new Error("\u751F\u6210\u914D\u5BF9\u7684 SSH \u5BC6\u94A5\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5");
 }
 __name(generateVncKeyPair, "generateVncKeyPair");
 function parseVncConnectionString(str) {
@@ -200082,9 +200090,7 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     for (const conn of busy2) {
       try {
         await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: conn.id });
-        console.log(`[VNC] deleted ${conn.id}`);
-      } catch (e) {
-        console.log(`[VNC] delete failed ${conn.id}: ${e?.message ?? e}`);
+      } catch {
       }
     }
     await new Promise((r) => setTimeout(r, 3e3));
@@ -200103,8 +200109,24 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
       instanceConsoleConnectionId: connectionId
     });
     const conn = info.instanceConsoleConnection;
-    if (conn?.vncConnectionString) {
-      return { connectionId, vncConnectionString: conn.vncConnectionString };
+    const str = conn?.vncConnectionString;
+    if (str) {
+      let matched = false;
+      try {
+        matched = parseVncConnectionString(str).connectionOcid === connectionId;
+      } catch {
+        matched = false;
+      }
+      if (matched) {
+        if (String(conn.lifecycleState ?? "") === "CREATING") {
+          await new Promise((r) => setTimeout(r, 6e3));
+        }
+        return {
+          connectionId,
+          vncConnectionString: str,
+          fingerprint: conn?.fingerprint ?? void 0
+        };
+      }
     }
     if (String(conn?.lifecycleState ?? "") === "FAILED") throw new Error("Console Connection \u521B\u5EFA\u5931\u8D25");
     await new Promise((r) => setTimeout(r, 5e3));
@@ -200121,6 +200143,51 @@ async function deleteConsoleConnection(clients, connectionId) {
   }
 }
 __name(deleteConsoleConnection, "deleteConsoleConnection");
+async function probeRelayAuth(session, timeoutMs = 2e4) {
+  const { Client } = await Promise.resolve().then(() => __toESM(require_lib2(), 1));
+  const conn = new Client();
+  try {
+    await new Promise((resolve, reject) => {
+      conn.on("ready", () => resolve());
+      conn.on("error", (e) => reject(e));
+      conn.connect({
+        host: session.relayHost,
+        port: session.relayPort,
+        username: session.connectionOcid,
+        privateKey: session.privateKey,
+        hostHash: "sha256",
+        hostVerifier: /* @__PURE__ */ __name(() => true, "hostVerifier"),
+        algorithms: {
+          cipher: ["aes256-ctr", "aes128-ctr", "aes256-gcm@openssh.com", "aes128-gcm@openssh.com"],
+          hmac: ["hmac-sha2-256", "hmac-sha2-512"]
+        },
+        readyTimeout: timeoutMs
+      });
+    });
+  } catch (e) {
+    const ourFp = session.publicKeyOpenSSH ? await sshFingerprint(session.publicKeyOpenSSH) : "\u672A\u77E5";
+    const ociFp = (session.fingerprint ?? "\u65E0").replace("SHA256:", "").slice(0, 20);
+    throw new Error(`\u8BA4\u8BC1\u9884\u68C0\u5931\u8D25\uFF1A${e?.message ?? e}\uFF08\u6211\u65B9\u6307\u7EB9 ${ourFp}\uFF0COCI \u6307\u7EB9 ${ociFp}\uFF09`);
+  } finally {
+    try {
+      conn.end();
+    } catch {
+    }
+  }
+}
+__name(probeRelayAuth, "probeRelayAuth");
+async function sshFingerprint(publicKeyOpenSSH) {
+  const b64 = publicKeyOpenSSH.split(" ")[1] ?? "";
+  if (!b64) return "\u89E3\u6790\u5931\u8D25";
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  let s = "";
+  for (const b of new Uint8Array(digest)) s += String.fromCharCode(b);
+  return btoa(s).replace(/=+$/, "").slice(0, 20);
+}
+__name(sshFingerprint, "sshFingerprint");
 function vncSessionId() {
   const bytes = crypto.getRandomValues(new Uint8Array(12));
   return `vnc_${toBase64Url2(bytes)}`;
@@ -202998,7 +203065,7 @@ if (typeof g2.process === "undefined" || typeof g2.process.nextTick !== "functio
   g2.process.nextTick = (fn, ...args) => queueMicrotask(() => fn(...args));
 }
 var VNC_SESSION_PREFIX = "vnc.session:";
-var HANDSHAKE_TIMEOUT = 3e4;
+var HANDSHAKE_TIMEOUT = 6e4;
 var VncTunnel = class {
   static {
     __name(this, "VncTunnel");
@@ -203014,7 +203081,7 @@ var VncTunnel = class {
     if ((request.headers.get("Upgrade") ?? "").toLowerCase() !== "websocket") {
       return new Response("expected websocket upgrade", { status: 400 });
     }
-    const sessionId = url.searchParams.get("session");
+    const sessionId = this.state.id.name || url.searchParams.get("session") || "";
     if (!sessionId) return new Response("missing session", { status: 400 });
     let session;
     try {
@@ -203097,29 +203164,65 @@ var VncTunnel = class {
       }
     }, HANDSHAKE_TIMEOUT);
     try {
-      const { Client } = await Promise.resolve().then(() => __toESM(require_lib2(), 1));
-      outer = new Client();
-      await new Promise((resolve, reject) => {
-        outer.on("ready", () => resolve());
-        outer.on("error", (e) => reject(new Error(`\u7B2C\u4E00\u5C42 SSH \u8BA4\u8BC1\u5931\u8D25\uFF1A${e?.message ?? e}`)));
-        outer.on("close", () => {
-          if (!vncChannel && !wsClosed) reject(new Error("SSH \u8FDE\u63A5\u610F\u5916\u5173\u95ED"));
-        });
-        outer.connect({
-          host: session.relayHost,
-          port: session.relayPort,
-          username: session.connectionOcid,
-          privateKey,
-          hostHash: "sha256",
-          hostVerifier: /* @__PURE__ */ __name(() => true, "hostVerifier"),
-          algorithms: {
-            cipher: ["aes256-ctr", "aes128-ctr", "aes256-gcm@openssh.com", "aes128-gcm@openssh.com"],
-            hmac: ["hmac-sha2-256", "hmac-sha2-512"]
-          },
-          readyTimeout: HANDSHAKE_TIMEOUT
-        });
-      });
-      if (wsClosed) return;
+      const { Client, utils } = await Promise.resolve().then(() => __toESM(require_lib2(), 1));
+      if (session.publicKeyOpenSSH) {
+        const parsed = utils.parseKey(privateKey);
+        const derived = parsed && !(parsed instanceof Error) ? Buffer.from(parsed.getPublicSSH()).toString("base64") : "";
+        const expected = session.publicKeyOpenSSH.split(" ")[1] ?? "";
+        if (!derived || derived !== expected) {
+          throw new Error("\u4F1A\u8BDD\u5BC6\u94A5\u4E0E Console Connection \u516C\u94A5\u4E0D\u5339\u914D\uFF0C\u8BF7\u91CD\u65B0\u70B9\u51FB\u300C\u542F\u52A8 VNC\u300D");
+        }
+      }
+      const connectOuter = /* @__PURE__ */ __name(async (attempts) => {
+        let lastErr = null;
+        for (let i = 0; i < attempts; i++) {
+          const client = new Client();
+          let ready = false;
+          try {
+            await new Promise((resolve, reject) => {
+              client.on("ready", () => {
+                ready = true;
+                resolve();
+              });
+              client.on("error", (e) => reject(e));
+              client.on("close", () => {
+                if (!ready) reject(new Error("SSH \u8FDE\u63A5\u88AB\u5173\u95ED"));
+              });
+              client.connect({
+                host: session.relayHost,
+                port: session.relayPort,
+                username: session.connectionOcid,
+                privateKey,
+                hostHash: "sha256",
+                hostVerifier: /* @__PURE__ */ __name(() => true, "hostVerifier"),
+                algorithms: {
+                  cipher: ["aes256-ctr", "aes128-ctr", "aes256-gcm@openssh.com", "aes128-gcm@openssh.com"],
+                  hmac: ["hmac-sha2-256", "hmac-sha2-512"]
+                },
+                readyTimeout: HANDSHAKE_TIMEOUT
+              });
+            });
+            return client;
+          } catch (e) {
+            lastErr = e;
+            try {
+              client.end();
+            } catch {
+            }
+            if (i < attempts - 1 && !wsClosed) await new Promise((r) => setTimeout(r, 4e3));
+            if (wsClosed) break;
+          }
+        }
+        throw new Error(`\u7B2C\u4E00\u5C42 SSH \u8BA4\u8BC1\u5931\u8D25\uFF1A${lastErr?.message ?? lastErr}`);
+      }, "connectOuter");
+      outer = await connectOuter(3);
+      if (wsClosed) {
+        try {
+          outer.end();
+        } catch {
+        }
+        return;
+      }
       const upstream = await new Promise((resolve, reject) => {
         outer.forwardOut("127.0.0.1", 0, session.instanceId, 22, (err, stream) => {
           if (err) reject(err);
@@ -203480,7 +203583,8 @@ app.get("/api/logs/stream", async (c) => {
   return stub.fetch(c.req.raw);
 });
 var VNC_SESSION_PREFIX2 = "vnc.session:";
-var VNC_SESSION_TTL = 15 * 60 * 1e3;
+var VNC_SESSION_TTL = 60 * 60 * 1e3;
+var VNC_TOKEN_TTL = 10 * 60 * 1e3;
 app.post("/api/vnc/start", async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const cfgId = (body.cfgId ?? "").trim();
@@ -203496,6 +203600,7 @@ app.post("/api/vnc/start", async (c) => {
       try {
         const s = JSON.parse(await decryptText(keySecretsForRead(c.env), row.value));
         if (s.instanceId !== instanceId || s.cfgId !== cfgId || s.expiresAt <= Date.now()) continue;
+        if (!s.publicKeyOpenSSH) continue;
         const info = await clients.compute.getInstanceConsoleConnection({
           instanceConsoleConnectionId: s.connectionId
         });
@@ -203509,16 +203614,18 @@ app.post("/api/vnc/start", async (c) => {
     }
     let sessionId;
     let session;
+    let createdConnectionId = null;
     if (reused) {
       sessionId = reused.sessionId;
       session = { ...reused.session, expiresAt: Date.now() + VNC_SESSION_TTL };
     } else {
       const keyPair = await generateVncKeyPair();
-      const { connectionId, vncConnectionString } = await createConsoleConnection(
+      const { connectionId, vncConnectionString, fingerprint } = await createConsoleConnection(
         clients,
         instanceId,
         keyPair.publicKeyOpenSSH
       );
+      createdConnectionId = connectionId;
       const parsed = parseVncConnectionString(vncConnectionString);
       sessionId = vncSessionId();
       session = {
@@ -203530,6 +203637,8 @@ app.post("/api/vnc/start", async (c) => {
         relayPort: parsed.relayPort,
         connectionOcid: parsed.connectionOcid,
         privateKey: keyPair.privateKeyPem,
+        publicKeyOpenSSH: keyPair.publicKeyOpenSSH,
+        fingerprint,
         expiresAt: Date.now() + VNC_SESSION_TTL
       };
     }
@@ -203537,10 +203646,16 @@ app.post("/api/vnc/start", async (c) => {
       `INSERT INTO sys_cfg (key, value, updated_at) VALUES (?, ?, ?)
        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
     ).bind(VNC_SESSION_PREFIX2 + sessionId, await encryptText(keySecret(c.env), JSON.stringify(session)), nowIso2()).run();
+    let warn = "";
+    try {
+      await probeRelayAuth(session);
+    } catch (e) {
+      warn = String(e?.message ?? e);
+    }
     const wsSecret = await authSecret(c.env);
-    const token = await signVncToken(wsSecret, sessionId, session.expiresAt);
+    const token = await signVncToken(wsSecret, sessionId, Date.now() + VNC_TOKEN_TTL);
     c.executionCtx.waitUntil(cleanupExpiredVncSessions(c.env, clients, cfg));
-    return c.json({ token, ttl: VNC_SESSION_TTL });
+    return c.json({ token, ttl: VNC_TOKEN_TTL, warn: warn || void 0 });
   } catch (e) {
     return Response.json({ error: errorMessage(e) }, { status: 400 });
   }
@@ -203552,11 +203667,8 @@ app.get("/api/vnc/ws", async (c) => {
   const token = (c.req.query("token") ?? "").trim();
   const sessionId = await verifyVncToken(await authSecret(c.env), token);
   if (!sessionId) return c.text("invalid or expired vnc token", { status: 401 });
-  const url = new URL(c.req.url);
-  url.searchParams.delete("token");
-  url.searchParams.set("session", sessionId);
   const stub = c.env.VNC_TUNNEL.get(c.env.VNC_TUNNEL.idFromName(sessionId));
-  return stub.fetch(new Request(url.toString(), c.req.raw));
+  return stub.fetch(c.req.raw);
 });
 async function cleanupExpiredVncSessions(env, clients, cfg) {
   const now = Date.now();
@@ -205043,17 +205155,30 @@ app.onError((err, c) => {
 });
 async function cleanupTempData(env) {
   const now = Date.now();
+  const graceMs = 5 * 60 * 1e3;
   try {
     const rows = await env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
     for (const row of rows.results ?? []) {
+      let session = null;
+      let shouldRemove = false;
       try {
-        const s = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
-        if (s.expiresAt <= now) {
-          await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
-        }
+        session = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
+        shouldRemove = session.expiresAt + graceMs <= now;
       } catch {
-        await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+        shouldRemove = true;
       }
+      if (!shouldRemove) continue;
+      if (session?.connectionId && session?.cfgId) {
+        try {
+          const cfg = await getCfg2(env, session.cfgId);
+          if (cfg) {
+            const clients = await clientsFor(env, cfg, session.region || cfg.region);
+            await deleteConsoleConnection(clients, session.connectionId);
+          }
+        } catch {
+        }
+      }
+      await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
     }
   } catch {
   }
