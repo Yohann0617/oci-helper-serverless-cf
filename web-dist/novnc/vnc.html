@@ -13,6 +13,9 @@
         #bar button:hover { background: #334155; }
         #screen { flex: 1; overflow: hidden; background: #000; }
         #error { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px; color: #fca5a5; font-size: 14px; }
+        #paste-box { position: absolute; right: 12px; top: 52px; display: none; width: 320px; background: #111a2e; border: 1px solid #334155; border-radius: 8px; padding: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+        #paste-box textarea { width: 100%; height: 96px; resize: vertical; background: #0b1120; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; font: 12px/1.4 ui-monospace, monospace; box-sizing: border-box; }
+        #paste-box .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
     </style>
     <script type="module" crossorigin="anonymous">
         import RFB from './core/rfb.js';
@@ -20,6 +23,8 @@
         const $ = (id) => document.getElementById(id);
         const status = (t) => { $('status').textContent = t; };
         const showError = (t) => { $('error').textContent = t; $('error').style.display = 'flex'; };
+        window.addEventListener('error', (e) => showError('JS 错误：' + (e.message || e.error)));
+        window.addEventListener('unhandledrejection', (e) => showError('未处理异常：' + (e.reason?.message ?? e.reason)));
 
         function query(name, def) {
             const m = location.href.match(new RegExp('.*[?&]' + name + '=([^&#]*)'));
@@ -33,8 +38,33 @@
             const proto = location.protocol === 'https:' ? 'wss' : 'ws';
             const url = proto + '://' + location.host + '/api/vnc/ws?token=' + encodeURIComponent(token);
             status('正在连接实例控制台…');
+
+            let rfb = null;
+
+            /**
+             * 逐字符发送文本：console（tty）场景下用键盘事件模拟输入最可靠。
+             * 标准 VNC 剪贴板同步只在图形界面里生效，对纯文本控制台无效。
+             */
+            function typeText(text) {
+                if (!rfb || !text) return 0;
+                let sent = 0;
+                for (const ch of text) {
+                    let keysym;
+                    if (ch === '\n') keysym = 0xff0d;
+                    else if (ch === '\t') keysym = 0xff09;
+                    else if (ch === '\r') continue;
+                    else {
+                        keysym = ch.codePointAt(0);
+                        if (keysym > 0x7e) continue; // keysym 无法直接映射非 ASCII
+                    }
+                    rfb.sendKey(keysym, '');
+                    sent += 1;
+                }
+                return sent;
+            }
+
             try {
-                const rfb = new RFB($('screen'), url, { credentials: {} });
+                rfb = new RFB($('screen'), url, { credentials: {} });
                 rfb.addEventListener('connect', () => status('已连接'));
                 rfb.addEventListener('disconnect', (e) => status(e.detail.clean ? '已断开' : '连接异常中断'));
                 rfb.addEventListener('desktopname', (e) => status('已连接 · ' + e.detail.name));
@@ -44,8 +74,32 @@
                 });
                 rfb.viewOnly = false;
                 rfb.scaleViewport = true;
+
                 $('cad').onclick = () => rfb.sendCtrlAltDel();
-                $('reconnect').onclick = () => rfb.connect();
+                $('reconnect').onclick = () => location.reload();
+
+                // 粘贴：优先读取剪贴板直接发送；失败则弹出输入框手动粘贴
+                $('paste').onclick = async () => {
+                    try {
+                        const text = await navigator.clipboard.readText();
+                        if (text) {
+                            const n = typeText(text);
+                            status(`已粘贴 ${n} 个字符`);
+                            return;
+                        }
+                    } catch {
+                        // 浏览器拒绝读取剪贴板时退回到手动输入
+                    }
+                    $('paste-box').style.display = 'block';
+                    $('paste-input').value = '';
+                    $('paste-input').focus();
+                };
+                $('paste-send').onclick = () => {
+                    const n = typeText($('paste-input').value);
+                    $('paste-box').style.display = 'none';
+                    status(`已粘贴 ${n} 个字符`);
+                };
+                $('paste-cancel').onclick = () => { $('paste-box').style.display = 'none'; };
             } catch (e) {
                 showError('连接失败：' + (e?.message ?? e));
             }
@@ -55,10 +109,18 @@
 <body>
     <div id="bar">
         <span id="status">Loading</span>
+        <button id="paste">粘贴</button>
         <button id="cad">Ctrl+Alt+Del</button>
         <button id="reconnect">重连</button>
     </div>
     <div id="screen"></div>
     <div id="error"></div>
+    <div id="paste-box">
+        <textarea id="paste-input" placeholder="在此粘贴文本，然后点“发送”（换行会作为回车发送）"></textarea>
+        <div class="row">
+            <button id="paste-cancel">取消</button>
+            <button id="paste-send">发送</button>
+        </div>
+    </div>
 </body>
 </html>
