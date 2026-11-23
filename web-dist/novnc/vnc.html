@@ -12,6 +12,7 @@
         #bar button { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
         #bar button:hover { background: #334155; }
         #bar button:disabled { opacity: .5; cursor: default; }
+        #bar button.active { background: #0369a1; border-color: #0284c7; color: #e0f2fe; }
         #screen { flex: 1; overflow: hidden; background: #000; touch-action: none; }
         #error { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px; color: #fca5a5; font-size: 14px; }
         #paste-box { position: absolute; right: 12px; top: 52px; display: none; width: min(380px, calc(100vw - 24px)); background: #111a2e; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.5); box-sizing: border-box; }
@@ -211,6 +212,40 @@
                     else document.documentElement.requestFullscreen?.();
                 };
 
+                // 连按 ESC：OCI 的 VNC 有输入延迟，手动抢 "Press ESC" 很难命中。
+                // 点一次后自动连按 20 秒，覆盖整个启动窗口；再点一次可提前停止。
+                const ESC_KEYSYM = 0xff1b;
+                let spamTimer = null;
+                let spamEndsAt = 0;
+
+                function stopSpam(msg) {
+                    if (spamTimer) { clearTimeout(spamTimer); spamTimer = null; }
+                    const btn = $("spam");
+                    btn.textContent = "连按 ESC";
+                    btn.classList.remove("active");
+                    if (msg) status(msg);
+                }
+
+                function startSpam() {
+                    stopSpam();
+                    spamEndsAt = Date.now() + 20000;
+                    $("spam").classList.add("active");
+                    const tick = () => {
+                        if (!rfb || Date.now() >= spamEndsAt) { stopSpam("连按 ESC 已结束"); return; }
+                        rfb.sendKey(ESC_KEYSYM, "Escape");
+                        const left = Math.ceil((spamEndsAt - Date.now()) / 1000);
+                        $("spam").textContent = `停止（${left}s）`;
+                        status(`正在连按 ESC… 剩余 ${left} 秒`);
+                        spamTimer = setTimeout(tick, 120);
+                    };
+                    tick();
+                }
+
+                $("spam").onclick = () => {
+                    if (spamTimer) stopSpam("已停止连按");
+                    else startSpam();
+                };
+
                 // 打开粘贴面板：先尝试读剪贴板填入，然后让用户确认内容再发送
                 $("paste").onclick = async () => {
                     $("paste-box").style.display = "block";
@@ -238,6 +273,7 @@
 <body>
     <div id="bar">
         <span id="status">Loading</span>
+        <button id="spam" title="重启后自动连按 ESC，用于进入 BIOS/启动菜单">连按 ESC</button>
         <button id="paste">输入/粘贴</button>
         <button id="cad">Ctrl+Alt+Del</button>
         <button id="fullscreen">全屏</button>
