@@ -200085,6 +200085,35 @@ function parseVncConnectionString(str) {
 }
 __name(parseVncConnectionString, "parseVncConnectionString");
 async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
+  let compartmentId = clients.compartmentId;
+  try {
+    const inst = await clients.compute.getInstance({ instanceId });
+    if (inst.instance?.compartmentId) compartmentId = inst.instance.compartmentId;
+  } catch {
+  }
+  const existing = await clients.compute.listInstanceConsoleConnections({
+    compartmentId,
+    instanceId
+  });
+  const isGone = /* @__PURE__ */ __name((state) => {
+    const s = String(state ?? "");
+    return s === "DELETED" || s === "DELETING";
+  }, "isGone");
+  for (const conn of existing.items ?? []) {
+    if (!conn.id || isGone(conn.lifecycleState)) continue;
+    try {
+      await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: conn.id });
+    } catch {
+    }
+  }
+  for (let i = 0; i < 10; i++) {
+    const check = await clients.compute.listInstanceConsoleConnections({
+      compartmentId,
+      instanceId
+    });
+    if (!(check.items ?? []).some((x) => x.id && !isGone(x.lifecycleState))) break;
+    await new Promise((r) => setTimeout(r, 1500));
+  }
   const resp = await clients.compute.createInstanceConsoleConnection({
     createInstanceConsoleConnectionDetails: {
       instanceId,
