@@ -203021,7 +203021,13 @@ var VncTunnel = class {
       const row = await this.env.DB.prepare("SELECT value FROM sys_cfg WHERE key = ?").bind(VNC_SESSION_PREFIX + sessionId).first();
       if (!row?.value) return new Response("session not found", { status: 404 });
       session = JSON.parse(await decryptText(keySecretsForRead(this.env), row.value));
-      if (session.expiresAt <= Date.now()) return new Response("session expired", { status: 410 });
+      if (session.expiresAt <= Date.now()) {
+        try {
+          await this.env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(VNC_SESSION_PREFIX + sessionId).run();
+        } catch {
+        }
+        return new Response("session expired", { status: 410 });
+      }
     } catch (e) {
       return new Response(`session error: ${e?.message ?? e}`, { status: 500 });
     }
@@ -203048,15 +203054,9 @@ var VncTunnel = class {
     });
     this.connectAndBridge(server, session, early, (fn) => {
       bridge = fn;
-    }).catch(async (e) => {
+    }).catch((e) => {
       const msg = String(e?.message ?? e);
-      try {
-        await this.env.DB.prepare(
-          `INSERT INTO sys_cfg (key, value, updated_at) VALUES (?, ?, ?)
-           ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
-        ).bind("vnc.last_error", msg.slice(0, 300), (/* @__PURE__ */ new Date()).toISOString()).run();
-      } catch {
-      }
+      console.error(`[VNC] \u96A7\u9053\u5931\u8D25\uFF1A${msg}`);
       try {
         server.close(1011, msg.slice(0, 100));
       } catch {
@@ -205041,11 +205041,36 @@ app.onError((err, c) => {
   console.error("unhandled", err);
   return Response.json({ error: err?.message ?? "\u670D\u52A1\u5668\u5185\u90E8\u9519\u8BEF" }, { status: 500 });
 });
+async function cleanupTempData(env) {
+  const now = Date.now();
+  try {
+    const rows = await env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
+    for (const row of rows.results ?? []) {
+      try {
+        const s = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
+        if (s.expiresAt <= now) {
+          await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+        }
+      } catch {
+        await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+      }
+    }
+  } catch {
+  }
+  try {
+    await env.DB.prepare(
+      "DELETE FROM sys_cfg WHERE key LIKE 'google.used:%' AND CAST(value AS INTEGER) * 1000 + 3600000 < ?"
+    ).bind(now).run();
+  } catch {
+  }
+}
+__name(cleanupTempData, "cleanupTempData");
 var index_default = {
   fetch: app.fetch,
   async scheduled(_event, env, ctx) {
     ctx.waitUntil(executeDueTasks(env));
     ctx.waitUntil(runDueIpTasks(env));
+    ctx.waitUntil(cleanupTempData(env));
   }
 };
 export {
