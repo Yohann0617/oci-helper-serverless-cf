@@ -2790,12 +2790,12 @@ var require_ChunkBuffer = __commonJS({
     };
     var __asyncGenerator = exports && exports.__asyncGenerator || function(thisArg, _arguments, generator) {
       if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-      var g = generator.apply(thisArg, _arguments || []), i, q2 = [];
+      var g2 = generator.apply(thisArg, _arguments || []), i, q2 = [];
       return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
         return this;
       }, i;
       function verb(n) {
-        if (g[n]) i[n] = function(v) {
+        if (g2[n]) i[n] = function(v) {
           return new Promise(function(a, b) {
             q2.push([n, v, a, b]) > 1 || resume(n, v);
           });
@@ -2804,7 +2804,7 @@ var require_ChunkBuffer = __commonJS({
       __name(verb, "verb");
       function resume(n, v) {
         try {
-          step(g[n](v));
+          step(g2[n](v));
         } catch (e) {
           settle(q2[0][3], e);
         }
@@ -2896,12 +2896,12 @@ var require_ChunkStream = __commonJS({
     };
     var __asyncGenerator = exports && exports.__asyncGenerator || function(thisArg, _arguments, generator) {
       if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-      var g = generator.apply(thisArg, _arguments || []), i, q2 = [];
+      var g2 = generator.apply(thisArg, _arguments || []), i, q2 = [];
       return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
         return this;
       }, i;
       function verb(n) {
-        if (g[n]) i[n] = function(v) {
+        if (g2[n]) i[n] = function(v) {
           return new Promise(function(a, b) {
             q2.push([n, v, a, b]) > 1 || resume(n, v);
           });
@@ -2910,7 +2910,7 @@ var require_ChunkStream = __commonJS({
       __name(verb, "verb");
       function resume(n, v) {
         try {
-          step(g[n](v));
+          step(g2[n](v));
         } catch (e) {
           settle(q2[0][3], e);
         }
@@ -2999,12 +2999,12 @@ var require_getReadableStreamData = __commonJS({
     };
     var __asyncGenerator = exports && exports.__asyncGenerator || function(thisArg, _arguments, generator) {
       if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-      var g = generator.apply(thisArg, _arguments || []), i, q2 = [];
+      var g2 = generator.apply(thisArg, _arguments || []), i, q2 = [];
       return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
         return this;
       }, i;
       function verb(n) {
-        if (g[n]) i[n] = function(v) {
+        if (g2[n]) i[n] = function(v) {
           return new Promise(function(a, b) {
             q2.push([n, v, a, b]) > 1 || resume(n, v);
           });
@@ -3013,7 +3013,7 @@ var require_getReadableStreamData = __commonJS({
       __name(verb, "verb");
       function resume(n, v) {
         try {
-          step(g[n](v));
+          step(g2[n](v));
         } catch (e) {
           settle(q2[0][3], e);
         }
@@ -3091,12 +3091,12 @@ var require_getReadableData = __commonJS({
     };
     var __asyncGenerator = exports && exports.__asyncGenerator || function(thisArg, _arguments, generator) {
       if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-      var g = generator.apply(thisArg, _arguments || []), i, q2 = [];
+      var g2 = generator.apply(thisArg, _arguments || []), i, q2 = [];
       return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
         return this;
       }, i;
       function verb(n) {
-        if (g[n]) i[n] = function(v) {
+        if (g2[n]) i[n] = function(v) {
           return new Promise(function(a, b) {
             q2.push([n, v, a, b]) > 1 || resume(n, v);
           });
@@ -3105,7 +3105,7 @@ var require_getReadableData = __commonJS({
       __name(verb, "verb");
       function resume(n, v) {
         try {
-          step(g[n](v));
+          step(g2[n](v));
         } catch (e) {
           settle(q2[0][3], e);
         }
@@ -3736,10 +3736,10 @@ var require_sha = __commonJS({
         return H(n2, 6) ^ H(n2, 11) ^ H(n2, 25);
       }
       __name(K, "K");
-      function g(n2) {
+      function g2(n2) {
         return [1732584193, 4023233417, 2562383102, 271733878, 3285377520];
       }
-      __name(g, "g");
+      __name(g2, "g");
       function L(n2, r2) {
         var t2, e2, i2, o2, u2, f2, s2, w2 = [];
         for (t2 = r2[0], e2 = r2[1], i2 = r2[2], o2 = r2[3], u2 = r2[4], s2 = 0; s2 < 80; s2 += 1) w2[s2] = s2 < 16 ? n2[s2] : S(w2[s2 - 3] ^ w2[s2 - 8] ^ w2[s2 - 14] ^ w2[s2 - 16], 1), f2 = s2 < 20 ? C(S(t2, 5), y(e2, i2, o2), u2, 1518500249, w2[s2]) : s2 < 40 ? C(S(t2, 5), p(e2, i2, o2), u2, 1859775393, w2[s2]) : s2 < 60 ? C(S(t2, 5), m(e2, i2, o2), u2, 2400959708, w2[s2]) : C(S(t2, 5), p(e2, i2, o2), u2, 3395469782, w2[s2]), u2 = o2, o2 = i2, i2 = S(e2, 30), e2 = t2, t2 = f2;
@@ -3760,7 +3760,7 @@ var require_sha = __commonJS({
           var u2 = e2 || {};
           return (o2 = n2.call(this, r3, t2, e2) || this).k = true, o2.K = o2.N, o2.F = -1, o2.m = i(o2.t, o2.i, o2.F), o2.R = L, o2.L = function(n3) {
             return n3.slice();
-          }, o2.B = g, o2.g = B, o2.U = [1732584193, 4023233417, 2562383102, 271733878, 3285377520], o2.p = 512, o2.T = 160, o2.C = false, u2.hmacKey && o2.Y(A("hmacKey", u2.hmacKey, o2.F)), o2;
+          }, o2.B = g2, o2.g = B, o2.U = [1732584193, 4023233417, 2562383102, 271733878, 3285377520], o2.p = 512, o2.T = 160, o2.C = false, u2.hmacKey && o2.Y(A("hmacKey", u2.hmacKey, o2.F)), o2;
         }
         __name(r2, "r");
         return b(r2, n2), r2;
@@ -5500,11 +5500,11 @@ var require_jsbn = __commonJS({
       __name(bnpIsEven, "bnpIsEven");
       function bnpExp(e, z2) {
         if (e > 4294967295 || e < 1) return BigInteger.ONE;
-        var r = nbi(), r2 = nbi(), g = z2.convert(this), i = nbits(e) - 1;
-        g.copyTo(r);
+        var r = nbi(), r2 = nbi(), g2 = z2.convert(this), i = nbits(e) - 1;
+        g2.copyTo(r);
         while (--i >= 0) {
           z2.sqrTo(r, r2);
-          if ((e & 1 << i) > 0) z2.mulTo(r2, g, r);
+          if ((e & 1 << i) > 0) z2.mulTo(r2, g2, r);
           else {
             var t2 = r;
             r = r2;
@@ -6026,14 +6026,14 @@ var require_jsbn = __commonJS({
           z2 = new Barrett(m);
         else
           z2 = new Montgomery(m);
-        var g = new Array(), n = 3, k1 = k - 1, km = (1 << k) - 1;
-        g[1] = z2.convert(this);
+        var g2 = new Array(), n = 3, k1 = k - 1, km = (1 << k) - 1;
+        g2[1] = z2.convert(this);
         if (k > 1) {
-          var g2 = nbi();
-          z2.sqrTo(g[1], g2);
+          var g22 = nbi();
+          z2.sqrTo(g2[1], g22);
           while (n <= km) {
-            g[n] = nbi();
-            z2.mulTo(g2, g[n - 2], g[n]);
+            g2[n] = nbi();
+            z2.mulTo(g22, g2[n - 2], g2[n]);
             n += 2;
           }
         }
@@ -6055,7 +6055,7 @@ var require_jsbn = __commonJS({
             --j;
           }
           if (is1) {
-            g[w].copyTo(r);
+            g2[w].copyTo(r);
             is1 = false;
           } else {
             while (n > 1) {
@@ -6069,7 +6069,7 @@ var require_jsbn = __commonJS({
               r = r2;
               r2 = t2;
             }
-            z2.mulTo(r2, g[w], r);
+            z2.mulTo(r2, g2[w], r);
           }
           while (j >= 0 && (e[j] & 1 << i) == 0) {
             z2.sqrTo(r, r2);
@@ -6093,12 +6093,12 @@ var require_jsbn = __commonJS({
           x = y;
           y = t2;
         }
-        var i = x.getLowestSetBit(), g = y.getLowestSetBit();
-        if (g < 0) return x;
-        if (i < g) g = i;
-        if (g > 0) {
-          x.rShiftTo(g, x);
-          y.rShiftTo(g, y);
+        var i = x.getLowestSetBit(), g2 = y.getLowestSetBit();
+        if (g2 < 0) return x;
+        if (i < g2) g2 = i;
+        if (g2 > 0) {
+          x.rShiftTo(g2, x);
+          y.rShiftTo(g2, y);
         }
         while (x.signum() > 0) {
           if ((i = x.getLowestSetBit()) > 0) x.rShiftTo(i, x);
@@ -6111,7 +6111,7 @@ var require_jsbn = __commonJS({
             y.rShiftTo(1, y);
           }
         }
-        if (g > 0) y.lShiftTo(g, y);
+        if (g2 > 0) y.lShiftTo(g2, y);
         return y;
       }
       __name(bnGCD, "bnGCD");
@@ -7402,7 +7402,7 @@ var require_nacl_fast = __commonJS({
         this.h[9] = h9;
       };
       poly1305.prototype.finish = function(mac, macpos) {
-        var g = new Uint16Array(10);
+        var g2 = new Uint16Array(10);
         var c, mask, f, i;
         if (this.leftover) {
           i = this.leftover;
@@ -7425,19 +7425,19 @@ var require_nacl_fast = __commonJS({
         c = this.h[1] >>> 13;
         this.h[1] &= 8191;
         this.h[2] += c;
-        g[0] = this.h[0] + 5;
-        c = g[0] >>> 13;
-        g[0] &= 8191;
+        g2[0] = this.h[0] + 5;
+        c = g2[0] >>> 13;
+        g2[0] &= 8191;
         for (i = 1; i < 10; i++) {
-          g[i] = this.h[i] + c;
-          c = g[i] >>> 13;
-          g[i] &= 8191;
+          g2[i] = this.h[i] + c;
+          c = g2[i] >>> 13;
+          g2[i] &= 8191;
         }
-        g[9] -= 1 << 13;
+        g2[9] -= 1 << 13;
         mask = (c ^ 1) - 1;
-        for (i = 0; i < 10; i++) g[i] &= mask;
+        for (i = 0; i < 10; i++) g2[i] &= mask;
         mask = ~mask;
-        for (i = 0; i < 10; i++) this.h[i] = this.h[i] & mask | g[i];
+        for (i = 0; i < 10; i++) this.h[i] = this.h[i] & mask | g2[i];
         this.h[0] = (this.h[0] | this.h[1] << 13) & 65535;
         this.h[1] = (this.h[1] >>> 3 | this.h[2] << 10) & 65535;
         this.h[2] = (this.h[2] >>> 6 | this.h[3] << 7) & 65535;
@@ -8610,7 +8610,7 @@ var require_nacl_fast = __commonJS({
       }
       __name(crypto_hash, "crypto_hash");
       function add(p, q2) {
-        var a = gf(), b = gf(), c = gf(), d = gf(), e = gf(), f = gf(), g = gf(), h = gf(), t = gf();
+        var a = gf(), b = gf(), c = gf(), d = gf(), e = gf(), f = gf(), g2 = gf(), h = gf(), t = gf();
         Z(a, p[1], p[0]);
         Z(t, q2[1], q2[0]);
         M(a, a, t);
@@ -8623,11 +8623,11 @@ var require_nacl_fast = __commonJS({
         A(d, d, d);
         Z(e, b, a);
         Z(f, d, c);
-        A(g, d, c);
+        A(g2, d, c);
         A(h, b, a);
         M(p[0], e, f);
-        M(p[1], h, g);
-        M(p[2], g, f);
+        M(p[1], h, g2);
+        M(p[2], g2, f);
         M(p[3], e, h);
       }
       __name(add, "add");
@@ -9340,14 +9340,14 @@ var require_utils2 = __commonJS({
       return buf;
     }
     __name(bigintToMpBuf, "bigintToMpBuf");
-    function calculateDSAPublic(g, p, x) {
-      assert.buffer(g);
+    function calculateDSAPublic(g2, p, x) {
+      assert.buffer(g2);
       assert.buffer(p);
       assert.buffer(x);
-      g = new jsbn(g);
+      g2 = new jsbn(g2);
       p = new jsbn(p);
       x = new jsbn(x);
-      var y = g.modPow(x, p);
+      var y = g2.modPow(x, p);
       var ybuf = bigintToMpBuf(y);
       return ybuf;
     }
@@ -9865,9 +9865,9 @@ var require_sec = __commonJS({
   "node_modules/ecc-jsbn/lib/sec.js"(exports, module) {
     var BigInteger = require_jsbn().BigInteger;
     var ECCurveFp = require_ec().ECCurveFp;
-    function X9ECParameters(curve, g, n, h) {
+    function X9ECParameters(curve, g2, n, h) {
       this.curve = curve;
-      this.g = g;
+      this.g = g2;
       this.n = n;
       this.h = h;
     }
@@ -10606,7 +10606,7 @@ var require_pkcs8 = __commonJS({
       der.readSequence();
       var p = readMPInt(der, "p");
       var q2 = readMPInt(der, "q");
-      var g = readMPInt(der, "g");
+      var g2 = readMPInt(der, "g");
       der.readSequence(asn1.Ber.BitString);
       der.readByte();
       var y = readMPInt(der, "y");
@@ -10615,7 +10615,7 @@ var require_pkcs8 = __commonJS({
         parts: [
           { name: "p", data: p },
           { name: "q", data: q2 },
-          { name: "g", data: g },
+          { name: "g", data: g2 },
           { name: "y", data: y }
         ]
       };
@@ -10626,16 +10626,16 @@ var require_pkcs8 = __commonJS({
       der.readSequence();
       var p = readMPInt(der, "p");
       var q2 = readMPInt(der, "q");
-      var g = readMPInt(der, "g");
+      var g2 = readMPInt(der, "g");
       der.readSequence(asn1.Ber.OctetString);
       var x = readMPInt(der, "x");
-      var y = utils.calculateDSAPublic(g, p, x);
+      var y = utils.calculateDSAPublic(g2, p, x);
       var key = {
         type: "dsa",
         parts: [
           { name: "p", data: p },
           { name: "q", data: q2 },
-          { name: "g", data: g },
+          { name: "g", data: g2 },
           { name: "y", data: y },
           { name: "x", data: x }
         ]
@@ -11141,7 +11141,7 @@ var require_pkcs1 = __commonJS({
       assert.strictEqual(version.readUInt8(0), 0);
       var p = readMPInt(der, "p");
       var q2 = readMPInt(der, "q");
-      var g = readMPInt(der, "g");
+      var g2 = readMPInt(der, "g");
       var y = readMPInt(der, "y");
       var x = readMPInt(der, "x");
       var key = {
@@ -11149,7 +11149,7 @@ var require_pkcs1 = __commonJS({
         parts: [
           { name: "p", data: p },
           { name: "q", data: q2 },
-          { name: "g", data: g },
+          { name: "g", data: g2 },
           { name: "y", data: y },
           { name: "x", data: x }
         ]
@@ -11180,14 +11180,14 @@ var require_pkcs1 = __commonJS({
       var y = readMPInt(der, "y");
       var p = readMPInt(der, "p");
       var q2 = readMPInt(der, "q");
-      var g = readMPInt(der, "g");
+      var g2 = readMPInt(der, "g");
       var key = {
         type: "dsa",
         parts: [
           { name: "y", data: y },
           { name: "p", data: p },
           { name: "q", data: q2 },
-          { name: "g", data: g }
+          { name: "g", data: g2 }
         ]
       };
       return new Key(key);
@@ -26664,12 +26664,12 @@ var require_paginators = __commonJS({
     };
     var __asyncGenerator = exports && exports.__asyncGenerator || function(thisArg, _arguments, generator) {
       if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-      var g = generator.apply(thisArg, _arguments || []), i, q2 = [];
+      var g2 = generator.apply(thisArg, _arguments || []), i, q2 = [];
       return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
         return this;
       }, i;
       function verb(n) {
-        if (g[n]) i[n] = function(v) {
+        if (g2[n]) i[n] = function(v) {
           return new Promise(function(a, b) {
             q2.push([n, v, a, b]) > 1 || resume(n, v);
           });
@@ -26678,7 +26678,7 @@ var require_paginators = __commonJS({
       __name(verb, "verb");
       function resume(n, v) {
         try {
-          step(g[n](v));
+          step(g2[n](v));
         } catch (e) {
           settle(q2[0][3], e);
         }
@@ -184194,7 +184194,7 @@ ${formatted}-----END ${type} KEY-----`;
         );
       }, "genOpenSSLRSAPriv");
     })();
-    function genOpenSSLDSAPub(p, q2, g, y) {
+    function genOpenSSLDSAPub(p, q2, g2, y) {
       const asnWriter = new Ber.Writer();
       asnWriter.startSequence();
       asnWriter.startSequence();
@@ -184202,7 +184202,7 @@ ${formatted}-----END ${type} KEY-----`;
       asnWriter.startSequence();
       asnWriter.writeBuffer(p, Ber.Integer);
       asnWriter.writeBuffer(q2, Ber.Integer);
-      asnWriter.writeBuffer(g, Ber.Integer);
+      asnWriter.writeBuffer(g2, Ber.Integer);
       asnWriter.endSequence();
       asnWriter.endSequence();
       asnWriter.startSequence(Ber.BitString);
@@ -184213,9 +184213,9 @@ ${formatted}-----END ${type} KEY-----`;
       return makePEM("PUBLIC", asnWriter.buffer);
     }
     __name(genOpenSSLDSAPub, "genOpenSSLDSAPub");
-    function genOpenSSHDSAPub(p, q2, g, y) {
+    function genOpenSSHDSAPub(p, q2, g2, y) {
       const publicKey = Buffer.allocUnsafe(
-        4 + 7 + 4 + p.length + 4 + q2.length + 4 + g.length + 4 + y.length
+        4 + 7 + 4 + p.length + 4 + q2.length + 4 + g2.length + 4 + y.length
       );
       writeUInt32BE(publicKey, 7, 0);
       publicKey.utf8Write("ssh-dss", 4, 7);
@@ -184224,20 +184224,20 @@ ${formatted}-----END ${type} KEY-----`;
       publicKey.set(p, i += 4);
       writeUInt32BE(publicKey, q2.length, i += p.length);
       publicKey.set(q2, i += 4);
-      writeUInt32BE(publicKey, g.length, i += q2.length);
-      publicKey.set(g, i += 4);
-      writeUInt32BE(publicKey, y.length, i += g.length);
+      writeUInt32BE(publicKey, g2.length, i += q2.length);
+      publicKey.set(g2, i += 4);
+      writeUInt32BE(publicKey, y.length, i += g2.length);
       publicKey.set(y, i + 4);
       return publicKey;
     }
     __name(genOpenSSHDSAPub, "genOpenSSHDSAPub");
-    function genOpenSSLDSAPriv(p, q2, g, y, x) {
+    function genOpenSSLDSAPriv(p, q2, g2, y, x) {
       const asnWriter = new Ber.Writer();
       asnWriter.startSequence();
       asnWriter.writeInt(0, Ber.Integer);
       asnWriter.writeBuffer(p, Ber.Integer);
       asnWriter.writeBuffer(q2, Ber.Integer);
-      asnWriter.writeBuffer(g, Ber.Integer);
+      asnWriter.writeBuffer(g2, Ber.Integer);
       asnWriter.writeBuffer(y, Ber.Integer);
       asnWriter.writeBuffer(x, Ber.Integer);
       asnWriter.endSequence();
@@ -184501,8 +184501,8 @@ ${formatted}-----END ${type} KEY-----`;
               const q2 = readString(data, data._pos);
               if (q2 === void 0)
                 return new Error("Malformed OpenSSH private key");
-              const g = readString(data, data._pos);
-              if (g === void 0)
+              const g2 = readString(data, data._pos);
+              if (g2 === void 0)
                 return new Error("Malformed OpenSSH private key");
               const y = readString(data, data._pos);
               if (y === void 0)
@@ -184510,9 +184510,9 @@ ${formatted}-----END ${type} KEY-----`;
               const x = readString(data, data._pos);
               if (x === void 0)
                 return new Error("Malformed OpenSSH private key");
-              pubPEM = genOpenSSLDSAPub(p, q2, g, y);
-              pubSSH = genOpenSSHDSAPub(p, q2, g, y);
-              privPEM = genOpenSSLDSAPriv(p, q2, g, y, x);
+              pubPEM = genOpenSSLDSAPub(p, q2, g2, y);
+              pubSSH = genOpenSSHDSAPub(p, q2, g2, y);
+              privPEM = genOpenSSLDSAPriv(p, q2, g2, y, x);
               algo = "sha1";
               break;
             }
@@ -184827,14 +184827,14 @@ ${formatted}-----END ${type} KEY-----`;
               const q2 = reader.readString(Ber.Integer, true);
               if (q2 === null)
                 return new Error(errMsg);
-              const g = reader.readString(Ber.Integer, true);
-              if (g === null)
+              const g2 = reader.readString(Ber.Integer, true);
+              if (g2 === null)
                 return new Error(errMsg);
               const y = reader.readString(Ber.Integer, true);
               if (y === null)
                 return new Error(errMsg);
-              pubPEM = genOpenSSLDSAPub(p, q2, g, y);
-              pubSSH = genOpenSSHDSAPub(p, q2, g, y);
+              pubPEM = genOpenSSLDSAPub(p, q2, g2, y);
+              pubSSH = genOpenSSHDSAPub(p, q2, g2, y);
             } catch {
               return new Error(errMsg);
             }
@@ -185019,8 +185019,8 @@ ${formatted}-----END ${type} KEY-----`;
             const q2 = readString(pubBlob, pubBlob._pos);
             if (q2 === void 0)
               return new Error("Malformed PPK public key");
-            const g = readString(pubBlob, pubBlob._pos);
-            if (g === void 0)
+            const g2 = readString(pubBlob, pubBlob._pos);
+            if (g2 === void 0)
               return new Error("Malformed PPK public key");
             const y = readString(pubBlob, pubBlob._pos);
             if (y === void 0)
@@ -185028,9 +185028,9 @@ ${formatted}-----END ${type} KEY-----`;
             const x = readString(privBlob, 0);
             if (x === void 0)
               return new Error("Malformed PPK private key");
-            pubPEM = genOpenSSLDSAPub(p2, q2, g, y);
-            pubSSH = genOpenSSHDSAPub(p2, q2, g, y);
-            privPEM = genOpenSSLDSAPriv(p2, q2, g, y, x);
+            pubPEM = genOpenSSLDSAPub(p2, q2, g2, y);
+            pubSSH = genOpenSSHDSAPub(p2, q2, g2, y);
+            privPEM = genOpenSSLDSAPriv(p2, q2, g2, y, x);
             break;
           }
         }
@@ -185142,14 +185142,14 @@ ${formatted}-----END ${type} KEY-----`;
             const q2 = readString(data, data._pos);
             if (q2 === void 0)
               return new Error("Malformed RFC4716 public key");
-            const g = readString(data, data._pos);
-            if (g === void 0)
+            const g2 = readString(data, data._pos);
+            if (g2 === void 0)
               return new Error("Malformed RFC4716 public key");
             const y = readString(data, data._pos);
             if (y === void 0)
               return new Error("Malformed RFC4716 public key");
-            pubPEM = genOpenSSLDSAPub(p, q2, g, y);
-            pubSSH = genOpenSSHDSAPub(p, q2, g, y);
+            pubPEM = genOpenSSLDSAPub(p, q2, g2, y);
+            pubSSH = genOpenSSHDSAPub(p, q2, g2, y);
             break;
           }
           default:
@@ -185185,14 +185185,14 @@ ${formatted}-----END ${type} KEY-----`;
           const q2 = readString(data, data._pos);
           if (q2 === void 0)
             return new Error("Malformed OpenSSH public key");
-          const g = readString(data, data._pos);
-          if (g === void 0)
+          const g2 = readString(data, data._pos);
+          if (g2 === void 0)
             return new Error("Malformed OpenSSH public key");
           const y = readString(data, data._pos);
           if (y === void 0)
             return new Error("Malformed OpenSSH public key");
-          pubPEM = genOpenSSLDSAPub(p, q2, g, y);
-          pubSSH = genOpenSSHDSAPub(p, q2, g, y);
+          pubPEM = genOpenSSLDSAPub(p, q2, g2, y);
+          pubSSH = genOpenSSHDSAPub(p, q2, g2, y);
           algo = "sha1";
           break;
         }
@@ -199995,6 +199995,7 @@ function randomPassword(length = 16) {
 __name(randomPassword, "randomPassword");
 
 // src/lib/vnc.ts
+import nodeCrypto from "node:crypto";
 function base64UrlToBytes(s) {
   const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
   const padded = b64.padEnd(Math.ceil(b64.length / 4) * 4, "=");
@@ -200030,17 +200031,8 @@ function mpint(bytes) {
 }
 __name(mpint, "mpint");
 async function generateVncKeyPair() {
-  const kp = await crypto.subtle.generateKey(
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: "SHA-256"
-    },
-    true,
-    ["sign", "verify"]
-  );
-  const jwk = await crypto.subtle.exportKey("jwk", kp.publicKey);
+  const { publicKey, privateKey } = nodeCrypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const jwk = publicKey.export({ format: "jwk" });
   if (!jwk.n || !jwk.e) throw new Error("\u5BFC\u51FA RSA \u516C\u94A5\u5931\u8D25");
   const e = base64UrlToBytes(jwk.e);
   const n = base64UrlToBytes(jwk.n);
@@ -200059,13 +200051,7 @@ async function generateVncKeyPair() {
   off += eMp.length;
   body.set(nMp, off);
   const publicKeyOpenSSH = `ssh-rsa ${bytesToBase64(body)} oci-helper-vnc`;
-  const pkcs8 = await crypto.subtle.exportKey("pkcs8", kp.privateKey);
-  const der = bytesToBase64(new Uint8Array(pkcs8));
-  const lines = der.match(/.{1,64}/g) ?? [];
-  const privateKeyPem = `-----BEGIN PRIVATE KEY-----
-${lines.join("\n")}
------END PRIVATE KEY-----
-`;
+  const privateKeyPem = privateKey.export({ type: "pkcs1", format: "pem" }).toString();
   return { publicKeyOpenSSH, privateKeyPem };
 }
 __name(generateVncKeyPair, "generateVncKeyPair");
@@ -200085,42 +200071,55 @@ function parseVncConnectionString(str) {
 }
 __name(parseVncConnectionString, "parseVncConnectionString");
 async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
-  let compartmentId = clients.compartmentId;
+  const compartmentCandidates = [];
   try {
     const inst = await clients.compute.getInstance({ instanceId });
-    if (inst.instance?.compartmentId) compartmentId = inst.instance.compartmentId;
+    if (inst.instance?.compartmentId) compartmentCandidates.push(inst.instance.compartmentId);
   } catch {
   }
-  const existing = await clients.compute.listInstanceConsoleConnections({
-    compartmentId,
-    instanceId
-  });
+  if (clients.compartmentId) compartmentCandidates.push(clients.compartmentId);
+  if (clients.tenancyId) compartmentCandidates.push(clients.tenancyId);
   const isGone = /* @__PURE__ */ __name((state) => {
     const s = String(state ?? "");
-    return s === "DELETED" || s === "DELETING";
+    return s === "DELETED" || s === "TERMINATED";
   }, "isGone");
-  for (const conn of existing.items ?? []) {
-    if (!conn.id || isGone(conn.lifecycleState)) continue;
-    try {
-      await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: conn.id });
-    } catch {
+  async function listExisting() {
+    const found = /* @__PURE__ */ new Map();
+    for (const compartmentId of [...new Set(compartmentCandidates)]) {
+      try {
+        const res = await clients.compute.listInstanceConsoleConnections({ compartmentId, instanceId });
+        for (const x of res.items ?? []) {
+          if (x.id) found.set(x.id, { id: x.id, state: String(x.lifecycleState ?? "") });
+        }
+      } catch {
+      }
     }
+    return [...found.values()];
   }
-  for (let i = 0; i < 10; i++) {
-    const check = await clients.compute.listInstanceConsoleConnections({
-      compartmentId,
-      instanceId
-    });
-    if (!(check.items ?? []).some((x) => x.id && !isGone(x.lifecycleState))) break;
-    await new Promise((r) => setTimeout(r, 1500));
+  __name(listExisting, "listExisting");
+  for (let round = 0; round < 3; round++) {
+    const list = await listExisting();
+    console.log(`[VNC] conn states: ${list.map((x) => `${x.id.slice(-8)}=${x.state}`).join(", ")}`);
+    const busy2 = list.filter((x) => !isGone(x.state));
+    if (!busy2.length) break;
+    for (const conn of busy2) {
+      try {
+        await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: conn.id });
+        console.log(`[VNC] deleted ${conn.id}`);
+      } catch (e) {
+        console.log(`[VNC] delete failed ${conn.id}: ${e?.message ?? e}`);
+      }
+    }
+    await new Promise((r) => setTimeout(r, 3e3));
+  }
+  const busy = (await listExisting()).filter((x) => !isGone(x.state));
+  if (busy.length) {
+    throw new Error(`\u65E7 Console Connection \u4ECD\u5728\u5220\u9664\u4E2D\uFF08${busy.map((x) => x.state).join(",")}\uFF09\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5`);
   }
   const resp = await clients.compute.createInstanceConsoleConnection({
-    createInstanceConsoleConnectionDetails: {
-      instanceId,
-      publicKey: publicKeyOpenSSH
-    }
+    createInstanceConsoleConnectionDetails: { instanceId, publicKey: publicKeyOpenSSH }
   });
-  const connectionId = resp.instanceConsoleConnection?.id;
+  const connectionId = resp.instanceConsoleConnection?.id ?? "";
   if (!connectionId) throw new Error("\u521B\u5EFA Console Connection \u5931\u8D25\uFF1A\u672A\u8FD4\u56DE ID");
   for (let i = 0; i < 15; i++) {
     const info = await clients.compute.getInstanceConsoleConnection({
@@ -202076,7 +202075,7 @@ async function createIamUser(c, p) {
   let adminGroupId = "";
   if (p.admin) {
     const groups = await c.identity.listGroups({ compartmentId: c.tenancyId, name: "Administrators", limit: 100 }).catch(() => ({ items: [] }));
-    const group = (groups.items ?? []).find((g) => g.name === "Administrators");
+    const group = (groups.items ?? []).find((g2) => g2.name === "Administrators");
     if (group?.id) {
       await c.identity.addUserToGroup({
         addUserToGroupDetails: { userId: user.id, groupId: group.id }
@@ -203014,6 +203013,13 @@ var LogHub = class {
 };
 
 // src/vnc-tunnel.ts
+var g = globalThis;
+if (typeof g.__dirname === "undefined") g.__dirname = "/";
+if (typeof g.__filename === "undefined") g.__filename = "/index.js";
+if (typeof g.process === "undefined" || typeof g.process.nextTick !== "function") {
+  g.process = g.process || {};
+  g.process.nextTick = (fn, ...args) => queueMicrotask(() => fn(...args));
+}
 var VNC_SESSION_PREFIX = "vnc.session:";
 var HANDSHAKE_TIMEOUT = 3e4;
 var VncTunnel = class {
@@ -203046,14 +203052,31 @@ var VncTunnel = class {
     const client = pair[0];
     const server = pair[1];
     server.accept();
-    this.connectAndBridge(server, session).catch((e) => {
+    this.connectAndBridge(server, session).catch(async (e) => {
+      const msg = String(e?.message ?? e);
       try {
-        server.send(JSON.stringify({ type: "error", message: e?.message ?? String(e) }));
-        server.close(1011, e?.message ?? "tunnel error");
+        await this.env.DB.prepare(
+          `INSERT INTO sys_cfg (key, value, updated_at) VALUES (?, ?, ?)
+           ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+        ).bind("vnc.last_error", msg.slice(0, 500), (/* @__PURE__ */ new Date()).toISOString()).run();
+      } catch {
+      }
+      try {
+        server.close(1011, msg.slice(0, 100));
       } catch {
       }
     });
     return new Response(null, { status: 101, webSocket: client });
+  }
+  async track(msg) {
+    console.log(`[VNC-TUNNEL] ${msg}`);
+    try {
+      await this.env.DB.prepare(
+        `INSERT INTO sys_cfg (key, value, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+      ).bind("vnc.last_status", msg.slice(0, 500), (/* @__PURE__ */ new Date()).toISOString()).run();
+    } catch {
+    }
   }
   async connectAndBridge(ws, session) {
     const privateKey = session.privateKey;
@@ -203089,6 +203112,7 @@ var VncTunnel = class {
       }
     }, HANDSHAKE_TIMEOUT);
     try {
+      await this.track(`start relay=${session.relayHost}:${session.relayPort} user=${session.connectionOcid.slice(0, 30)}...`);
       const { Client } = await Promise.resolve().then(() => __toESM(require_lib4(), 1));
       outer = new Client();
       await new Promise((resolve, reject) => {
@@ -203106,12 +203130,13 @@ var VncTunnel = class {
           hostVerifier: /* @__PURE__ */ __name(() => true, "hostVerifier"),
           algorithms: {
             cipher: ["aes256-ctr", "aes128-ctr", "aes256-gcm@openssh.com", "aes128-gcm@openssh.com"],
-            hmac: ["hmac-sha2-256", "hmac-sha2-512"],
-            serverHostKey: ["ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"]
+            hmac: ["hmac-sha2-256", "hmac-sha2-512"]
+            // 不限制 host key 算法，让 ssh2 用默认全套与 OCI relay 协商
           },
           readyTimeout: HANDSHAKE_TIMEOUT
         });
       });
+      await this.track("outer SSH ready");
       if (wsClosed) return;
       const upstream = await new Promise((resolve, reject) => {
         outer.forwardOut("127.0.0.1", 0, session.instanceId, 22, (err, stream) => {
@@ -203119,6 +203144,7 @@ var VncTunnel = class {
           else resolve(stream);
         });
       });
+      await this.track(`outer forwardOut to ${session.instanceId.slice(0, 30)}...:22 ok`);
       if (wsClosed) return;
       inner = new Client();
       await new Promise((resolve, reject) => {
@@ -203135,12 +203161,12 @@ var VncTunnel = class {
           hostVerifier: /* @__PURE__ */ __name(() => true, "hostVerifier"),
           algorithms: {
             cipher: ["aes256-ctr", "aes128-ctr", "aes256-gcm@openssh.com", "aes128-gcm@openssh.com"],
-            hmac: ["hmac-sha2-256", "hmac-sha2-512"],
-            serverHostKey: ["ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"]
+            hmac: ["hmac-sha2-256", "hmac-sha2-512"]
           },
           readyTimeout: HANDSHAKE_TIMEOUT
         });
       });
+      await this.track("inner SSH ready");
       if (wsClosed) return;
       vncChannel = await new Promise((resolve, reject) => {
         inner.forwardOut("127.0.0.1", 0, session.instanceId, 5900, (err, stream) => {
@@ -203148,6 +203174,7 @@ var VncTunnel = class {
           else resolve(stream);
         });
       });
+      await this.track("inner forwardOut to 5900 ok, bridging started");
       clearTimeout(timeout);
       if (wsClosed) {
         try {
@@ -203156,12 +203183,19 @@ var VncTunnel = class {
         }
         return;
       }
+      let wsBytes = 0;
       ws.addEventListener("message", (event) => {
         if (wsClosed || !vncChannel) return;
         try {
           const data = event.data;
-          if (data instanceof ArrayBuffer) vncChannel.write(new Uint8Array(data));
-          else if (typeof data === "string") vncChannel.write(data);
+          if (data instanceof ArrayBuffer) {
+            wsBytes += data.byteLength;
+            vncChannel.write(new Uint8Array(data));
+          } else if (typeof data === "string") {
+            wsBytes += data.length;
+            vncChannel.write(data);
+          }
+          if (wsBytes <= 64) void this.track(`ws\u2192rfb ${wsBytes} bytes: ${typeof event.data}`);
         } catch {
           try {
             ws.close();
@@ -203169,10 +203203,17 @@ var VncTunnel = class {
           }
         }
       });
+      let rfbBytes = 0;
       vncChannel.on("data", (chunk) => {
         if (wsClosed) return;
+        if (rfbBytes === 0) {
+          void this.track(`first RFB data: ${chunk.slice(0, 16).toString("hex")}`);
+        }
+        rfbBytes += chunk.byteLength;
         try {
-          ws.send(new Uint8Array(chunk));
+          const copy = new Uint8Array(chunk.byteLength);
+          copy.set(chunk);
+          ws.send(copy.buffer);
         } catch {
           try {
             ws.close();
@@ -203194,6 +203235,7 @@ var VncTunnel = class {
       });
     } catch (e) {
       clearTimeout(timeout);
+      await this.track(`failed: ${e?.message ?? e}`);
       throw e;
     }
   }
@@ -203459,6 +203501,10 @@ app.use("/api/*", async (c, next) => {
   }
   await next();
 });
+app.post("/api/logout", async (c) => {
+  await rotateSessionVersion(c.env);
+  return c.json({ ok: true });
+});
 app.get("/api/logs/stream", async (c) => {
   if ((c.req.header("upgrade") ?? "").toLowerCase() !== "websocket") {
     return c.text("expected websocket upgrade", 400);
@@ -203477,25 +203523,48 @@ app.post("/api/vnc/start", async (c) => {
   if (!cfg) return badRequest("OCI \u914D\u7F6E\u4E0D\u5B58\u5728");
   try {
     const clients = await clientsFor(c.env, cfg, body.region || cfg.region, body.compartment);
-    const keyPair = await generateVncKeyPair();
-    const { connectionId, vncConnectionString } = await createConsoleConnection(
-      clients,
-      instanceId,
-      keyPair.publicKeyOpenSSH
-    );
-    const parsed = parseVncConnectionString(vncConnectionString);
-    const sessionId = vncSessionId();
-    const session = {
-      connectionId,
-      instanceId,
-      cfgId,
-      region: body.region || cfg.region,
-      relayHost: parsed.relayHost,
-      relayPort: parsed.relayPort,
-      connectionOcid: parsed.connectionOcid,
-      privateKey: keyPair.privateKeyPem,
-      expiresAt: Date.now() + VNC_SESSION_TTL
-    };
+    let reused = null;
+    const rows = await c.env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
+    for (const row of rows.results ?? []) {
+      try {
+        const s = JSON.parse(await decryptText(keySecretsForRead(c.env), row.value));
+        if (s.instanceId !== instanceId || s.cfgId !== cfgId || s.expiresAt <= Date.now()) continue;
+        const info = await clients.compute.getInstanceConsoleConnection({
+          instanceConsoleConnectionId: s.connectionId
+        });
+        if (info.instanceConsoleConnection?.lifecycleState === "ACTIVE") {
+          reused = { sessionId: row.key.slice(VNC_SESSION_PREFIX2.length), session: s };
+          break;
+        }
+      } catch {
+      }
+    }
+    let sessionId;
+    let session;
+    if (reused) {
+      sessionId = reused.sessionId;
+      session = { ...reused.session, expiresAt: Date.now() + VNC_SESSION_TTL };
+    } else {
+      const keyPair = await generateVncKeyPair();
+      const { connectionId, vncConnectionString } = await createConsoleConnection(
+        clients,
+        instanceId,
+        keyPair.publicKeyOpenSSH
+      );
+      const parsed = parseVncConnectionString(vncConnectionString);
+      sessionId = vncSessionId();
+      session = {
+        connectionId,
+        instanceId,
+        cfgId,
+        region: body.region || cfg.region,
+        relayHost: parsed.relayHost,
+        relayPort: parsed.relayPort,
+        connectionOcid: parsed.connectionOcid,
+        privateKey: keyPair.privateKeyPem,
+        expiresAt: Date.now() + VNC_SESSION_TTL
+      };
+    }
     await c.env.DB.prepare(
       `INSERT INTO sys_cfg (key, value, updated_at) VALUES (?, ?, ?)
        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
