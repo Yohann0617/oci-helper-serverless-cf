@@ -213,6 +213,8 @@
                 if (sending) return;
                 const text = $("paste-input").value;
                 $("paste-box").style.display = "none";
+                // 主动失焦，避免收起输入法的动作吃掉下一次点击
+                try { $("paste-input").blur(); } catch { /* ignore */ }
                 sending = true;
                 $("paste").disabled = true;
                 status("正在发送…");
@@ -348,23 +350,43 @@
                     btn.addEventListener("click", () => sendKeyOf(btn.dataset.key));
                 }
 
-                // 注意：不要再在点击画面时聚焦隐藏输入框。
-                // 那会让移动端弹出原生"粘贴"气泡，且第一次点工具栏按钮只会收键盘（吞掉这次点击）。
+                // 注意：打开面板时不要自动读取剪贴板。
+                // Android 在 App 读取剪贴板时会弹出系统的「粘贴」预览气泡，并吞掉这次点击，
+                // 表现为「第一次点『输入』只弹粘贴气泡，要点第二次」。改为用户显式点按钮读取。
 
                 // ===== 输入/粘贴面板 =====
-                $("paste").onclick = async () => {
+                function closePastePanel() {
+                    $("paste-box").style.display = "none";
+                    // 主动失焦，避免下一次点击先被「收起输入法/失焦」吃掉
+                    try { $("paste-input").blur(); } catch { /* ignore */ }
+                }
+
+                $("paste").onclick = () => {
+                    // 若已有元素处于编辑态，先让它失焦，避免第一次点击被吞
+                    const active = document.activeElement;
+                    if (active && active !== document.body) {
+                        try { active.blur(); } catch { /* ignore */ }
+                    }
                     $("paste-box").style.display = "block";
                     $("quick-hint").style.display = "none";
-                    try {
-                        const text = await navigator.clipboard.readText();
-                        if (text && !$("paste-input").value) $("paste-input").value = text;
-                    } catch {
-                        // 移动端/未授权时会读取失败，用户可在输入框手动粘贴
-                    }
                     updatePreview();
                     // 触屏设备不自动聚焦：自动聚焦会弹原生菜单并吞掉下一次点击
-                    if (!isTouch()) {
-                        $("paste-input").focus();
+                    if (!isTouch()) $("paste-input").focus();
+                };
+
+                // 显式从剪贴板填入（此时才触发系统剪贴板访问）
+                $("q-clipboard").onclick = async () => {
+                    try {
+                        const text = await navigator.clipboard.readText();
+                        if (text) {
+                            // 追加到已有内容后面，避免覆盖用户输入
+                            $("paste-input").value = $("paste-input").value
+                                ? $("paste-input").value + text
+                                : text;
+                            updatePreview();
+                        }
+                    } catch {
+                        // 未授权/不支持时忽略，用户可直接在输入框手动粘贴
                     }
                 };
 
@@ -383,7 +405,7 @@
                 $("paste-input").oninput = updatePreview;
                 $("paste-send").onclick = () => doSend(false);
                 $("paste-send-enter").onclick = () => doSend(true);
-                $("paste-cancel").onclick = () => { $("paste-box").style.display = "none"; };
+                $("paste-cancel").onclick = () => closePastePanel();
             } catch (e) {
                 showError("连接失败：" + (e?.message ?? e));
             }
@@ -394,23 +416,23 @@
     <div id="bar">
         <span id="status">Loading</span>
         <div class="group">
-            <select id="spam-key" title="选择要连按的按键（F2 在固件界面内不会触发退出）">
+            <select id="spam-key" aria-label="选择要连按的按键">
                 <option value="f2">F2</option>
                 <option value="esc">ESC</option>
                 <option value="del">Del</option>
             </select>
-            <button id="spam" title="重启后自动连按所选按键，用于进入固件/启动菜单">连按 F2</button>
+            <button id="spam" aria-label="连按所选按键">连按 F2</button>
         </div>
         <div class="group">
-            <button id="keypad-toggle" title="展开虚拟键盘（方向键等）">⌨ 键盘</button>
-            <button id="paste" title="输入或粘贴文本发送到控制台">输入</button>
+            <button id="keypad-toggle" aria-label="展开虚拟键盘">⌨ 键盘</button>
+            <button id="paste" aria-label="输入文本发送到控制台">输入</button>
         </div>
         <div class="group">
-            <button id="cad" title="发送 Ctrl+Alt+Del">Ctrl+Alt+Del</button>
-            <button id="fullscreen" title="全屏显示">全屏</button>
+            <button id="cad" aria-label="发送 Ctrl+Alt+Del">Ctrl+Alt+Del</button>
+            <button id="fullscreen" aria-label="全屏显示">全屏</button>
         </div>
         <div class="group tight">
-            <button id="reconnect" class="ghost icon" title="重新加载页面并重连" aria-label="重新连接">⟳</button>
+            <button id="reconnect" class="ghost icon" aria-label="重新连接">⟳</button>
         </div>
     </div>
 
@@ -440,7 +462,8 @@
     <div id="paste-box">
         <h3>发送内容（手机端可在此直接输入）</h3>
         <div id="quick">
-            <button type="button" id="q-firmware" title="重启并直接进入 BIOS/UEFI 设置界面">⚡ 重启进 BIOS</button>
+            <button type="button" id="q-firmware">⚡ 重启进 BIOS</button>
+            <button type="button" id="q-clipboard">📋 从剪贴板填入</button>
         </div>
         <div id="quick-hint"></div>
         <textarea id="paste-input" placeholder="在此粘贴或输入要发送的文本"
