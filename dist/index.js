@@ -203788,9 +203788,35 @@ app.post("/api/vnc/start", async (c) => {
     c.executionCtx.waitUntil(pruneStale());
     return c.json({ token, ttl: VNC_TOKEN_TTL, warn: warn || void 0 });
   } catch (e) {
-    return Response.json({ error: errorMessage(e) }, { status: 400 });
+    const msg = errorMessage(e);
+    await purgeInstanceVncSessions(c.env, cfgId, instanceId);
+    const needCleanup = /控制台连接|变更中|409|创建 Console Connection|残留连接/i.test(msg);
+    return Response.json(
+      {
+        error: needCleanup ? `${msg}
+\u53EF\u5728\u5B9E\u4F8B\u5361\u7247\u7684\u300C\u63A7\u5236\u53F0\u8FDE\u63A5\u300D\u4E2D\u5220\u9664\u6B8B\u7559\u8FDE\u63A5\u540E\u91CD\u8BD5` : msg,
+        needConsoleCleanup: needCleanup
+      },
+      { status: 400 }
+    );
   }
 });
+async function purgeInstanceVncSessions(env, cfgId, instanceId) {
+  try {
+    const rows = await env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
+    for (const row of rows.results ?? []) {
+      try {
+        const s = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
+        if (s.instanceId !== instanceId || s.cfgId !== cfgId) continue;
+        await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+      } catch {
+        await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+      }
+    }
+  } catch {
+  }
+}
+__name(purgeInstanceVncSessions, "purgeInstanceVncSessions");
 app.get("/api/vnc/console-connections", async (c) => {
   const cfgId = (c.req.query("cfgId") ?? "").trim();
   const instanceId = (c.req.query("instanceId") ?? "").trim();
