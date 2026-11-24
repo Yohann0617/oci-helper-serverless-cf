@@ -200130,19 +200130,23 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
   }, "instanceState");
   const createWithRetry = /* @__PURE__ */ __name(async () => {
     let lastErr = null;
-    for (let attempt = 0; attempt < 4; attempt++) {
+    const MAX = 6;
+    for (let attempt = 0; attempt < MAX; attempt++) {
       try {
         return await createOnce();
       } catch (e) {
         lastErr = e;
         if (isInstanceBusy(e)) {
-          if (attempt < 3) {
-            await new Promise((r) => setTimeout(r, 5e3));
+          const pending = (await listExisting()).filter((x) => !isGone(x.state));
+          if (attempt < MAX - 1) {
+            await new Promise((r) => setTimeout(r, pending.length ? 8e3 : 5e3));
             continue;
           }
           const state = await instanceState();
+          const conns = await listExisting();
+          const detail = conns.length ? conns.map((x) => `${x.id.slice(-8)}=${x.state}`).join("\uFF0C") : "\u65E0";
           throw new Error(
-            `\u5B9E\u4F8B\u5F53\u524D\u72B6\u6001\u4E3A ${state}\uFF08\u6B63\u5728\u53D8\u66F4\u4E2D\uFF09\uFF0C\u8BF7\u7B49\u5B9E\u4F8B\u6062\u590D\u4E3A\u300C\u8FD0\u884C\u4E2D\u300D\u540E\u518D\u70B9\u300C\u542F\u52A8 VNC\u300D`
+            `\u5B9E\u4F8B\u72B6\u6001 ${state}\uFF0C\u4F46 OCI \u4ECD\u62A5\u544A\u53D8\u66F4\u4E2D\uFF08\u63A7\u5236\u53F0\u8FDE\u63A5\uFF1A${detail}\uFF09\u3002\u901A\u5E38\u662F\u4E0A\u4E00\u6B21\u8FDE\u63A5\u7684\u5220\u9664/\u521B\u5EFA\u5C1A\u672A\u7ED3\u675F\uFF0C\u8BF7\u7B49 1~2 \u5206\u949F\u540E\u518D\u8BD5\uFF1B\u82E5\u6301\u7EED\u5931\u8D25\u53EF\u5230 OCI \u63A7\u5236\u53F0\u624B\u52A8\u5220\u9664\u8BE5\u5B9E\u4F8B\u7684\u63A7\u5236\u53F0\u8FDE\u63A5`
           );
         }
         if (!is409(e)) throw e;
@@ -200152,7 +200156,7 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
           } catch {
           }
         }
-        if (attempt < 3) await new Promise((r) => setTimeout(r, 4e3 * (attempt + 1)));
+        if (attempt < MAX - 1) await new Promise((r) => setTimeout(r, 4e3 * (attempt + 1)));
       }
     }
     throw new Error(
@@ -203653,7 +203657,8 @@ app.post("/api/vnc/start", async (c) => {
     for (const row of rows.results ?? []) {
       try {
         const s = JSON.parse(await decryptText(keySecretsForRead(c.env), row.value));
-        if (s.instanceId !== instanceId || s.cfgId !== cfgId || s.expiresAt <= Date.now()) continue;
+        if (s.instanceId !== instanceId || s.cfgId !== cfgId) continue;
+        if (s.expiresAt <= Date.now() - 7 * 24 * 60 * 60 * 1e3) continue;
         if (!s.publicKeyOpenSSH) continue;
         const info = await clients.compute.getInstanceConsoleConnection({
           instanceConsoleConnectionId: s.connectionId
@@ -203738,17 +203743,15 @@ app.post("/api/vnc/start", async (c) => {
         const all = await c.env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
         for (const row of all.results ?? []) {
           if (row.key === VNC_SESSION_PREFIX2 + sessionId) continue;
-          let old = null;
           let sameInstance = false;
           try {
-            old = JSON.parse(await decryptText(keySecretsForRead(c.env), row.value));
+            const old = JSON.parse(await decryptText(keySecretsForRead(c.env), row.value));
             sameInstance = old.instanceId === instanceId && old.cfgId === cfgId;
           } catch {
             await c.env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
             continue;
           }
           if (!sameInstance) continue;
-          if (old?.connectionId) await deleteConsoleConnection(clients, old.connectionId);
           await c.env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
         }
       } catch {
@@ -203773,14 +203776,13 @@ app.get("/api/vnc/ws", async (c) => {
   const stub = c.env.VNC_TUNNEL.get(c.env.VNC_TUNNEL.idFromName(sessionId));
   return stub.fetch(c.req.raw);
 });
-async function cleanupExpiredVncSessions(env, clients, cfg) {
-  const now = Date.now();
+async function cleanupExpiredVncSessions(env, _clients, _cfg) {
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1e3;
   const rows = await env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
   for (const row of rows.results ?? []) {
     try {
       const session = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
-      if (session.expiresAt <= now) {
-        await deleteConsoleConnection(clients, session.connectionId);
+      if (session.expiresAt <= cutoff) {
         await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
       }
     } catch {
@@ -205289,29 +205291,18 @@ app.onError((err, c) => {
 });
 async function cleanupTempData(env) {
   const now = Date.now();
-  const graceMs = 5 * 60 * 1e3;
+  const keepMs = 7 * 24 * 60 * 60 * 1e3;
   try {
     const rows = await env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
     for (const row of rows.results ?? []) {
-      let session = null;
       let shouldRemove = false;
       try {
-        session = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
-        shouldRemove = session.expiresAt + graceMs <= now;
+        const session = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
+        shouldRemove = session.expiresAt + keepMs <= now;
       } catch {
         shouldRemove = true;
       }
       if (!shouldRemove) continue;
-      if (session?.connectionId && session?.cfgId) {
-        try {
-          const cfg = await getCfg2(env, session.cfgId);
-          if (cfg) {
-            const clients = await clientsFor(env, cfg, session.region || cfg.region);
-            await deleteConsoleConnection(clients, session.connectionId);
-          }
-        } catch {
-        }
-      }
       await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
     }
   } catch {
