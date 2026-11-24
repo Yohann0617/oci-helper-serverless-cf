@@ -262,17 +262,20 @@
                 $("cad").onclick = () => rfb.sendCtrlAltDel();
 
                 // 全屏：iOS Safari（以及部分内嵌 WebView）不支持元素全屏，直接隐藏按钮
-                const fsEl = document.documentElement as any;
-                const canFullscreen = !!(document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
+                const fsEl = document.documentElement;
+                const canFullscreen = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
                 if (!canFullscreen) {
                     $("fullscreen").style.display = "none";
                 } else {
                     $("fullscreen").onclick = () => {
-                        const current = document.fullscreenElement || (document as any).webkitFullscreenElement;
+                        const current = document.fullscreenElement || document.webkitFullscreenElement;
                         if (current) {
-                            (document.exitFullscreen || (document as any).webkitExitFullscreen)?.call(document);
-                        } else {
-                            (fsEl.requestFullscreen || fsEl.webkitRequestFullscreen)?.call(fsEl);
+                            if (document.exitFullscreen) document.exitFullscreen();
+                            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                        } else if (fsEl.requestFullscreen) {
+                            fsEl.requestFullscreen();
+                        } else if (fsEl.webkitRequestFullscreen) {
+                            fsEl.webkitRequestFullscreen();
                         }
                     };
                 }
