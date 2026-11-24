@@ -200082,22 +200082,16 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     return [...found.values()];
   }
   __name(listExisting, "listExisting");
-  for (let round = 0; round < 20; round++) {
-    const list = await listExisting();
-    console.log(`[VNC] conn states: ${list.map((x) => `${x.id.slice(-8)}=${x.state}`).join(", ")}`);
-    const busy2 = list.filter((x) => !isGone(x.state));
-    if (!busy2.length) break;
-    for (const conn of busy2) {
+  for (let round = 0; round < 3; round++) {
+    const busy = (await listExisting()).filter((x) => !isGone(x.state));
+    if (!busy.length) break;
+    for (const conn of busy) {
       try {
         await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: conn.id });
       } catch {
       }
     }
-    await new Promise((r) => setTimeout(r, 3e3));
-  }
-  const busy = (await listExisting()).filter((x) => !isGone(x.state));
-  if (busy.length) {
-    throw new Error(`\u65E7 Console Connection \u4ECD\u5728\u5220\u9664\u4E2D\uFF08${busy.map((x) => x.state).join(",")}\uFF09\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5`);
+    await new Promise((r) => setTimeout(r, 2e3));
   }
   const createOnce = /* @__PURE__ */ __name(async () => {
     const resp = await clients.compute.createInstanceConsoleConnection({
@@ -200130,13 +200124,38 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     }
     throw new Error("\u7B49\u5F85 Console Connection \u5C31\u7EEA\u8D85\u65F6\uFF08\u5DF2\u7B49 150 \u79D2\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\uFF09");
   }, "createOnce");
+  const is409 = /* @__PURE__ */ __name((e) => {
+    const text = `${e?.statusCode ?? ""} ${e?.code ?? ""} ${e?.serviceError?.code ?? ""} ${e?.message ?? ""} ${e?.serviceError?.message ?? ""}`;
+    return /409|already exists or has not been terminated/i.test(text);
+  }, "is409");
+  const createWithRetry = /* @__PURE__ */ __name(async () => {
+    let lastErr = null;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        return await createOnce();
+      } catch (e) {
+        lastErr = e;
+        if (!is409(e)) throw e;
+        for (const c of (await listExisting()).filter((x) => !isGone(x.state))) {
+          try {
+            await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: c.id });
+          } catch {
+          }
+        }
+        if (attempt < 3) await new Promise((r) => setTimeout(r, 4e3 * (attempt + 1)));
+      }
+    }
+    throw new Error(
+      `\u8BE5\u5B9E\u4F8B\u7684\u63A7\u5236\u53F0\u8FDE\u63A5\u4ECD\u5728\u56DE\u6536\u4E2D\uFF08OCI \u8FD4\u56DE 409\uFF09\uFF0C\u8BF7 1~2 \u5206\u949F\u540E\u518D\u8BD5\u3002\u539F\u59CB\u9519\u8BEF\uFF1A${lastErr?.message ?? lastErr}`
+    );
+  }, "createWithRetry");
   const ourFp = await sshFingerprint(publicKeyOpenSSH);
   const normalizeFp = /* @__PURE__ */ __name((raw2) => {
     const s = String(raw2 ?? "").trim();
     return s.startsWith("SHA256:") ? s.slice(7).replace(/=+$/, "") : "";
   }, "normalizeFp");
   for (let attempt = 0; attempt < 2; attempt++) {
-    const created = await createOnce();
+    const created = await createWithRetry();
     const ociFp = normalizeFp(created.fingerprint);
     if (!ociFp || ociFp === ourFp) return created;
     await deleteConsoleConnection(clients, created.connectionId);
