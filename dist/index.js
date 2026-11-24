@@ -200082,6 +200082,26 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     return [...found.values()];
   }
   __name(listExisting, "listExisting");
+  const failedConn = (await listExisting()).filter((x) => x.state === "FAILED");
+  if (failedConn.length) {
+    let allDeleted = true;
+    for (const c of failedConn) {
+      try {
+        await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: c.id });
+      } catch {
+        allDeleted = false;
+      }
+    }
+    if (!allDeleted) {
+      throw new Error(
+        "\u8BE5\u5B9E\u4F8B\u5B58\u5728 FAILED \u7684\u63A7\u5236\u53F0\u8FDE\u63A5\u4E14\u65E0\u6CD5\u5220\u9664\uFF08\u5B9E\u4F8B\u53EF\u80FD\u6B63\u5904\u4E8E\u53D8\u66F4\u4E2D\uFF09\u3002\u8BF7\u5148\u91CD\u542F\u5B9E\u4F8B\uFF0C\u5F85\u72B6\u6001\u6062\u590D RUNNING \u540E\u518D\u8BD5\uFF1B\u82E5\u4ECD\u5931\u8D25\u8BF7\u8054\u7CFB OCI \u652F\u6301"
+      );
+    }
+    for (let i = 0; i < 4; i++) {
+      await new Promise((r) => setTimeout(r, 2e3));
+      if (!(await listExisting()).some((x) => x.state === "FAILED")) break;
+    }
+  }
   const createOnce = /* @__PURE__ */ __name(async () => {
     const resp = await clients.compute.createInstanceConsoleConnection({
       createInstanceConsoleConnectionDetails: { instanceId, publicKey: publicKeyOpenSSH }
@@ -200108,7 +200128,15 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
           return { connectionId, vncConnectionString: str, fingerprint: conn?.fingerprint ?? void 0 };
         }
       }
-      if (String(conn?.lifecycleState ?? "") === "FAILED") throw new Error("Console Connection \u521B\u5EFA\u5931\u8D25");
+      if (String(conn?.lifecycleState ?? "") === "FAILED") {
+        try {
+          await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: connectionId });
+        } catch {
+        }
+        throw new Error(
+          "OCI \u65E0\u6CD5\u4E3A\u8BE5\u5B9E\u4F8B\u5EFA\u7ACB\u63A7\u5236\u53F0\u901A\u9053\uFF08\u8FDE\u63A5\u72B6\u6001 FAILED\uFF09\u3002\u8FD9\u901A\u5E38\u8BF4\u660E\u5B9E\u4F8B\u4FA7\u7684\u63A7\u5236\u53F0\u670D\u52A1\u5F02\u5E38\uFF0C\u53EF\u5C1D\u8BD5\u91CD\u542F\u5B9E\u4F8B\u540E\u518D\u8BD5\uFF1B\u82E5\u6301\u7EED\u5931\u8D25\u8BF7\u8054\u7CFB OCI \u652F\u6301"
+        );
+      }
       await new Promise((r) => setTimeout(r, 5e3));
     }
     throw new Error("\u7B49\u5F85 Console Connection \u5C31\u7EEA\u8D85\u65F6\uFF08\u5DF2\u7B49 150 \u79D2\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\uFF09");
