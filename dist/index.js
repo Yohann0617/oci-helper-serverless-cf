@@ -200118,17 +200118,18 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
   __name(listExisting, "listExisting");
   const failedConn = (await listExisting()).filter((x) => x.state === "FAILED");
   if (failedConn.length) {
-    let allDeleted = true;
+    let deleteErr = "";
     for (const c of failedConn) {
       try {
         await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: c.id });
-      } catch {
-        allDeleted = false;
+      } catch (e) {
+        deleteErr = deleteErr || String(e?.message ?? e);
       }
     }
-    if (!allDeleted) {
+    if (deleteErr) {
       throw new Error(
-        "\u8BE5\u5B9E\u4F8B\u5B58\u5728 FAILED \u7684\u63A7\u5236\u53F0\u8FDE\u63A5\u4E14\u65E0\u6CD5\u5220\u9664\uFF08\u5B9E\u4F8B\u53EF\u80FD\u6B63\u5904\u4E8E\u53D8\u66F4\u4E2D\uFF09\u3002\u8BF7\u5148\u91CD\u542F\u5B9E\u4F8B\uFF0C\u5F85\u72B6\u6001\u6062\u590D RUNNING \u540E\u518D\u8BD5\uFF1B\u82E5\u4ECD\u5931\u8D25\u8BF7\u8054\u7CFB OCI \u652F\u6301"
+        `\u5220\u9664 FAILED \u63A7\u5236\u53F0\u8FDE\u63A5\u88AB OCI \u62D2\u7EDD\uFF1A${deleteErr}
+\u8BF7\u5728\u300C\u63A7\u5236\u53F0\u8FDE\u63A5\u300D\u4E2D\u624B\u52A8\u91CD\u8BD5\uFF0C\u6216\u91CD\u542F\u5B9E\u4F8B\u540E\u518D\u8BD5\uFF1B\u82E5\u6301\u7EED\u5931\u8D25\u8BF7\u8054\u7CFB OCI \u652F\u6301`
       );
     }
     for (let i = 0; i < 4; i++) {
@@ -203929,7 +203930,8 @@ app.delete("/api/vnc/console-connections/:connectionId", async (c) => {
     if (/currently being modified/i.test(raw2)) {
       return Response.json(
         {
-          error: "\u5B9E\u4F8B\u88AB OCI \u6807\u8BB0\u4E3A\u300C\u53D8\u66F4\u4E2D\u300D\uFF0C\u76EE\u524D\u65E0\u6CD5\u5220\u9664\u63A7\u5236\u53F0\u8FDE\u63A5\u3002\u8BF7\u5148\u91CD\u542F\u8BE5\u5B9E\u4F8B\uFF0C\u7B49\u72B6\u6001\u6062\u590D RUNNING \u540E\u518D\u5220\u9664\u3002",
+          error: `OCI \u62D2\u7EDD\u4E86\u5220\u9664\u8BF7\u6C42\uFF08\u5B9E\u4F8B\u72B6\u6001\u9501\u672A\u91CA\u653E\uFF09\u3002\u8FD9\u901A\u5E38\u8BF4\u660E\u5B9E\u4F8B\u4E0A\u6709\u4E00\u4E2A\u6302\u8D77\u7684\u53D8\u66F4\u64CD\u4F5C\uFF0C\u9700\u8981\u7B49\u5B83\u7ED3\u675F\u6216\u91CD\u542F\u5B9E\u4F8B\u3002
+OCI \u539F\u59CB\u54CD\u5E94\uFF1A${raw2}`,
           detail: raw2
         },
         { status: 409 }
