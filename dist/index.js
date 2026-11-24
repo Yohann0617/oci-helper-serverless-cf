@@ -200140,18 +200140,21 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
   }, "listPrimary");
   const clearStaleConnections = /* @__PURE__ */ __name(async () => {
     const pending = (await listExisting()).filter((x) => !isGone(x.state));
-    if (!pending.length) return false;
+    if (!pending.length) return "";
+    let deleteErr = "";
     for (const c of pending) {
       try {
         await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: c.id });
-      } catch {
+      } catch (e) {
+        const msg = String(e?.message ?? e).slice(0, 120);
+        deleteErr = deleteErr || `${c.id.slice(-8)}(${c.state})\uFF1A${msg}`;
       }
     }
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 10; i++) {
       await new Promise((r) => setTimeout(r, 3e3));
-      if (!(await listPrimary()).some((x) => !isGone(x.state))) return true;
+      if (!(await listPrimary()).some((x) => !isGone(x.state))) return deleteErr;
     }
-    return true;
+    return deleteErr;
   }, "clearStaleConnections");
   const createWithRetry = /* @__PURE__ */ __name(async () => {
     let lastErr = null;
@@ -200162,7 +200165,7 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
       } catch (e) {
         lastErr = e;
         if (isInstanceBusy(e) || is409(e)) {
-          await clearStaleConnections();
+          const deleteErr = await clearStaleConnections();
           if (attempt < MAX - 1) {
             await new Promise((r) => setTimeout(r, 3e3));
             continue;
@@ -200170,8 +200173,9 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
           const state = await instanceState();
           const conns = (await listExisting()).filter((x) => !isGone(x.state));
           const detail = conns.length ? conns.map((x) => `${x.id.slice(-8)}=${x.state}`).join("\uFF0C") : "\u65E0";
+          const delHint = deleteErr ? `\uFF1B\u5220\u9664\u5931\u8D25\u539F\u56E0\uFF1A${deleteErr}` : "";
           throw new Error(
-            `\u5B9E\u4F8B\u72B6\u6001 ${state}\uFF0C\u4F46 OCI \u4ECD\u62D2\u7EDD\u521B\u5EFA\u63A7\u5236\u53F0\u8FDE\u63A5\uFF08\u6B8B\u7559\u8FDE\u63A5\uFF1A${detail}\uFF09\u3002\u8BF7\u7B49 1~2 \u5206\u949F\u540E\u518D\u8BD5\uFF1B\u82E5\u6301\u7EED\u5931\u8D25\u53EF\u5230 OCI \u63A7\u5236\u53F0\u624B\u52A8\u5220\u9664\u8BE5\u5B9E\u4F8B\u7684\u63A7\u5236\u53F0\u8FDE\u63A5`
+            `\u5B9E\u4F8B\u72B6\u6001 ${state}\uFF0C\u4F46 OCI \u4ECD\u62D2\u7EDD\u521B\u5EFA\u63A7\u5236\u53F0\u8FDE\u63A5\uFF08\u6B8B\u7559\u8FDE\u63A5\uFF1A${detail}${delHint}\uFF09\u3002\u8BF7\u5728 OCI \u63A7\u5236\u53F0 \u2192 \u5B9E\u4F8B \u2192 \u63A7\u5236\u53F0\u8FDE\u63A5 \u4E2D\u5220\u9664\u8BE5\u6B8B\u7559\u8FDE\u63A5\u540E\u91CD\u8BD5`
           );
         }
         throw e;
