@@ -200082,17 +200082,6 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     return [...found.values()];
   }
   __name(listExisting, "listExisting");
-  for (let round = 0; round < 3; round++) {
-    const busy = (await listExisting()).filter((x) => !isGone(x.state));
-    if (!busy.length) break;
-    for (const conn of busy) {
-      try {
-        await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: conn.id });
-      } catch {
-      }
-    }
-    await new Promise((r) => setTimeout(r, 2e3));
-  }
   const createOnce = /* @__PURE__ */ __name(async () => {
     const resp = await clients.compute.createInstanceConsoleConnection({
       createInstanceConsoleConnectionDetails: { instanceId, publicKey: publicKeyOpenSSH }
@@ -200131,6 +200120,14 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     if (/is currently being modified/i.test(text)) return false;
     return /409|already exists or has not been terminated/i.test(text);
   }, "is409");
+  const instanceState = /* @__PURE__ */ __name(async () => {
+    try {
+      const res = await clients.compute.getInstance({ instanceId });
+      return String(res.instance?.lifecycleState ?? "UNKNOWN");
+    } catch {
+      return "UNKNOWN";
+    }
+  }, "instanceState");
   const createWithRetry = /* @__PURE__ */ __name(async () => {
     let lastErr = null;
     for (let attempt = 0; attempt < 4; attempt++) {
@@ -200139,7 +200136,14 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
       } catch (e) {
         lastErr = e;
         if (isInstanceBusy(e)) {
-          throw new Error("\u5B9E\u4F8B\u6B63\u5728\u91CD\u542F/\u505C\u6B62/\u542F\u52A8\u6216\u53D8\u66F4\u914D\u7F6E\u4E2D\uFF0C\u8BF7\u7B49\u5B9E\u4F8B\u6062\u590D\u4E3A\u300C\u8FD0\u884C\u4E2D\u300D\u540E\u518D\u70B9\u300C\u542F\u52A8 VNC\u300D");
+          if (attempt < 3) {
+            await new Promise((r) => setTimeout(r, 5e3));
+            continue;
+          }
+          const state = await instanceState();
+          throw new Error(
+            `\u5B9E\u4F8B\u5F53\u524D\u72B6\u6001\u4E3A ${state}\uFF08\u6B63\u5728\u53D8\u66F4\u4E2D\uFF09\uFF0C\u8BF7\u7B49\u5B9E\u4F8B\u6062\u590D\u4E3A\u300C\u8FD0\u884C\u4E2D\u300D\u540E\u518D\u70B9\u300C\u542F\u52A8 VNC\u300D`
+          );
         }
         if (!is409(e)) throw e;
         for (const c of (await listExisting()).filter((x) => !isGone(x.state))) {
