@@ -200102,48 +200102,31 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     const s = String(state ?? "");
     return s === "DELETED" || s === "TERMINATED";
   }, "isGone");
-  async function listExisting() {
-    const found = /* @__PURE__ */ new Map();
-    for (const compartmentId of [...new Set(compartmentCandidates)]) {
-      try {
-        const res = await clients.compute.listInstanceConsoleConnections({ compartmentId, instanceId });
-        for (const x of res.items ?? []) {
-          if (x.id) found.set(x.id, { id: x.id, state: String(x.lifecycleState ?? "") });
-        }
-      } catch {
-      }
+  const listIn = /* @__PURE__ */ __name(async (compartmentId) => {
+    try {
+      const res = await clients.compute.listInstanceConsoleConnections({ compartmentId, instanceId });
+      return (res.items ?? []).filter((x) => !!x.id).map((x) => ({ id: x.id, state: String(x.lifecycleState ?? "") }));
+    } catch {
+      return [];
     }
-    return [...found.values()];
+  }, "listIn");
+  async function listExisting() {
+    const primary = compartmentCandidates[0];
+    if (primary) {
+      const items = await listIn(primary);
+      if (items.length) return items;
+    }
+    const fallback = compartmentCandidates.find((x) => x !== primary);
+    return fallback ? listIn(fallback) : [];
   }
   __name(listExisting, "listExisting");
-  const failedConn = (await listExisting()).filter((x) => x.state === "FAILED");
-  if (failedConn.length) {
-    let deleteErr = "";
-    for (const c of failedConn) {
-      try {
-        await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: c.id });
-      } catch (e) {
-        deleteErr = deleteErr || String(e?.message ?? e);
-      }
-    }
-    if (deleteErr) {
-      throw new Error(
-        `\u5220\u9664 FAILED \u63A7\u5236\u53F0\u8FDE\u63A5\u88AB OCI \u62D2\u7EDD\uFF1A${deleteErr}
-\u8BF7\u5728\u300C\u63A7\u5236\u53F0\u8FDE\u63A5\u300D\u4E2D\u624B\u52A8\u91CD\u8BD5\uFF0C\u6216\u91CD\u542F\u5B9E\u4F8B\u540E\u518D\u8BD5\uFF1B\u82E5\u6301\u7EED\u5931\u8D25\u8BF7\u8054\u7CFB OCI \u652F\u6301`
-      );
-    }
-    for (let i = 0; i < 4; i++) {
-      await new Promise((r) => setTimeout(r, 2e3));
-      if (!(await listExisting()).some((x) => x.state === "FAILED")) break;
-    }
-  }
   const createOnce = /* @__PURE__ */ __name(async () => {
     const resp = await clients.compute.createInstanceConsoleConnection({
       createInstanceConsoleConnectionDetails: { instanceId, publicKey: publicKeyOpenSSH }
     });
     const connectionId = resp.instanceConsoleConnection?.id ?? "";
     if (!connectionId) throw new Error("\u521B\u5EFA Console Connection \u5931\u8D25\uFF1A\u672A\u8FD4\u56DE ID");
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 20; i++) {
       const info = await clients.compute.getInstanceConsoleConnection({
         instanceConsoleConnectionId: connectionId
       });
@@ -200164,17 +200147,13 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
         }
       }
       if (String(conn?.lifecycleState ?? "") === "FAILED") {
-        try {
-          await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: connectionId });
-        } catch {
-        }
         throw new Error(
-          "OCI \u65E0\u6CD5\u4E3A\u8BE5\u5B9E\u4F8B\u5EFA\u7ACB\u63A7\u5236\u53F0\u901A\u9053\uFF08\u8FDE\u63A5\u72B6\u6001 FAILED\uFF09\u3002\u8FD9\u901A\u5E38\u8BF4\u660E\u5B9E\u4F8B\u4FA7\u7684\u63A7\u5236\u53F0\u670D\u52A1\u5F02\u5E38\uFF0C\u53EF\u5C1D\u8BD5\u91CD\u542F\u5B9E\u4F8B\u540E\u518D\u8BD5\uFF1B\u82E5\u6301\u7EED\u5931\u8D25\u8BF7\u8054\u7CFB OCI \u652F\u6301"
+          "OCI \u65E0\u6CD5\u4E3A\u8BE5\u5B9E\u4F8B\u5EFA\u7ACB\u63A7\u5236\u53F0\u901A\u9053\uFF08\u8FDE\u63A5\u72B6\u6001 FAILED\uFF09\u3002\u8FD9\u901A\u5E38\u8BF4\u660E\u5B9E\u4F8B\u4FA7\u7684\u63A7\u5236\u53F0\u670D\u52A1\u5F02\u5E38\u3002\u53EF\u5728\u300C\u63A7\u5236\u53F0\u8FDE\u63A5\u300D\u91CC\u5220\u6389\u8FD9\u6761\u8BB0\u5F55\uFF0C\u6216\u91CD\u542F\u5B9E\u4F8B\u540E\u518D\u8BD5"
         );
       }
-      await new Promise((r) => setTimeout(r, 5e3));
+      await new Promise((r) => setTimeout(r, 3e3));
     }
-    throw new Error("\u7B49\u5F85 Console Connection \u5C31\u7EEA\u8D85\u65F6\uFF08\u5DF2\u7B49 150 \u79D2\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\uFF09");
+    throw new Error("\u7B49\u5F85 Console Connection \u5C31\u7EEA\u8D85\u65F6\uFF08\u5DF2\u7B49 60 \u79D2\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\uFF09");
   }, "createOnce");
   const errorText = /* @__PURE__ */ __name((e) => `${e?.statusCode ?? ""} ${e?.code ?? ""} ${e?.serviceError?.code ?? ""} ${e?.message ?? ""} ${e?.serviceError?.message ?? ""}`, "errorText");
   const isInstanceBusy = /* @__PURE__ */ __name((e) => /is currently being modified|currently being modified/i.test(errorText(e)), "isInstanceBusy");
@@ -200191,17 +200170,8 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
       return `\u67E5\u8BE2\u5931\u8D25\uFF08${String(e?.message ?? e).slice(0, 80)}\uFF09`;
     }
   }, "instanceState");
-  const listPrimary = /* @__PURE__ */ __name(async () => {
-    const compartmentId = compartmentCandidates[0];
-    if (!compartmentId) return [];
-    try {
-      const res = await clients.compute.listInstanceConsoleConnections({ compartmentId, instanceId });
-      return (res.items ?? []).filter((x) => !!x.id).map((x) => ({ id: x.id, state: String(x.lifecycleState ?? "") }));
-    } catch {
-      return [];
-    }
-  }, "listPrimary");
   const clearStaleConnections = /* @__PURE__ */ __name(async () => {
+    const primary = compartmentCandidates[0];
     const pending = (await listExisting()).filter((x) => !isGone(x.state));
     if (!pending.length) return "";
     let deleteErr = "";
@@ -200213,9 +200183,9 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
         deleteErr = deleteErr || `${c.id.slice(-8)}(${c.state})\uFF1A${msg}`;
       }
     }
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       await new Promise((r) => setTimeout(r, 3e3));
-      if (!(await listPrimary()).some((x) => !isGone(x.state))) return deleteErr;
+      if (!(await listIn(primary)).some((x) => !isGone(x.state))) return deleteErr;
     }
     return deleteErr;
   }, "clearStaleConnections");
@@ -203813,6 +203783,15 @@ app.post("/api/vnc/start", async (c) => {
     return c.json({ token, ttl: VNC_TOKEN_TTL, warn: warn || void 0 });
   } catch (e) {
     const msg = errorMessage(e);
+    if (/429|too many requests|toomanyrequests/i.test(msg)) {
+      return Response.json(
+        {
+          error: "OCI \u63A5\u53E3\u9650\u6D41\uFF08429 Too many requests\uFF09\uFF0C\u8BF7\u7B49 1~2 \u5206\u949F\u540E\u518D\u8BD5\u3002\n\u8FD9\u901A\u5E38\u662F\u77ED\u65F6\u95F4\u5185\u591A\u6B21\u521B\u5EFA/\u5220\u9664\u63A7\u5236\u53F0\u8FDE\u63A5\u89E6\u53D1\u7684\u79DF\u6237\u7EA7\u9650\u5236\u3002",
+          throttled: true
+        },
+        { status: 429 }
+      );
+    }
     const needCleanup = /控制台连接|变更中|409|创建 Console Connection|残留连接/i.test(msg);
     return Response.json(
       {
