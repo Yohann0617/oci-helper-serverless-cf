@@ -200124,8 +200124,8 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     try {
       const res = await clients.compute.getInstance({ instanceId });
       return String(res.instance?.lifecycleState ?? "UNKNOWN");
-    } catch {
-      return "UNKNOWN";
+    } catch (e) {
+      return `\u67E5\u8BE2\u5931\u8D25\uFF08${String(e?.message ?? e).slice(0, 80)}\uFF09`;
     }
   }, "instanceState");
   const listPrimary = /* @__PURE__ */ __name(async () => {
@@ -200155,7 +200155,7 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
   }, "clearStaleConnections");
   const createWithRetry = /* @__PURE__ */ __name(async () => {
     let lastErr = null;
-    const MAX = 6;
+    const MAX = 3;
     for (let attempt = 0; attempt < MAX; attempt++) {
       try {
         return await createOnce();
@@ -203676,11 +203676,16 @@ app.post("/api/vnc/start", async (c) => {
         if (s.instanceId !== instanceId || s.cfgId !== cfgId) continue;
         if (s.expiresAt <= Date.now() - 7 * 24 * 60 * 60 * 1e3) continue;
         if (!s.publicKeyOpenSSH) continue;
-        const info = await clients.compute.getInstanceConsoleConnection({
-          instanceConsoleConnectionId: s.connectionId
-        });
-        const st = String(info.instanceConsoleConnection?.lifecycleState ?? "");
-        if ((st === "ACTIVE" || st === "CREATING") && info.instanceConsoleConnection?.vncConnectionString) {
+        try {
+          const info = await clients.compute.getInstanceConsoleConnection({
+            instanceConsoleConnectionId: s.connectionId
+          });
+          const st = String(info.instanceConsoleConnection?.lifecycleState ?? "");
+          if ((st === "ACTIVE" || st === "CREATING") && info.instanceConsoleConnection?.vncConnectionString) {
+            reused = { sessionId: row.key.slice(VNC_SESSION_PREFIX2.length), session: s };
+            break;
+          }
+        } catch {
           reused = { sessionId: row.key.slice(VNC_SESSION_PREFIX2.length), session: s };
           break;
         }
