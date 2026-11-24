@@ -203837,7 +203837,17 @@ app.delete("/api/vnc/console-connections/:connectionId", async (c) => {
     });
     return c.json({ ok: true });
   } catch (e) {
-    return Response.json({ error: errorMessage(e) }, { status: 400 });
+    const raw2 = errorMessage(e);
+    if (/currently being modified/i.test(raw2)) {
+      return Response.json(
+        {
+          error: "\u5B9E\u4F8B\u88AB OCI \u6807\u8BB0\u4E3A\u300C\u53D8\u66F4\u4E2D\u300D\uFF0C\u76EE\u524D\u65E0\u6CD5\u5220\u9664\u63A7\u5236\u53F0\u8FDE\u63A5\u3002\u8BF7\u5148\u91CD\u542F\u8BE5\u5B9E\u4F8B\uFF0C\u7B49\u72B6\u6001\u6062\u590D RUNNING \u540E\u518D\u5220\u9664\u3002",
+          detail: raw2
+        },
+        { status: 409 }
+      );
+    }
+    return Response.json({ error: raw2 }, { status: 400 });
   }
 });
 app.get("/api/vnc/ws", async (c) => {
