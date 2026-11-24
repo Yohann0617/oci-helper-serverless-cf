@@ -13,6 +13,9 @@
         #status { flex: 1 1 140px; min-width: 110px; font-size: 12px; color: #cbd5e1; }
         .group { display: flex; align-items: center; gap: 6px; }
         .group + .group { padding-left: 10px; border-left: 1px solid #1e293b; }
+        /* 危险操作单独靠右、固定宽度，避免和常用按钮一起被等分放大导致误触 */
+        .group.tight { flex: 0 0 auto; }
+        #bar button.icon { padding: 6px 9px; min-width: 34px; font-size: 14px; line-height: 1; }
         #bar button, #bar select { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
         #bar button:hover { background: #334155; }
         #bar button:disabled { opacity: .5; cursor: default; }
@@ -52,6 +55,8 @@
             #status { flex: 1 1 100%; order: -1; }
             .group { flex: 1 1 auto; }
             .group + .group { padding-left: 0; border-left: none; }
+            .group.tight { flex: 0 0 auto; margin-left: auto; }
+            #bar .group.tight button { flex: 0 0 auto; padding: 10px 12px; }
             #bar button, #bar select { flex: 1 1 auto; padding: 10px 6px; font-size: 13px; }
             .krow button { padding: 13px 4px; font-size: 16px; }
             #paste-box { position: fixed; left: 8px; right: 8px; top: 100px; width: auto; max-height: 70vh; overflow: auto; }
@@ -62,7 +67,6 @@
     </style>
     <script type="module" crossorigin="anonymous">
         import RFB from './core/rfb.js';
-        import { getKeysym } from './core/input/util.js';
 
         const $ = (id) => document.getElementById(id);
         const status = (t) => { $('status').textContent = t; };
@@ -256,11 +260,24 @@
 
                 // ===== 工具栏按钮 =====
                 $("cad").onclick = () => rfb.sendCtrlAltDel();
-                $("fullscreen").onclick = () => {
-                    if (document.fullscreenElement) document.exitFullscreen?.();
-                    else document.documentElement.requestFullscreen?.();
-                };
-                // 重连放在最后并加确认，避免误触导致会话中断
+
+                // 全屏：iOS Safari（以及部分内嵌 WebView）不支持元素全屏，直接隐藏按钮
+                const fsEl = document.documentElement as any;
+                const canFullscreen = !!(document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
+                if (!canFullscreen) {
+                    $("fullscreen").style.display = "none";
+                } else {
+                    $("fullscreen").onclick = () => {
+                        const current = document.fullscreenElement || (document as any).webkitFullscreenElement;
+                        if (current) {
+                            (document.exitFullscreen || (document as any).webkitExitFullscreen)?.call(document);
+                        } else {
+                            (fsEl.requestFullscreen || fsEl.webkitRequestFullscreen)?.call(fsEl);
+                        }
+                    };
+                }
+
+                // 重连：图标按钮 + 二次确认，避免误触断开会话
                 $("reconnect").onclick = () => {
                     if (!confirm("重新连接会断开当前控制台会话，确定继续？")) return;
                     location.reload();
@@ -328,17 +345,8 @@
                     btn.addEventListener("click", () => sendKeyOf(btn.dataset.key));
                 }
 
-                // 移动端点击画面时尝试唤起系统软键盘（把按键转发到 VNC）
-                $("screen").addEventListener("click", () => {
-                    if (isTouch()) $("kbd-sink").focus();
-                });
-                $("kbd-sink").addEventListener("keydown", (e) => {
-                    if (!rfb) return;
-                    const keysym = getKeysym(e);
-                    if (!keysym) return;
-                    e.preventDefault();
-                    rfb.sendKey(keysym, e.code || "");
-                });
+                // 注意：不要再在点击画面时聚焦隐藏输入框。
+                // 那会让移动端弹出原生"粘贴"气泡，且第一次点工具栏按钮只会收键盘（吞掉这次点击）。
 
                 // ===== 输入/粘贴面板 =====
                 $("paste").onclick = async () => {
@@ -351,8 +359,10 @@
                         // 移动端/未授权时会读取失败，用户可在输入框手动粘贴
                     }
                     updatePreview();
-                    $("paste-input").focus();
-                    $("paste-input").select();
+                    // 触屏设备不自动聚焦：自动聚焦会弹原生菜单并吞掉下一次点击
+                    if (!isTouch()) {
+                        $("paste-input").focus();
+                    }
                 };
 
                 // 快捷指令：重启并直接进入固件设置（无需抢按键）
@@ -396,8 +406,8 @@
             <button id="cad" title="发送 Ctrl+Alt+Del">Ctrl+Alt+Del</button>
             <button id="fullscreen" title="全屏显示">全屏</button>
         </div>
-        <div class="group">
-            <button id="reconnect" class="ghost" title="重新加载页面并重连">重连</button>
+        <div class="group tight">
+            <button id="reconnect" class="ghost icon" title="重新加载页面并重连" aria-label="重新连接">⟳</button>
         </div>
     </div>
 
@@ -420,10 +430,7 @@
         </div>
     </div>
 
-    <!-- 移动端点击画面时聚焦此输入框以唤起系统键盘，keydown 转发到 VNC -->
-    <input id="kbd-sink" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-           aria-hidden="true" tabindex="0"
-           style="position:fixed;left:50%;bottom:2px;width:1px;height:1px;opacity:.01;border:0;outline:0;padding:0;background:transparent;color:transparent;caret-color:transparent">
+
 
     <div id="error"></div>
 
