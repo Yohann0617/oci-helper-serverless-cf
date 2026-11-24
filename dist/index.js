@@ -200021,21 +200021,55 @@ function toBase64Url2(bytes) {
   return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 __name(toBase64Url2, "toBase64Url");
+function mpint(bytes) {
+  let start = 0;
+  while (start < bytes.length - 1 && bytes[start] === 0) start++;
+  let slice = bytes.slice(start);
+  if (slice[0] & 128) {
+    const out2 = new Uint8Array(slice.length + 1);
+    out2.set(slice, 1);
+    slice = out2;
+  }
+  const out = new Uint8Array(4 + slice.length);
+  new DataView(out.buffer).setUint32(0, slice.length);
+  out.set(slice, 4);
+  return out;
+}
+__name(mpint, "mpint");
 async function generateVncKeyPair() {
+  const nodeCrypto = (await import("node:crypto")).default;
   const { utils: ssh2Utils } = await Promise.resolve().then(() => __toESM(require_lib2(), 1));
   for (let attempt = 0; attempt < 3; attempt++) {
-    const pair = ssh2Utils.generateKeyPairSync("rsa", { bits: 2048 });
-    const publicParsed = ssh2Utils.parseKey(Buffer.from(pair.public));
-    const privateParsed = ssh2Utils.parseKey(Buffer.from(pair.private));
-    if (!publicParsed || !privateParsed) continue;
-    const pubBlob = Buffer.from(publicParsed.getPublicSSH());
-    const derivedBlob = Buffer.from(privateParsed.getPublicSSH());
-    if (!pubBlob.length || !derivedBlob.length || !pubBlob.equals(derivedBlob)) continue;
-    return {
-      // getPublicSSH() 是二进制 blob（含 ssh-rsa 算法名），需自行 base64 化为 OpenSSH 单行格式
-      publicKeyOpenSSH: `ssh-rsa ${pubBlob.toString("base64")} oci-helper-vnc`,
-      privateKeyPem: privateParsed.getPrivatePEM().toString()
-    };
+    const { publicKey, privateKey } = nodeCrypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
+    const jwk = publicKey.export({ format: "jwk" });
+    if (!jwk.n || !jwk.e) continue;
+    const e = base64UrlToBytes(jwk.e);
+    const n = base64UrlToBytes(jwk.n);
+    const alg = new TextEncoder().encode("ssh-rsa");
+    const algLen = new Uint8Array(4);
+    new DataView(algLen.buffer).setUint32(0, alg.length);
+    const eMp = mpint(e);
+    const nMp = mpint(n);
+    const body = new Uint8Array(algLen.length + alg.length + eMp.length + nMp.length);
+    let off = 0;
+    body.set(algLen, off);
+    off += algLen.length;
+    body.set(alg, off);
+    off += alg.length;
+    body.set(eMp, off);
+    off += eMp.length;
+    body.set(nMp, off);
+    const publicKeyOpenSSH = `ssh-rsa ${bytesToBase64(body)} oci-helper-vnc`;
+    const privateKeyPem = privateKey.export({ type: "pkcs1", format: "pem" }).toString();
+    try {
+      const parsed = ssh2Utils.parseKey(privateKeyPem);
+      if (!parsed || parsed instanceof Error) continue;
+      const derived = Buffer.from(parsed.getPublicSSH());
+      if (!derived.equals(Buffer.from(body))) continue;
+    } catch {
+      continue;
+    }
+    return { publicKeyOpenSSH, privateKeyPem };
   }
   throw new Error("\u751F\u6210\u914D\u5BF9\u7684 SSH \u5BC6\u94A5\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5");
 }
