@@ -201004,7 +201004,7 @@ async function listRegionSubscriptions(c, tenancyId) {
 }
 __name(listRegionSubscriptions, "listRegionSubscriptions");
 function classifyError(err) {
-  const status = err?.statusCode ?? err?.status ?? 0;
+  const status = Number(err?.statusCode ?? err?.status ?? 0) || 0;
   const serviceError = err?.serviceError ?? {};
   const code = String(serviceError.code ?? err?.code ?? "");
   const rawMessage = String(serviceError.message ?? err?.message ?? err ?? "");
@@ -201014,12 +201014,21 @@ function classifyError(err) {
     kind = "capacity";
   } else if (text.includes("limitexceeded") || text.includes("limit exceeded") || text.includes("quota")) {
     kind = "limit";
-  } else if (status === 401 || text.includes("notauthenticated")) {
+  } else if (status === 401 || status === 403 || text.includes("notauthenticated") || text.includes("notauthorized") || text.includes("invalidkey") || text.includes("signature")) {
     kind = "auth";
-  } else if (status === 429 || text.includes("toomanyrequests")) {
+  } else if (status === 429 || text.includes("toomanyrequests") || text.includes("too many requests")) {
     kind = "throttle";
+  } else if (status === 408 || status >= 500 || text.includes("timeout") || text.includes("timed out") || text.includes("econnreset") || text.includes("econnrefused") || text.includes("enotfound") || text.includes("eai_again") || text.includes("fetch failed") || text.includes("network")) {
+    kind = "network";
   }
-  return { kind, status, code, message: rawMessage || "OCI \u8BF7\u6C42\u5931\u8D25" };
+  return {
+    kind,
+    status,
+    code,
+    message: rawMessage || "OCI \u8BF7\u6C42\u5931\u8D25",
+    retryable: kind === "throttle" || kind === "network",
+    credential: kind === "auth"
+  };
 }
 __name(classifyError, "classifyError");
 
@@ -203958,20 +203967,36 @@ app.delete("/api/cfgs/:id", async (c) => {
   ]);
   return c.json({ ok: true });
 });
+var sleep = /* @__PURE__ */ __name((ms) => new Promise((r) => setTimeout(r, ms)), "sleep");
 app.post("/api/cfgs/:id/check", async (c) => {
   const row = await getCfg2(c.env, c.req.param("id"));
   if (!row) return Response.json({ error: "\u914D\u7F6E\u4E0D\u5B58\u5728" }, { status: 404 });
-  try {
+  const persist = /* @__PURE__ */ __name(async (status, error) => {
+    await c.env.DB.prepare(
+      "UPDATE oci_cfg SET status = ?, last_error = ?, last_checked_at = ?, updated_at = ? WHERE id = ?"
+    ).bind(status, error, nowIso2(), nowIso2(), row.id).run();
+  }, "persist");
+  const probe = /* @__PURE__ */ __name(() => runTraced(traceFor(c, row.id), async () => {
     const clients = await clientsFor(c.env, row);
-    const { tenancy, ads, regions, plan } = await runTraced(traceFor(c, row.id), async () => {
-      const [tenancy2, ads2, regions2, plan2] = await Promise.all([
-        clients.identity.getTenancy({ tenancyId: row.tenancy_ocid }),
-        listAvailabilityDomains(clients),
-        listRegionSubscriptions(clients, row.tenancy_ocid).catch(() => []),
-        getPlanType(clients)
-      ]);
-      return { tenancy: tenancy2, ads: ads2, regions: regions2, plan: plan2 };
-    });
+    const [tenancy, ads, regions, plan] = await Promise.all([
+      clients.identity.getTenancy({ tenancyId: row.tenancy_ocid }),
+      listAvailabilityDomains(clients),
+      listRegionSubscriptions(clients, row.tenancy_ocid).catch(() => []),
+      getPlanType(clients)
+    ]);
+    return { clients, tenancy, ads, regions, plan };
+  }), "probe");
+  try {
+    let result;
+    try {
+      result = await probe();
+    } catch (e) {
+      const cls = classifyError(e);
+      if (!cls.retryable) throw e;
+      await sleep(1500);
+      result = await probe();
+    }
+    const { clients, tenancy, ads, regions, plan } = result;
     const meta = {
       name: tenancy.tenancy?.name ?? null,
       description: tenancy.tenancy?.description ?? null,
@@ -203994,15 +204019,30 @@ app.post("/api/cfgs/:id/check", async (c) => {
     ).run();
     return c.json({
       ok: true,
+      status: "active",
+      checkedAt: nowIso2(),
       availabilityDomains: ads,
       tenancyName: tenancy.tenancy?.name ?? "",
       regions,
       planType: plan?.planType ?? null
     });
   } catch (e) {
+    const cls = classifyError(e);
     const message = errorMessage(e);
-    await c.env.DB.prepare("UPDATE oci_cfg SET status = 'invalid', last_error = ?, last_checked_at = ?, updated_at = ? WHERE id = ?").bind(message, nowIso2(), nowIso2(), row.id).run();
-    return Response.json({ error: message }, { status: 400 });
+    const decryptFailed = /解密|decrypt|operationerror|crypto/i.test(message);
+    const fatal = cls.credential || decryptFailed;
+    const status = fatal ? "invalid" : "unknown";
+    await persist(status, message);
+    return Response.json(
+      {
+        error: message,
+        kind: decryptFailed ? "auth" : cls.kind,
+        status,
+        retryable: cls.retryable,
+        checkedAt: nowIso2()
+      },
+      { status: fatal ? 400 : 503 }
+    );
   }
 });
 app.get("/api/cfgs/:id/compartments", async (c) => {
