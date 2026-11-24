@@ -200227,7 +200227,7 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
         return await createOnce();
       } catch (e) {
         lastErr = e;
-        if (isInstanceBusy(e) || is409(e)) {
+        if (is409(e)) {
           const deleteErr = await clearStaleConnections();
           if (attempt < MAX - 1) {
             await new Promise((r) => setTimeout(r, 3e3));
@@ -200246,35 +200246,15 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
     }
     throw new Error(`\u521B\u5EFA Console Connection \u5931\u8D25\uFF1A${lastErr?.message ?? lastErr}`);
   }, "createWithRetry");
+  const created = await createWithRetry();
   const ourFp = await sshFingerprint(publicKeyOpenSSH);
-  const normalizeFp = /* @__PURE__ */ __name((raw2) => {
-    const s = String(raw2 ?? "").trim();
-    return s.startsWith("SHA256:") ? s.slice(7).replace(/=+$/, "") : "";
-  }, "normalizeFp");
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const created = await createWithRetry();
-    const ociFp = normalizeFp(created.fingerprint);
-    if (!ociFp || ociFp === ourFp) return created;
-    await deleteConsoleConnection(clients, created.connectionId);
-    if (attempt === 1) {
-      throw new Error(
-        `Console Connection \u672A\u80FD\u7ED1\u5B9A\u65B0\u516C\u94A5\uFF08OCI ${ociFp.slice(0, 12)} \u2260 \u6211\u65B9 ${ourFp.slice(0, 12)}\uFF09\uFF0C\u8BE5\u5B9E\u4F8B\u53EF\u80FD\u88AB\u5386\u53F2\u63A7\u5236\u53F0\u8FDE\u63A5\u5360\u7528\uFF0C\u8BF7\u5230 OCI \u63A7\u5236\u53F0\u5220\u9664\u8BE5\u5B9E\u4F8B\u7684\u63A7\u5236\u53F0\u8FDE\u63A5\u540E\u91CD\u8BD5`
-      );
-    }
-    await new Promise((r) => setTimeout(r, 3e3));
+  const ociFp = String(created.fingerprint ?? "").replace("SHA256:", "").replace(/=+$/, "");
+  if (ociFp && ourFp && ociFp !== ourFp) {
+    console.warn(`[VNC] \u516C\u94A5\u6307\u7EB9\u4E0D\u4E00\u81F4\uFF08OCI ${ociFp.slice(0, 16)} / \u6211\u65B9 ${ourFp.slice(0, 16)}\uFF09\uFF0C\u4FDD\u7559\u8FDE\u63A5\u4E0D\u5220\u9664`);
   }
-  throw new Error("\u521B\u5EFA Console Connection \u5931\u8D25");
+  return created;
 }
 __name(createConsoleConnection, "createConsoleConnection");
-async function deleteConsoleConnection(clients, connectionId) {
-  try {
-    await clients.compute.deleteInstanceConsoleConnection({
-      instanceConsoleConnectionId: connectionId
-    });
-  } catch {
-  }
-}
-__name(deleteConsoleConnection, "deleteConsoleConnection");
 async function probeRelayAuth(session, timeoutMs = 2e4) {
   const { Client } = await Promise.resolve().then(() => __toESM(require_lib2(), 1));
   const conn = new Client();
