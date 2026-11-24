@@ -200099,39 +200099,55 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
   if (busy.length) {
     throw new Error(`\u65E7 Console Connection \u4ECD\u5728\u5220\u9664\u4E2D\uFF08${busy.map((x) => x.state).join(",")}\uFF09\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5`);
   }
-  const resp = await clients.compute.createInstanceConsoleConnection({
-    createInstanceConsoleConnectionDetails: { instanceId, publicKey: publicKeyOpenSSH }
-  });
-  const connectionId = resp.instanceConsoleConnection?.id ?? "";
-  if (!connectionId) throw new Error("\u521B\u5EFA Console Connection \u5931\u8D25\uFF1A\u672A\u8FD4\u56DE ID");
-  for (let i = 0; i < 30; i++) {
-    const info = await clients.compute.getInstanceConsoleConnection({
-      instanceConsoleConnectionId: connectionId
+  const createOnce = /* @__PURE__ */ __name(async () => {
+    const resp = await clients.compute.createInstanceConsoleConnection({
+      createInstanceConsoleConnectionDetails: { instanceId, publicKey: publicKeyOpenSSH }
     });
-    const conn = info.instanceConsoleConnection;
-    const str = conn?.vncConnectionString;
-    if (str) {
-      let matched = false;
-      try {
-        matched = parseVncConnectionString(str).connectionOcid === connectionId;
-      } catch {
-        matched = false;
-      }
-      if (matched) {
-        if (String(conn.lifecycleState ?? "") === "CREATING") {
-          await new Promise((r) => setTimeout(r, 6e3));
+    const connectionId = resp.instanceConsoleConnection?.id ?? "";
+    if (!connectionId) throw new Error("\u521B\u5EFA Console Connection \u5931\u8D25\uFF1A\u672A\u8FD4\u56DE ID");
+    for (let i = 0; i < 30; i++) {
+      const info = await clients.compute.getInstanceConsoleConnection({
+        instanceConsoleConnectionId: connectionId
+      });
+      const conn = info.instanceConsoleConnection;
+      const str = conn?.vncConnectionString;
+      if (str) {
+        let matched = false;
+        try {
+          matched = parseVncConnectionString(str).connectionOcid === connectionId;
+        } catch {
+          matched = false;
         }
-        return {
-          connectionId,
-          vncConnectionString: str,
-          fingerprint: conn?.fingerprint ?? void 0
-        };
+        if (matched) {
+          if (String(conn.lifecycleState ?? "") === "CREATING") {
+            await new Promise((r) => setTimeout(r, 6e3));
+          }
+          return { connectionId, vncConnectionString: str, fingerprint: conn?.fingerprint ?? void 0 };
+        }
       }
+      if (String(conn?.lifecycleState ?? "") === "FAILED") throw new Error("Console Connection \u521B\u5EFA\u5931\u8D25");
+      await new Promise((r) => setTimeout(r, 5e3));
     }
-    if (String(conn?.lifecycleState ?? "") === "FAILED") throw new Error("Console Connection \u521B\u5EFA\u5931\u8D25");
-    await new Promise((r) => setTimeout(r, 5e3));
+    throw new Error("\u7B49\u5F85 Console Connection \u5C31\u7EEA\u8D85\u65F6\uFF08\u5DF2\u7B49 150 \u79D2\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\uFF09");
+  }, "createOnce");
+  const ourFp = await sshFingerprint(publicKeyOpenSSH);
+  const normalizeFp = /* @__PURE__ */ __name((raw2) => {
+    const s = String(raw2 ?? "").trim();
+    return s.startsWith("SHA256:") ? s.slice(7).replace(/=+$/, "") : "";
+  }, "normalizeFp");
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const created = await createOnce();
+    const ociFp = normalizeFp(created.fingerprint);
+    if (!ociFp || ociFp === ourFp) return created;
+    await deleteConsoleConnection(clients, created.connectionId);
+    if (attempt === 1) {
+      throw new Error(
+        `Console Connection \u672A\u80FD\u7ED1\u5B9A\u65B0\u516C\u94A5\uFF08OCI ${ociFp.slice(0, 12)} \u2260 \u6211\u65B9 ${ourFp.slice(0, 12)}\uFF09\uFF0C\u8BE5\u5B9E\u4F8B\u53EF\u80FD\u88AB\u5386\u53F2\u63A7\u5236\u53F0\u8FDE\u63A5\u5360\u7528\uFF0C\u8BF7\u5230 OCI \u63A7\u5236\u53F0\u5220\u9664\u8BE5\u5B9E\u4F8B\u7684\u63A7\u5236\u53F0\u8FDE\u63A5\u540E\u91CD\u8BD5`
+      );
+    }
+    await new Promise((r) => setTimeout(r, 3e3));
   }
-  throw new Error("\u7B49\u5F85 Console Connection \u5C31\u7EEA\u8D85\u65F6\uFF08\u5DF2\u7B49 150 \u79D2\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\uFF09");
+  throw new Error("\u521B\u5EFA Console Connection \u5931\u8D25");
 }
 __name(createConsoleConnection, "createConsoleConnection");
 async function deleteConsoleConnection(clients, connectionId) {
@@ -203682,7 +203698,7 @@ app.post("/api/vnc/start", async (c) => {
         try {
           await probeRelayAuth(session);
         } catch (e2) {
-          warn = String(e2?.message ?? e2);
+          throw new Error(`\u63A7\u5236\u53F0\u8FDE\u63A5\u91CD\u5EFA\u540E\u4ECD\u65E0\u6CD5\u8BA4\u8BC1\uFF1A${String(e2?.message ?? e2)}`);
         }
       } else {
         warn = String(e?.message ?? e);
