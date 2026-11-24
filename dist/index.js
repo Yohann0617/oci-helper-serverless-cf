@@ -203748,7 +203748,7 @@ app.post("/api/vnc/start", async (c) => {
             instanceConsoleConnectionId: s.connectionId
           });
           const st = String(info.instanceConsoleConnection?.lifecycleState ?? "");
-          if ((st === "ACTIVE" || st === "CREATING") && info.instanceConsoleConnection?.vncConnectionString) {
+          if ((st === "ACTIVE" || st === "CREATING" || st === "FAILED") && info.instanceConsoleConnection?.vncConnectionString) {
             reused = { sessionId: row.key.slice(VNC_SESSION_PREFIX2.length), session: s };
             break;
           }
@@ -203801,30 +203801,11 @@ app.post("/api/vnc/start", async (c) => {
       session = built.s;
     }
     await saveSession(sessionId, session);
-    const isAuthFailure = /* @__PURE__ */ __name((msg) => /authentication methods failed|permission denied|no supported authentication/i.test(msg), "isAuthFailure");
     let warn = "";
     try {
       await probeRelayAuth(session);
     } catch (e) {
-      const msg = String(e?.message ?? e);
-      if (reused && isAuthFailure(msg)) {
-        await deleteConsoleConnection(clients, session.connectionId);
-        try {
-          await c.env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(VNC_SESSION_PREFIX2 + sessionId).run();
-        } catch {
-        }
-        const built = await buildFresh();
-        sessionId = built.sid;
-        session = built.s;
-        await saveSession(sessionId, session);
-        try {
-          await probeRelayAuth(session);
-        } catch (e2) {
-          throw new Error(`\u63A7\u5236\u53F0\u8FDE\u63A5\u91CD\u5EFA\u540E\u4ECD\u65E0\u6CD5\u8BA4\u8BC1\uFF1A${String(e2?.message ?? e2)}`);
-        }
-      } else {
-        warn = String(e?.message ?? e);
-      }
+      warn = String(e?.message ?? e);
     }
     const pruneStale = /* @__PURE__ */ __name(async () => {
       try {
@@ -203852,7 +203833,6 @@ app.post("/api/vnc/start", async (c) => {
     return c.json({ token, ttl: VNC_TOKEN_TTL, warn: warn || void 0 });
   } catch (e) {
     const msg = errorMessage(e);
-    await purgeInstanceVncSessions(c.env, cfgId, instanceId);
     const needCleanup = /控制台连接|变更中|409|创建 Console Connection|残留连接/i.test(msg);
     return Response.json(
       {
@@ -203864,22 +203844,38 @@ app.post("/api/vnc/start", async (c) => {
     );
   }
 });
-async function purgeInstanceVncSessions(env, cfgId, instanceId) {
+app.post("/api/vnc/attach", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const cfgId = (body.cfgId ?? "").trim();
+  const connectionId = (body.connectionId ?? "").trim();
+  if (!cfgId || !connectionId) return badRequest("\u7F3A\u5C11\u914D\u7F6E ID \u6216\u8FDE\u63A5 ID");
   try {
-    const rows = await env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
+    const rows = await c.env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
     for (const row of rows.results ?? []) {
+      let s = null;
       try {
-        const s = JSON.parse(await decryptText(keySecretsForRead(env), row.value));
-        if (s.instanceId !== instanceId || s.cfgId !== cfgId) continue;
-        await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+        s = JSON.parse(await decryptText(keySecretsForRead(c.env), row.value));
       } catch {
-        await env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+        continue;
       }
+      if (!s || s.connectionId !== connectionId || s.cfgId !== cfgId) continue;
+      const next = { ...s, expiresAt: Date.now() + VNC_SESSION_TTL };
+      await c.env.DB.prepare("UPDATE sys_cfg SET value = ?, updated_at = ? WHERE key = ?").bind(await encryptText(keySecret(c.env), JSON.stringify(next)), nowIso2(), row.key).run();
+      const token = await signVncToken(
+        await authSecret(c.env),
+        row.key.slice(VNC_SESSION_PREFIX2.length),
+        Date.now() + VNC_TOKEN_TTL
+      );
+      return c.json({ token, ttl: VNC_TOKEN_TTL });
     }
-  } catch {
+    return Response.json(
+      { error: "\u672C\u5730\u6CA1\u6709\u8FD9\u6761\u8FDE\u63A5\u7684\u79C1\u94A5\uFF08\u53EF\u80FD\u5728\u5386\u53F2\u5931\u8D25\u6E05\u7406\u4E2D\u4E22\u5931\uFF09\uFF0C\u65E0\u6CD5\u76F4\u63A5\u8FDE\u63A5" },
+      { status: 400 }
+    );
+  } catch (e) {
+    return Response.json({ error: errorMessage(e) }, { status: 400 });
   }
-}
-__name(purgeInstanceVncSessions, "purgeInstanceVncSessions");
+});
 app.get("/api/vnc/console-connections", async (c) => {
   const cfgId = (c.req.query("cfgId") ?? "").trim();
   const instanceId = (c.req.query("instanceId") ?? "").trim();
