@@ -200128,6 +200128,31 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
       return "UNKNOWN";
     }
   }, "instanceState");
+  const listPrimary = /* @__PURE__ */ __name(async () => {
+    const compartmentId = compartmentCandidates[0];
+    if (!compartmentId) return [];
+    try {
+      const res = await clients.compute.listInstanceConsoleConnections({ compartmentId, instanceId });
+      return (res.items ?? []).filter((x) => !!x.id).map((x) => ({ id: x.id, state: String(x.lifecycleState ?? "") }));
+    } catch {
+      return [];
+    }
+  }, "listPrimary");
+  const clearStaleConnections = /* @__PURE__ */ __name(async () => {
+    const pending = (await listExisting()).filter((x) => !isGone(x.state));
+    if (!pending.length) return false;
+    for (const c of pending) {
+      try {
+        await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: c.id });
+      } catch {
+      }
+    }
+    for (let i = 0; i < 6; i++) {
+      await new Promise((r) => setTimeout(r, 3e3));
+      if (!(await listPrimary()).some((x) => !isGone(x.state))) return true;
+    }
+    return true;
+  }, "clearStaleConnections");
   const createWithRetry = /* @__PURE__ */ __name(async () => {
     let lastErr = null;
     const MAX = 6;
@@ -200136,32 +200161,23 @@ async function createConsoleConnection(clients, instanceId, publicKeyOpenSSH) {
         return await createOnce();
       } catch (e) {
         lastErr = e;
-        if (isInstanceBusy(e)) {
-          const pending = (await listExisting()).filter((x) => !isGone(x.state));
+        if (isInstanceBusy(e) || is409(e)) {
+          await clearStaleConnections();
           if (attempt < MAX - 1) {
-            await new Promise((r) => setTimeout(r, pending.length ? 8e3 : 5e3));
+            await new Promise((r) => setTimeout(r, 3e3));
             continue;
           }
           const state = await instanceState();
-          const conns = await listExisting();
+          const conns = (await listExisting()).filter((x) => !isGone(x.state));
           const detail = conns.length ? conns.map((x) => `${x.id.slice(-8)}=${x.state}`).join("\uFF0C") : "\u65E0";
           throw new Error(
-            `\u5B9E\u4F8B\u72B6\u6001 ${state}\uFF0C\u4F46 OCI \u4ECD\u62A5\u544A\u53D8\u66F4\u4E2D\uFF08\u63A7\u5236\u53F0\u8FDE\u63A5\uFF1A${detail}\uFF09\u3002\u901A\u5E38\u662F\u4E0A\u4E00\u6B21\u8FDE\u63A5\u7684\u5220\u9664/\u521B\u5EFA\u5C1A\u672A\u7ED3\u675F\uFF0C\u8BF7\u7B49 1~2 \u5206\u949F\u540E\u518D\u8BD5\uFF1B\u82E5\u6301\u7EED\u5931\u8D25\u53EF\u5230 OCI \u63A7\u5236\u53F0\u624B\u52A8\u5220\u9664\u8BE5\u5B9E\u4F8B\u7684\u63A7\u5236\u53F0\u8FDE\u63A5`
+            `\u5B9E\u4F8B\u72B6\u6001 ${state}\uFF0C\u4F46 OCI \u4ECD\u62D2\u7EDD\u521B\u5EFA\u63A7\u5236\u53F0\u8FDE\u63A5\uFF08\u6B8B\u7559\u8FDE\u63A5\uFF1A${detail}\uFF09\u3002\u8BF7\u7B49 1~2 \u5206\u949F\u540E\u518D\u8BD5\uFF1B\u82E5\u6301\u7EED\u5931\u8D25\u53EF\u5230 OCI \u63A7\u5236\u53F0\u624B\u52A8\u5220\u9664\u8BE5\u5B9E\u4F8B\u7684\u63A7\u5236\u53F0\u8FDE\u63A5`
           );
         }
-        if (!is409(e)) throw e;
-        for (const c of (await listExisting()).filter((x) => !isGone(x.state))) {
-          try {
-            await clients.compute.deleteInstanceConsoleConnection({ instanceConsoleConnectionId: c.id });
-          } catch {
-          }
-        }
-        if (attempt < MAX - 1) await new Promise((r) => setTimeout(r, 4e3 * (attempt + 1)));
+        throw e;
       }
     }
-    throw new Error(
-      `\u8BE5\u5B9E\u4F8B\u7684\u63A7\u5236\u53F0\u8FDE\u63A5\u4ECD\u5728\u56DE\u6536\u4E2D\uFF08OCI \u8FD4\u56DE 409\uFF09\uFF0C\u8BF7 1~2 \u5206\u949F\u540E\u518D\u8BD5\u3002\u539F\u59CB\u9519\u8BEF\uFF1A${lastErr?.message ?? lastErr}`
-    );
+    throw new Error(`\u521B\u5EFA Console Connection \u5931\u8D25\uFF1A${lastErr?.message ?? lastErr}`);
   }, "createWithRetry");
   const ourFp = await sshFingerprint(publicKeyOpenSSH);
   const normalizeFp = /* @__PURE__ */ __name((raw2) => {
