@@ -2,21 +2,38 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Cloud Shell · noVNC</title>
     <style>
         html, body { height: 100%; margin: 0; background: #0b1120; color: #e2e8f0; font-family: system-ui, sans-serif; }
         body { display: flex; flex-direction: column; }
-        #bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px; background: #111a2e; border-bottom: 1px solid #1e293b; font-size: 13px; }
-        #status { flex: 1 1 140px; min-width: 120px; }
-        #bar button { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
+
+        /* 工具栏：分组排列，组间留白+分隔线，降低误触 */
+        #bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; background: #111a2e; border-bottom: 1px solid #1e293b; }
+        #status { flex: 1 1 140px; min-width: 110px; font-size: 12px; color: #cbd5e1; }
+        .group { display: flex; align-items: center; gap: 6px; }
+        .group + .group { padding-left: 10px; border-left: 1px solid #1e293b; }
+        #bar button, #bar select { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
         #bar button:hover { background: #334155; }
         #bar button:disabled { opacity: .5; cursor: default; }
         #bar button.active { background: #b91c1c; border-color: #dc2626; color: #fee2e2; }
-        #bar select { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 4px; font-size: 12px; }
-        #screen { flex: 1; overflow: hidden; background: #000; touch-action: none; }
-        #error { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px; color: #fca5a5; font-size: 14px; }
-        #paste-box { position: absolute; right: 12px; top: 52px; display: none; width: min(380px, calc(100vw - 24px)); background: #111a2e; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.5); box-sizing: border-box; }
+        #bar button.ghost { background: transparent; color: #94a3b8; border-color: #334155; }
+        #bar button.ghost:hover { background: #1e293b; color: #e2e8f0; }
+        #bar button.on { background: #0369a1; border-color: #0284c7; color: #e0f2fe; }
+        #bar select { padding: 6px 4px; }
+
+        #screen { flex: 1; overflow: hidden; background: #000; touch-action: none; min-height: 0; }
+        #error { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px; color: #fca5a5; font-size: 14px; background: rgba(11,17,32,.94); z-index: 30; cursor: pointer; }
+
+        /* 虚拟键盘：在文档流底部，不遮挡画面 */
+        #keypad { display: none; flex-direction: column; gap: 6px; padding: 8px; background: #111a2e; border-top: 1px solid #334155; }
+        #keypad.show { display: flex; }
+        .krow { display: flex; gap: 6px; }
+        .krow button { flex: 1 1 0; padding: 10px 4px; background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; font-size: 14px; cursor: pointer; user-select: none; }
+        .krow button:active { background: #0369a1; border-color: #0284c7; }
+        .krow button.wide { flex: 1.4 1 0; }
+
+        #paste-box { position: absolute; right: 12px; top: 52px; display: none; width: min(380px, calc(100vw - 24px)); background: #111a2e; border: 1px solid #334155; border-radius: 8px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.5); box-sizing: border-box; z-index: 25; }
         #paste-box h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #cbd5e1; }
         #paste-box textarea { width: 100%; height: 84px; resize: vertical; background: #0b1120; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; font: 12px/1.4 ui-monospace, monospace; box-sizing: border-box; }
         #paste-preview { margin-top: 8px; padding: 6px 8px; background: #0b1120; border: 1px solid #1e293b; border-radius: 6px; font: 12px/1.5 ui-monospace, monospace; color: #93c5fd; word-break: break-all; max-height: 88px; overflow: auto; white-space: pre-wrap; }
@@ -29,12 +46,15 @@
         #paste-box .row button { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
         #paste-box .row button.primary { background: #0369a1; border-color: #0284c7; }
 
-        /* 窄屏 / 手机适配 */
+        /* 手机端：状态独占一行，按钮平分，键盘按钮更大 */
         @media (max-width: 640px) {
-            #bar { gap: 8px; padding: 8px; }
+            #bar { gap: 6px; padding: 6px 8px; }
             #status { flex: 1 1 100%; order: -1; }
-            #bar button { flex: 1 1 auto; padding: 10px 8px; font-size: 13px; }
-            #paste-box { position: fixed; left: 8px; right: 8px; top: 92px; width: auto; max-height: 72vh; overflow: auto; }
+            .group { flex: 1 1 auto; }
+            .group + .group { padding-left: 0; border-left: none; }
+            #bar button, #bar select { flex: 1 1 auto; padding: 10px 6px; font-size: 13px; }
+            .krow button { padding: 13px 4px; font-size: 16px; }
+            #paste-box { position: fixed; left: 8px; right: 8px; top: 100px; width: auto; max-height: 70vh; overflow: auto; }
             #paste-box textarea { height: 72px; font-size: 14px; }
             #paste-box .row button { flex: 1 1 auto; padding: 10px 8px; font-size: 13px; }
             #paste-preview { max-height: 64px; font-size: 13px; }
@@ -42,10 +62,12 @@
     </style>
     <script type="module" crossorigin="anonymous">
         import RFB from './core/rfb.js';
+        import { getKeysym } from './core/input/util.js';
 
         const $ = (id) => document.getElementById(id);
         const status = (t) => { $('status').textContent = t; };
         const showError = (t) => { $('error').textContent = t; $('error').style.display = 'flex'; };
+        $('error').onclick = () => { $('error').style.display = 'none'; };
         window.addEventListener('error', (e) => showError('JS 错误：' + (e.message || e.error)));
         window.addEventListener('unhandledrejection', (e) => showError('未处理异常：' + (e.reason?.message ?? e.reason)));
 
@@ -53,6 +75,8 @@
             const m = location.href.match(new RegExp('.*[?&]' + name + '=([^&#]*)'));
             return m ? decodeURIComponent(m[1]) : def;
         }
+
+        const isTouch = () => window.matchMedia('(pointer: coarse)').matches;
 
         /** 把文本转成可读预览：换行/Tab/不可发送字符都显式标出 */
         function preview(text) {
@@ -80,6 +104,28 @@
 
             let rfb = null;
 
+            // 快捷按键表：keysym + KeyboardEvent.code
+            const KEYMAP = {
+                esc: [0xff1b, "Escape"],
+                f2: [0xffbf, "F2"],
+                tab: [0xff09, "Tab"],
+                enter: [0xff0d, "Enter"],
+                backspace: [0xff08, "Backspace"],
+                del: [0xffff, "Delete"],
+                left: [0xff51, "ArrowLeft"],
+                up: [0xff52, "ArrowUp"],
+                down: [0xff54, "ArrowDown"],
+                right: [0xff53, "ArrowRight"],
+                home: [0xff50, "Home"],
+                end: [0xff57, "End"],
+            };
+
+            function sendKeyOf(name) {
+                const k = KEYMAP[name];
+                if (!k || !rfb) return;
+                rfb.sendKey(k[0], k[1]);
+            }
+
             // 需要 Shift 的符号 -> 对应的基础键（US 键盘布局）
             const SHIFT_MAP = {
                 "!": "1", "@": "2", "#": "3", "$": "4", "%": "5", "^": "6", "&": "7", "*": "8",
@@ -100,7 +146,6 @@
              */
             async function typeText(text, enter, onProgress) {
                 if (!rfb) return { sent: 0, skipped: 0 };
-                // 先算出总步数，便于显示进度
                 let total = 0;
                 for (const ch of text) {
                     if (ch === "\r") continue;
@@ -119,7 +164,6 @@
                     } else if (ch === "\t") {
                         rfb.sendKey(TAB_KEYSYM, "Tab");
                     } else if (/[A-Z]/.test(ch)) {
-                        // 大写字母：Shift + 小写字母，兼容只认物理按键的控制台
                         rfb.sendKey(SHIFT_KEYSYM, "ShiftLeft", true);
                         rfb.sendKey(ch.toLowerCase().codePointAt(0), "");
                         rfb.sendKey(SHIFT_KEYSYM, "ShiftLeft", false);
@@ -210,19 +254,22 @@
                 rfb.viewOnly = false;
                 rfb.scaleViewport = true;
 
+                // ===== 工具栏按钮 =====
                 $("cad").onclick = () => rfb.sendCtrlAltDel();
-                $("reconnect").onclick = () => location.reload();
                 $("fullscreen").onclick = () => {
                     if (document.fullscreenElement) document.exitFullscreen?.();
                     else document.documentElement.requestFullscreen?.();
                 };
+                // 重连放在最后并加确认，避免误触导致会话中断
+                $("reconnect").onclick = () => {
+                    if (!confirm("重新连接会断开当前控制台会话，确定继续？")) return;
+                    location.reload();
+                };
 
-                // 连按按键：OCI 的 VNC 有输入延迟，手动抢时机很难命中。
-                // 但 ESC 在 BIOS 里是「退出」，按多了会把刚进的设置界面退出去，
-                // 因此时长控制在 10 秒、间隔 250ms，并支持切换 F2/Del。
+                // ===== 连按按键（进 BIOS/启动菜单）=====
                 const SPAM_KEYS = {
-                    esc: { keysym: 0xff1b, code: "Escape", label: "ESC" },
                     f2: { keysym: 0xffbf, code: "F2", label: "F2" },
+                    esc: { keysym: 0xff1b, code: "Escape", label: "ESC" },
                     del: { keysym: 0xffff, code: "Delete", label: "Del" },
                 };
                 const SPAM_DURATION_MS = 10000;
@@ -231,7 +278,7 @@
                 let spamEndsAt = 0;
 
                 function currentSpamKey() {
-                    return SPAM_KEYS[$("spam-key").value] ?? SPAM_KEYS.esc;
+                    return SPAM_KEYS[$("spam-key").value] ?? SPAM_KEYS.f2;
                 }
 
                 function resetSpamButton() {
@@ -259,7 +306,7 @@
                         rfb.sendKey(key.keysym, key.code);
                         const left = Math.ceil((spamEndsAt - Date.now()) / 1000);
                         $("spam").textContent = `停止（${left}s）`;
-                        status(`正在连按 ${key.label}… 进入 BIOS 后请立即点「停止」`);
+                        status(`正在连按 ${key.label}… 进入固件界面后请立即点「停止」`);
                         spamTimer = setTimeout(tick, SPAM_INTERVAL_MS);
                     };
                     tick();
@@ -270,14 +317,35 @@
                     else startSpam();
                 };
                 $("spam-key").onchange = () => { if (!spamTimer) resetSpamButton(); };
+                resetSpamButton();
 
-                // 打开粘贴面板：先尝试读剪贴板填入，然后让用户确认内容再发送
+                // ===== 虚拟键盘（手机端无软键盘时的可靠输入方式）=====
+                $("keypad-toggle").onclick = () => {
+                    const shown = $("keypad").classList.toggle("show");
+                    $("keypad-toggle").classList.toggle("on", shown);
+                };
+                for (const btn of document.querySelectorAll("#keypad button[data-key]")) {
+                    btn.addEventListener("click", () => sendKeyOf(btn.dataset.key));
+                }
+
+                // 移动端点击画面时尝试唤起系统软键盘（把按键转发到 VNC）
+                $("screen").addEventListener("click", () => {
+                    if (isTouch()) $("kbd-sink").focus();
+                });
+                $("kbd-sink").addEventListener("keydown", (e) => {
+                    if (!rfb) return;
+                    const keysym = getKeysym(e);
+                    if (!keysym) return;
+                    e.preventDefault();
+                    rfb.sendKey(keysym, e.code || "");
+                });
+
+                // ===== 输入/粘贴面板 =====
                 $("paste").onclick = async () => {
                     $("paste-box").style.display = "block";
                     $("quick-hint").style.display = "none";
                     try {
                         const text = await navigator.clipboard.readText();
-                        // 仅在输入框为空时用剪贴板填充，避免覆盖用户已输入的内容
                         if (text && !$("paste-input").value) $("paste-input").value = text;
                     } catch {
                         // 移动端/未授权时会读取失败，用户可在输入框手动粘贴
@@ -312,19 +380,53 @@
 <body>
     <div id="bar">
         <span id="status">Loading</span>
-        <select id="spam-key" title="选择要连按的按键（ESC 在 BIOS 内是退出，可改用 F2）">
-            <option value="esc">ESC</option>
-            <option value="f2">F2</option>
-            <option value="del">Del</option>
-        </select>
-        <button id="spam" title="重启后自动连按所选按键，用于进入 BIOS/启动菜单">连按 ESC</button>
-        <button id="paste">输入/粘贴</button>
-        <button id="cad">Ctrl+Alt+Del</button>
-        <button id="fullscreen">全屏</button>
-        <button id="reconnect">重连</button>
+        <div class="group">
+            <select id="spam-key" title="选择要连按的按键（F2 在固件界面内不会触发退出）">
+                <option value="f2">F2</option>
+                <option value="esc">ESC</option>
+                <option value="del">Del</option>
+            </select>
+            <button id="spam" title="重启后自动连按所选按键，用于进入固件/启动菜单">连按 F2</button>
+        </div>
+        <div class="group">
+            <button id="keypad-toggle" title="展开虚拟键盘（方向键等）">⌨ 键盘</button>
+            <button id="paste" title="输入或粘贴文本发送到控制台">输入</button>
+        </div>
+        <div class="group">
+            <button id="cad" title="发送 Ctrl+Alt+Del">Ctrl+Alt+Del</button>
+            <button id="fullscreen" title="全屏显示">全屏</button>
+        </div>
+        <div class="group">
+            <button id="reconnect" class="ghost" title="重新加载页面并重连">重连</button>
+        </div>
     </div>
+
     <div id="screen"></div>
+
+    <div id="keypad">
+        <div class="krow">
+            <button data-key="esc">Esc</button>
+            <button data-key="f2">F2</button>
+            <button data-key="tab">Tab</button>
+            <button data-key="enter" class="wide">Enter</button>
+            <button data-key="backspace">⌫</button>
+            <button data-key="del">Del</button>
+        </div>
+        <div class="krow">
+            <button data-key="left">←</button>
+            <button data-key="up">↑</button>
+            <button data-key="down">↓</button>
+            <button data-key="right">→</button>
+        </div>
+    </div>
+
+    <!-- 移动端点击画面时聚焦此输入框以唤起系统键盘，keydown 转发到 VNC -->
+    <input id="kbd-sink" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+           aria-hidden="true" tabindex="0"
+           style="position:fixed;left:50%;bottom:2px;width:1px;height:1px;opacity:.01;border:0;outline:0;padding:0;background:transparent;color:transparent;caret-color:transparent">
+
     <div id="error"></div>
+
     <div id="paste-box">
         <h3>发送内容（手机端可在此直接输入）</h3>
         <div id="quick">
