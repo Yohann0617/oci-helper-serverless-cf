@@ -203791,6 +203791,55 @@ app.post("/api/vnc/start", async (c) => {
     return Response.json({ error: errorMessage(e) }, { status: 400 });
   }
 });
+app.get("/api/vnc/console-connections", async (c) => {
+  const cfgId = (c.req.query("cfgId") ?? "").trim();
+  const instanceId = (c.req.query("instanceId") ?? "").trim();
+  if (!cfgId || !instanceId) return badRequest("\u7F3A\u5C11\u914D\u7F6E ID \u6216\u5B9E\u4F8B ID");
+  const cfg = await getCfg2(c.env, cfgId);
+  if (!cfg) return badRequest("OCI \u914D\u7F6E\u4E0D\u5B58\u5728");
+  const region = (c.req.query("region") ?? "").trim() || void 0;
+  const compartment = (c.req.query("compartment") ?? "").trim() || void 0;
+  try {
+    const clients = await clientsFor(c.env, cfg, region, compartment);
+    let compartmentId = compartment || cfg.compartment_id || cfg.tenancy_ocid;
+    let instanceState = "";
+    try {
+      const inst = await clients.compute.getInstance({ instanceId });
+      instanceState = String(inst.instance?.lifecycleState ?? "");
+      if (inst.instance?.compartmentId) compartmentId = inst.instance.compartmentId;
+    } catch {
+    }
+    const res = await clients.compute.listInstanceConsoleConnections({ compartmentId, instanceId });
+    const items = (res.items ?? []).filter((x) => !!x.id).map((x) => ({
+      id: x.id,
+      state: String(x.lifecycleState ?? ""),
+      fingerprint: (x.fingerprint ?? "").replace("SHA256:", "").slice(0, 24),
+      hasConnectionString: !!x.vncConnectionString,
+      // SDK 的类型定义里没有 timeCreated，但接口实际会返回（用于判断哪条是旧的）
+      timeCreated: x.timeCreated ?? null
+    })).sort((a, b) => (a.state === "DELETED" ? 1 : 0) - (b.state === "DELETED" ? 1 : 0));
+    return c.json({ items, compartmentId, instanceState });
+  } catch (e) {
+    return Response.json({ error: errorMessage(e) }, { status: 400 });
+  }
+});
+app.delete("/api/vnc/console-connections/:connectionId", async (c) => {
+  const cfgId = (c.req.query("cfgId") ?? "").trim();
+  if (!cfgId) return badRequest("\u7F3A\u5C11\u914D\u7F6E ID");
+  const cfg = await getCfg2(c.env, cfgId);
+  if (!cfg) return badRequest("OCI \u914D\u7F6E\u4E0D\u5B58\u5728");
+  const region = (c.req.query("region") ?? "").trim() || void 0;
+  const compartment = (c.req.query("compartment") ?? "").trim() || void 0;
+  try {
+    const clients = await clientsFor(c.env, cfg, region, compartment);
+    await clients.compute.deleteInstanceConsoleConnection({
+      instanceConsoleConnectionId: c.req.param("connectionId")
+    });
+    return c.json({ ok: true });
+  } catch (e) {
+    return Response.json({ error: errorMessage(e) }, { status: 400 });
+  }
+});
 app.get("/api/vnc/ws", async (c) => {
   if ((c.req.header("upgrade") ?? "").toLowerCase() !== "websocket") {
     return c.text("expected websocket upgrade", { status: 400 });
