@@ -203621,49 +203621,98 @@ app.post("/api/vnc/start", async (c) => {
       } catch {
       }
     }
-    let sessionId;
-    let session;
-    let createdConnectionId = null;
-    if (reused) {
-      sessionId = reused.sessionId;
-      session = { ...reused.session, expiresAt: Date.now() + VNC_SESSION_TTL };
-    } else {
+    const saveSession = /* @__PURE__ */ __name(async (sid, s) => {
+      await c.env.DB.prepare(
+        `INSERT INTO sys_cfg (key, value, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+      ).bind(VNC_SESSION_PREFIX2 + sid, await encryptText(keySecret(c.env), JSON.stringify(s)), nowIso2()).run();
+    }, "saveSession");
+    const buildFresh = /* @__PURE__ */ __name(async () => {
       const keyPair = await generateVncKeyPair();
       const { connectionId, vncConnectionString, fingerprint } = await createConsoleConnection(
         clients,
         instanceId,
         keyPair.publicKeyOpenSSH
       );
-      createdConnectionId = connectionId;
       const parsed = parseVncConnectionString(vncConnectionString);
-      sessionId = vncSessionId();
-      session = {
-        connectionId,
-        instanceId,
-        cfgId,
-        region: body.region || cfg.region,
-        relayHost: parsed.relayHost,
-        relayPort: parsed.relayPort,
-        connectionOcid: parsed.connectionOcid,
-        privateKey: keyPair.privateKeyPem,
-        publicKeyOpenSSH: keyPair.publicKeyOpenSSH,
-        fingerprint,
-        expiresAt: Date.now() + VNC_SESSION_TTL
+      return {
+        sid: vncSessionId(),
+        s: {
+          connectionId,
+          instanceId,
+          cfgId,
+          region: body.region || cfg.region,
+          relayHost: parsed.relayHost,
+          relayPort: parsed.relayPort,
+          connectionOcid: parsed.connectionOcid,
+          privateKey: keyPair.privateKeyPem,
+          publicKeyOpenSSH: keyPair.publicKeyOpenSSH,
+          fingerprint,
+          expiresAt: Date.now() + VNC_SESSION_TTL
+        }
       };
+    }, "buildFresh");
+    let sessionId;
+    let session;
+    if (reused) {
+      sessionId = reused.sessionId;
+      session = { ...reused.session, expiresAt: Date.now() + VNC_SESSION_TTL };
+    } else {
+      const built = await buildFresh();
+      sessionId = built.sid;
+      session = built.s;
     }
-    await c.env.DB.prepare(
-      `INSERT INTO sys_cfg (key, value, updated_at) VALUES (?, ?, ?)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
-    ).bind(VNC_SESSION_PREFIX2 + sessionId, await encryptText(keySecret(c.env), JSON.stringify(session)), nowIso2()).run();
+    await saveSession(sessionId, session);
+    const isAuthFailure = /* @__PURE__ */ __name((msg) => /authentication methods failed|permission denied|no supported authentication/i.test(msg), "isAuthFailure");
     let warn = "";
     try {
       await probeRelayAuth(session);
     } catch (e) {
-      warn = String(e?.message ?? e);
+      const msg = String(e?.message ?? e);
+      if (reused && isAuthFailure(msg)) {
+        await deleteConsoleConnection(clients, session.connectionId);
+        try {
+          await c.env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(VNC_SESSION_PREFIX2 + sessionId).run();
+        } catch {
+        }
+        const built = await buildFresh();
+        sessionId = built.sid;
+        session = built.s;
+        await saveSession(sessionId, session);
+        try {
+          await probeRelayAuth(session);
+        } catch (e2) {
+          warn = String(e2?.message ?? e2);
+        }
+      } else {
+        warn = String(e?.message ?? e);
+      }
     }
+    const pruneStale = /* @__PURE__ */ __name(async () => {
+      try {
+        const all = await c.env.DB.prepare("SELECT key, value FROM sys_cfg WHERE key LIKE ?").bind(VNC_SESSION_PREFIX2 + "%").all();
+        for (const row of all.results ?? []) {
+          if (row.key === VNC_SESSION_PREFIX2 + sessionId) continue;
+          let old = null;
+          let sameInstance = false;
+          try {
+            old = JSON.parse(await decryptText(keySecretsForRead(c.env), row.value));
+            sameInstance = old.instanceId === instanceId && old.cfgId === cfgId;
+          } catch {
+            await c.env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+            continue;
+          }
+          if (!sameInstance) continue;
+          if (old?.connectionId) await deleteConsoleConnection(clients, old.connectionId);
+          await c.env.DB.prepare("DELETE FROM sys_cfg WHERE key = ?").bind(row.key).run();
+        }
+      } catch {
+      }
+    }, "pruneStale");
     const wsSecret = await authSecret(c.env);
     const token = await signVncToken(wsSecret, sessionId, Date.now() + VNC_TOKEN_TTL);
     c.executionCtx.waitUntil(cleanupExpiredVncSessions(c.env, clients, cfg));
+    c.executionCtx.waitUntil(pruneStale());
     return c.json({ token, ttl: VNC_TOKEN_TTL, warn: warn || void 0 });
   } catch (e) {
     return Response.json({ error: errorMessage(e) }, { status: 400 });
