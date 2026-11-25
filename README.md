@@ -1,4 +1,5 @@
 # OCI Helper Serverless（部署到 Cloudflare Workers）
+> 原项目：https://github.com/Yohann0617/oci-helper
 
 一键把 **OCI 抢机 / 实例管理面板**部署到你自己的 Cloudflare 账号。
 
