@@ -122,3 +122,4 @@ Allow group <你的组> to inspect limits in tenancy
 ## 隐私与数据
 
 - OCI 私钥、私钥口令、任务 root 密码及系统密钥均用 `KEY_SECRET` 经 HKDF-SHA256 派生的 AES-256-GCM 加密后存在**你自己的 D1 数据库**，本项目不收集任何数据；缺少 `KEY_SECRET` 时拒绝服务与写入。登录 token 含 `jti` 与口令版本，改密即失效。
+
