@@ -15,7 +15,7 @@
 
 1. 点击页面顶部的 **Deploy to Cloudflare** 按钮。
 2. 授权 GitHub / Cloudflare，Cloudflare 会把本仓库**复制一份到你自己的 GitHub 账号**，并自动创建 D1 数据库（如未创建，参考下方方式二创建并绑定）、绑定资源、完成部署（按向导提示填写 Worker 名称即可，默认 `oci-helper-serverless`）。
-3. 部署完成后，先在 Worker → **设置 → 变量与 Secrets** 设置 `AUTH_PASSWORD` 和 `KEY_SECRET`（见下方“部署后必做”），再打开 Worker 域名（如 `https://oci-helper-serverless.<你的子域>.workers.dev`）登录。若未设置 `AUTH_PASSWORD`，Worker 会在日志中输出一个随机初始密码，请用该密码登录。
+3. 部署完成后，先在 Worker → **设置 → 变量与 Secrets** 设置 `AUTH_PASSWORD`、 `AUTH_SECRET` 和 `KEY_SECRET`（见下方“部署后必做”），再打开 Worker 域名（如 `https://oci-helper-serverless.<你的子域>.workers.dev`）登录。
 
 > 这个方式会 Fork 仓库到你的账号（Cloudflare 的机制如此，无法关闭），好处是以后可以在你 Fork 的仓库点 **Sync fork** 同步源仓库更新，Cloudflare 会自动重新部署。
 
