@@ -48,27 +48,7 @@
 
 </details>
 
-## 方式三：不改配置，Dashboard 手动绑定 D1（可选）
-
-<details>
-    <summary> ☜ Read more 👨‍💻</summary>
-
-同样需要在你自己的 Fork 上操作，只是把“填 `database_id`”换成“在控制台绑定”：
-
-1. 先按方式二第 2 步创建一个 D1 数据库（暂时不用管 ID）。
-2. Workers & Pages → **创建 → 连接 GitHub**，选择你自己的 Fork，把**部署命令**改为：
-   ```
-   npx wrangler deploy --config wrangler.import.toml
-   ```
-   （`wrangler.import.toml` 专门为此准备：不声明 D1，因此不会因占位符 `database_id` 而部署失败。）
-3. **绑定 D1**：部署完成后，进入该 Worker → **设置 → 绑定 → 添加绑定**，类型选 **D1 数据库**，**变量名称必须填 `DB`**（大小写一致），选择第 1 步创建的数据库，保存。
-4. **重新部署**：在 Worker 的 **部署** 页再点一次部署，让绑定生效。Worker 首次请求时会自动建表。
-
-> 数据库名称本身随便，Worker 只认绑定变量名 `DB`。若后续自动构建把 Dashboard 里加的绑定覆盖掉，请改用方式二直接在 `wrangler.toml` 里填 `database_id`。
-
-</details>
-
-## 方式四：本机命令行部署（可选）
+## 方式三：本机命令行部署（可选）
 
 <details>
     <summary> ☜ Read more 👨‍💻</summary>
@@ -103,7 +83,8 @@ wrangler deploy
 
 - **部署向导里没看到 D1 / 没点“新建数据库”就继续了**：按「方式二」手动创建一个库，把 ID 填进你 Fork 仓库的 `wrangler.toml` 后重新部署。
 - **构建报 `binding DB of type d1 must have a valid database_id`**：`wrangler.toml` 里还是占位符，按方式二第 3 步填入真实 ID。
-- **部署成功但页面报错 / 提示数据库未初始化**：Worker 没有名为 `DB` 的 D1 绑定，到 **设置 → 绑定** 添加（变量名必须是大写 `DB`），然后重新部署。
+- **部署成功但页面报错 / 提示数据库未初始化**：Worker 没有名为 `DB` 的 D1 绑定。请确认仓库 `wrangler.toml` 里的 `database_id` 已填真实 ID 后重新部署（在 Dashboard 手动加的绑定会在每次部署时被配置覆盖）。
+- **之前把部署命令改成过 `--config wrangler.import.toml`**：该方式已移除，请改回 `npx wrangler deploy`，并在 `wrangler.toml` 里填好 `database_id`，否则每次部署都会丢掉 D1 绑定。
 - **打不开登录页但不知道密码**：未设置 `AUTH_PASSWORD` 时到 Worker 实时日志查看随机初始密码，或直接设置该变量。
 - **改了 `KEY_SECRET` 后原有 OCI 配置报解密失败**：这是预期行为，加密密钥已变，需重新录入私钥等敏感信息。
 - **报 `Cannot apply new-sqlite-class migration ...` (10074)**：说明你的 Worker 里已有早期的 Durable Object 命名空间。本仓库配置已改用声明式 `exports`，正常情况下不会触发；若仍出现，请用最新仓库重新同步部署，或删除旧 Worker 后重建（D1 数据不受影响，`KEY_SECRET` 需沿用）。

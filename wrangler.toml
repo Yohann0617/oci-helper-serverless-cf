@@ -12,9 +12,9 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
 
-# D1 数据库：需要手动创建（Deploy 按钮/连接 GitHub 导入都不会稳定地自动建库）。
-#   1) Dashboard → 存储和数据库 → D1 → 创建；或执行 npx wrangler d1 create oci-helper-serverless
-#   2) 把数据库的 database_id 填到下方（保持占位符会导致部署失败）
+# D1 数据库：Deploy 向导里点“新建数据库”会自动创建并注入 database_id；
+# 也可先手动创建，再把真实 ID 填到下方（保持占位符会导致部署失败）：
+#   npx wrangler d1 create oci-helper-serverless
 # 表结构由 Worker 首次请求时自动 CREATE TABLE IF NOT EXISTS，无需手动跑 migration。
 [[d1_databases]]
 binding = "DB"
