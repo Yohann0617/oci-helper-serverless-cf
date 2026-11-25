@@ -12,11 +12,10 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
 
-# D1 数据库：需要手动创建（部署按钮/连接 GitHub 导入不会稳定地自动建库）。
+# D1 数据库：需要手动创建（Deploy 按钮/连接 GitHub 导入都不会稳定地自动建库）。
 #   1) Dashboard → 存储和数据库 → D1 → 创建；或执行 npx wrangler d1 create oci-helper-serverless
-#   2) 把数据库的 database_id 填到下方（占位符会导致部署失败）
+#   2) 把数据库的 database_id 填到下方（保持占位符会导致部署失败）
 # 表结构由 Worker 首次请求时自动 CREATE TABLE IF NOT EXISTS，无需手动跑 migration。
-# 不想改本文件时，可改用 wrangler.import.toml 部署，再到 Dashboard 绑定 D1（变量名 DB）。
 [[d1_databases]]
 binding = "DB"
 database_name = "oci-helper-serverless"
@@ -28,9 +27,17 @@ migrations_dir = "migrations"
 name = "LOG_HUB"
 class_name = "LogHub"
 
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["LogHub"]
+[[durable_objects.bindings]]
+name = "VNC_TUNNEL"
+class_name = "VncTunnel"
+
+[exports.LogHub]
+type = "durable-object"
+storage = "sqlite"
+
+[exports.VncTunnel]
+type = "durable-object"
+storage = "sqlite"
 
 [triggers]
 crons = ["* * * * *"]

@@ -12,18 +12,24 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
 
-# 不改 database_id 的可选方案：本文件不声明 D1，部署后请在 Dashboard →
-# 设置 → 绑定 里手动添加 D1 数据库，变量名填 DB（大小写一致）。
-# 需先手动创建库；Worker 首次请求会自动建表。
+# 不声明 D1 的版本：部署后在 Dashboard → 设置 → 绑定 手动添加 D1（变量名 DB）。
 # 用法：npx wrangler deploy --config wrangler.import.toml
 
 [[durable_objects.bindings]]
 name = "LOG_HUB"
 class_name = "LogHub"
 
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["LogHub"]
+[[durable_objects.bindings]]
+name = "VNC_TUNNEL"
+class_name = "VncTunnel"
+
+[exports.LogHub]
+type = "durable-object"
+storage = "sqlite"
+
+[exports.VncTunnel]
+type = "durable-object"
+storage = "sqlite"
 
 [triggers]
 crons = ["* * * * *"]
