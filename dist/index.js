@@ -203096,7 +203096,7 @@ var REPO = "Yohann0617/oci-helper-serverless-cf";
 var REPO_URL = `https://github.com/${REPO}`;
 var VERSION_URL = `https://raw.githubusercontent.com/${REPO}/main/version.json`;
 function currentBuildId() {
-  return "20261125.214318" ? "20261125.214318" : DEV_BUILD_ID;
+  return "20261125.215050" ? "20261125.215050" : DEV_BUILD_ID;
 }
 __name(currentBuildId, "currentBuildId");
 async function checkUpdate() {
