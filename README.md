@@ -97,7 +97,7 @@ wrangler deploy
 
 > 提示：本项目没有默认口令。若未设置 `AUTH_PASSWORD`，请从 Worker 日志获取随机初始密码并尽快改为自己的密码。
 
-<img width="934" height="442" alt="image" src="https://github.com/user-attachments/assets/a9decfd4-fee5-4b8d-a1f6-2d50507f6510" />
+<img width="898" height="555" alt="image" src="https://github.com/user-attachments/assets/9d4a62fd-55be-402d-bb38-b336ac8831a7" />
 
 ## 常见问题
 
