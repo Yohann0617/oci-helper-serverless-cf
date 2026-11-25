@@ -19,7 +19,7 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "oci-helper-serverless"
-database_id = "b7440ae6-5fdd-473e-bb92-fa69f2de1005"
+database_id = "YOUR_DATABASE_ID_XXX"
 migrations_dir = "migrations"
 
 [[durable_objects.bindings]]
